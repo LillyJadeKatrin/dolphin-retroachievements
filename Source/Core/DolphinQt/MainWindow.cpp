@@ -37,6 +37,7 @@
 #include "Common/Version.h"
 #include "Common/WindowSystemInfo.h"
 
+#include "Core/AchievementManager.h"
 #include "Core/Boot/Boot.h"
 #include "Core/BootManager.h"
 #include "Core/CommonTitles.h"
@@ -238,6 +239,9 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   InitCoreCallbacks();
 
   NetPlayInit();
+
+  Achievements::Init();
+  Achievements::Login();
 
 #if defined(__unix__) || defined(__unix) || defined(__APPLE__)
   auto* daemon = new SignalDaemon(this);

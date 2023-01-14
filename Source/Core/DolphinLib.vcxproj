@@ -52,6 +52,7 @@
   <Import Project="$(ExternalsDir)minizip\exports.props" />
   <Import Project="$(ExternalsDir)picojson\exports.props" />
   <Import Project="$(ExternalsDir)pugixml\exports.props" />
+  <Import Project="$(ExternalsDir)rcheevos\exports.props" />
   <Import Project="$(ExternalsDir)SDL\exports.props" />
   <Import Project="$(ExternalsDir)SFML\exports.props" />
   <Import Project="$(ExternalsDir)soundtouch\exports.props" />
@@ -65,23 +66,35 @@
     <BuildInfoTemplate>Common\build_info.txt.in</BuildInfoTemplate>
     <BuildInfoOutput>$(BinaryOutputDir)build_info.txt</BuildInfoOutput>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="$(BuildInfoTemplate)" />
   </ItemGroup>
-  <UsingTask TaskName="GetProductVersion"
-    TaskFactory="CodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+  <ItemGroup>
+    <ClInclude Include="Core\AchievementManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\AchievementManager.cpp" />
+  </ItemGroup>
+  <UsingTask TaskName="GetProductVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <Path ParameterType="System.String" Required="true" />
       <ProductVersion ParameterType="System.String" Output="true" />
     </ParameterGroup>
     <Task>
-      <Using Namespace="System.Diagnostics"/>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
+      <Using Namespace="System.Diagnostics" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
           ProductVersion = FileVersionInfo.GetVersionInfo(Path).ProductVersion;
-        ]]>
-      </Code>
+        ]]></Code>
     </Task>
   </UsingTask>
   <Target Name="WriteBuildInfo" AfterTargets="Build" Inputs="$(BuildInfoTemplate)" Outputs="$(BuildInfoOutput)">
@@ -89,10 +102,6 @@
       <Output PropertyName="VCToolsProductVersion" TaskParameter="ProductVersion" />
     </GetProductVersion>
     <Message Text="VCToolsProductVersion $(VCToolsProductVersion)" Importance="High" />
-    <WriteLinesToFile
-      File="$(BuildInfoOutput)"
-      Lines="$([System.IO.File]::ReadAllText($(BuildInfoTemplate)).Replace('${VC_TOOLS_VERSION}', $(VCToolsProductVersion)))"
-      Overwrite="true"
-    />
+    <WriteLinesToFile File="$(BuildInfoOutput)" Lines="$([System.IO.File]::ReadAllText($(BuildInfoTemplate)).Replace('${VC_TOOLS_VERSION}', $(VCToolsProductVersion)))" Overwrite="true" />
   </Target>
 </Project>
