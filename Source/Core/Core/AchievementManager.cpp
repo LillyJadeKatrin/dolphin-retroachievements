@@ -14,6 +14,7 @@
 namespace Achievements
 {
 static rc_runtime_t runtime{};
+static bool is_runtime_initialized = false;
 static rc_api_login_response_t login_data{};
 static rc_api_start_session_response_t session_data{};
 static rc_api_fetch_game_data_response_t game_data{};
@@ -138,7 +139,31 @@ void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
 
 void Init()
 {
-  rc_runtime_init(&runtime);
+  if (!is_runtime_initialized && sett_integration_enabled)
+  {
+    rc_runtime_init(&runtime);
+  }
+  else if (is_runtime_initialized && !sett_integration_enabled)
+  {
+    Shutdown();
+  }
+}
+
+void Shutdown()
+{
+  if (game_data.response.succeeded)
+  {
+    rc_api_destroy_fetch_game_data_response(&game_data);
+  }
+  if (session_data.response.succeeded)
+  {
+    rc_api_destroy_start_session_response(&session_data);
+  }
+  if (login_data.response.succeeded)
+  {
+    rc_api_destroy_login_response(&login_data);
+  }
+  rc_runtime_destroy(&runtime);
 }
 
 void Login()

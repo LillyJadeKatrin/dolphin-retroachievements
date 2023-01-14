@@ -11,6 +11,7 @@
 namespace Achievements
 {
 void Init();
+void Shutdown();
 void Login();
 void StartSession(Memory::MemoryManager* memmgr);
 void FetchData();
