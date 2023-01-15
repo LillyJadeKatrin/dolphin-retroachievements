@@ -229,7 +229,7 @@ void Award(unsigned int achievement_id)
       .username = username,
       .api_token = login_data.api_token,
       .achievement_id = achievement_id,
-      .hardcore = sett_hardcore_enabled,
+      .hardcore = 0,
       .game_hash = game_hash};
   rc_api_award_achievement_response_t award_response = {};
   Request<rc_api_award_achievement_request_t, rc_api_award_achievement_response_t>(
