@@ -119,7 +119,9 @@ void DisplayUnlocked(unsigned int achievement_id)
       OSD::AddMessage(std::format("Unlocked: {} ({})", game_data.achievements[ix].title,
                                   game_data.achievements[ix].points),
                       OSD::Duration::VERY_LONG, OSD::Color::GREEN,
-                      &(*unlocked_icons[game_data.achievements[ix].id].begin()));
+                      (sett_badge_icons_enabled)
+                          ?(&(*unlocked_icons[game_data.achievements[ix].id].begin()))
+                          :(nullptr));
     }
   }
 }
@@ -154,7 +156,8 @@ void Login()
       login_request, &login_data, rc_api_init_login_request, rc_api_process_login_response);
   rc_api_fetch_image_request_t icon_request = {.image_name = login_data.username,
                                                .image_type = RC_IMAGE_TYPE_USER};
-  IconRequest(icon_request, user_icon);
+  if (sett_badge_icons_enabled)
+    IconRequest(icon_request, user_icon);
 }
 
 void StartSession(Memory::MemoryManager* memmgr)
@@ -180,15 +183,18 @@ void FetchData()
       rc_api_process_fetch_game_data_response);
   rc_api_fetch_image_request_t icon_request = {.image_name = game_data.image_name,
                                                .image_type = RC_IMAGE_TYPE_GAME};
-  IconRequest(icon_request, user_icon);
-  for (unsigned int ix = 0; ix < partial_list_limit; ix++)
-//    for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  if (sett_badge_icons_enabled)
   {
-    icon_request.image_name = game_data.achievements[ix].badge_name;
-    icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT;
-    IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
-    icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
-    IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
+    IconRequest(icon_request, user_icon);
+    for (unsigned int ix = 0; ix < partial_list_limit; ix++)
+    //      for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+    {
+      icon_request.image_name = game_data.achievements[ix].badge_name;
+      icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT;
+      IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
+      icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
+      IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
+    }
   }
 }
 
