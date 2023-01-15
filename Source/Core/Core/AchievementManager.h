@@ -10,6 +10,17 @@
 
 namespace Achievements
 {
+static bool sett_integration_enabled;
+static std::string sett_username;
+static std::string sett_api_token;
+static bool sett_achievements_enabled;
+static bool sett_leaderboards_enabled;
+static bool sett_rich_presence_enabled;
+static bool sett_hardcore_enabled;
+static bool sett_badge_icons_enabled;
+static bool sett_test_mode_enabled;
+static bool sett_unofficial_enabled;
+
 void Init();
 void Login();
 void StartSession(Memory::MemoryManager* memmgr);

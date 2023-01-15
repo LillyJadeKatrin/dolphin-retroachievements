@@ -25,17 +25,6 @@ static rc_api_login_response_t login_data{};
 static rc_api_start_session_response_t session_data{};
 static rc_api_fetch_game_data_response_t game_data{};
 
-static bool sett_integration_enabled;
-static std::string sett_username;
-static std::string sett_api_token;
-static bool sett_achievements_enabled;
-static bool sett_leaderboards_enabled;
-static bool sett_rich_presence_enabled;
-static bool sett_hardcore_enabled;
-static bool sett_badge_icons_enabled;
-static bool sett_test_mode_enabled;
-static bool sett_unofficial_enabled;
-
 static Memory::MemoryManager* memory_manager = nullptr;
 
 static std::map<unsigned int, std::vector<u8>> unlocked_icons;

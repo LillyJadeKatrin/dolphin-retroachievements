@@ -1,0 +1,44 @@
+// Copyright 2023 Dolphin Emulator Project
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+// 15 JAN 2023 - Lilly Jade Katrin - lilly.kitty.1988@gmail.com
+// Thanks to Stenzek and the PCSX2 project for inspiration, assistance and examples,
+// and to TheFetishMachine and Infernum for encouragement and cheerleading
+
+#pragma once
+
+#include <QWidget>
+
+#include <array>
+
+class QCheckBox;
+class QGroupBox;
+class QVBoxLayout;
+class QPushButton;
+
+class AchievementSettingsWidget final : public QWidget
+{
+  Q_OBJECT
+public:
+  explicit AchievementSettingsWidget(QWidget* parent);
+
+private:
+  void OnControllerInterfaceConfigure();
+
+  void CreateLayout();
+  void ConnectWidgets();
+
+  void LoadSettings();
+  void SaveSettings();
+
+  QGroupBox* m_common_box;
+  QVBoxLayout* m_common_layout;
+  QCheckBox* m_common_integration_enabled_input;
+  QCheckBox* m_common_achievements_enabled_input;
+  QCheckBox* m_common_leaderboards_enabled_input;
+  QCheckBox* m_common_rich_presence_enabled_input;
+  QCheckBox* m_common_hardcore_enabled_input;
+  QCheckBox* m_common_badge_icons_enabled_input;
+  QCheckBox* m_common_test_mode_enabled_input;
+  QCheckBox* m_common_unofficial_enabled_input;
+};

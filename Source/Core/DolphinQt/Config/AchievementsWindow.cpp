@@ -10,19 +10,15 @@
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 
-#include "DolphinQt/Config/CommonControllersWidget.h"
-#include "DolphinQt/Config/GamecubeControllersWidget.h"
-#include "DolphinQt/Config/WiimoteControllersWidget.h"
+#include "DolphinQt/Config/AchievementSettingsWidget.h"
 #include "DolphinQt/QtUtils/WrapInScrollArea.h"
 
 AchievementsWindow::AchievementsWindow(QWidget* parent) : QDialog(parent)
 {
-  setWindowTitle(tr("Controller Settings"));
+  setWindowTitle(tr("Achievements"));
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-  m_gamecube_controllers = new GamecubeControllersWidget(this);
-  m_wiimote_controllers = new WiimoteControllersWidget(this);
-  m_common = new CommonControllersWidget(this);
+  m_settings = new AchievementSettingsWidget(this);
   CreateMainLayout();
   ConnectWidgets();
 }
@@ -32,9 +28,7 @@ void AchievementsWindow::CreateMainLayout()
   auto* layout = new QVBoxLayout();
   m_button_box = new QDialogButtonBox(QDialogButtonBox::Close);
 
-  layout->addWidget(m_gamecube_controllers);
-  layout->addWidget(m_wiimote_controllers);
-  layout->addWidget(m_common);
+  layout->addWidget(m_settings);
   layout->addStretch();
   layout->addWidget(m_button_box);
 

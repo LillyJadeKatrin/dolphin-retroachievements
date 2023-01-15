@@ -8,10 +8,8 @@
 #pragma once
 #include <QDialog>
 
-class CommonControllersWidget;
-class GamecubeControllersWidget;
+class AchievementSettingsWidget;
 class QDialogButtonBox;
-class WiimoteControllersWidget;
 
 class AchievementsWindow : public QDialog
 {
@@ -24,7 +22,5 @@ private:
   void ConnectWidgets();
 
   QDialogButtonBox* m_button_box;
-  GamecubeControllersWidget* m_gamecube_controllers;
-  WiimoteControllersWidget* m_wiimote_controllers;
-  CommonControllersWidget* m_common;
+  AchievementSettingsWidget* m_settings;
 };
