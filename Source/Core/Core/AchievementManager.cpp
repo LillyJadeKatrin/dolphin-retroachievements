@@ -147,6 +147,8 @@ void Init()
 
 void Login()
 {
+  if (!sett_integration_enabled || !is_runtime_initialized)
+    return;
   rc_api_login_request_t login_request = {.username = username, .password = password};
   Request<rc_api_login_request_t, rc_api_login_response_t>(
       login_request, &login_data, rc_api_init_login_request, rc_api_process_login_response);
@@ -157,6 +159,8 @@ void Login()
 
 void StartSession(Memory::MemoryManager* memmgr)
 {
+  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded)
+    return;
   rc_api_start_session_request_t start_session_request = {
       .username = username, .api_token = login_data.api_token, .game_id = game_id};
   Request<rc_api_start_session_request_t, rc_api_start_session_response_t>(
@@ -167,6 +171,8 @@ void StartSession(Memory::MemoryManager* memmgr)
 
 void FetchData()
 {
+  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded || !session_data.response.succeeded)
+    return;
   rc_api_fetch_game_data_request_t fetch_data_request = {
       .username = username, .api_token = login_data.api_token, .game_id = game_id};
   Request<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
@@ -188,6 +194,9 @@ void FetchData()
 
 void Activate()
 {
+  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
+      !session_data.response.succeeded || !game_data.response.succeeded)
+    return;
   // TODO lillyjade: only loading the first cheevo for testing purposes
   // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   for (unsigned int ix = 0; ix < partial_list_limit; ix++)
@@ -199,11 +208,17 @@ void Activate()
 
 void DoFrame()
 {
+  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
+      !session_data.response.succeeded || !game_data.response.succeeded)
+    return;
   rc_runtime_do_frame(&runtime, &AchievementEventHandler, &MemoryPeeker, nullptr, nullptr);
 }
 
 void Award(unsigned int achievement_id)
 {
+  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
+      !session_data.response.succeeded || !game_data.response.succeeded)
+    return;
   rc_api_award_achievement_request_t award_request = {
       .username = username,
       .api_token = login_data.api_token,
