@@ -143,27 +143,6 @@ void Init()
   {
     rc_runtime_init(&runtime);
   }
-  else if (is_runtime_initialized && !sett_integration_enabled)
-  {
-    Shutdown();
-  }
-}
-
-void Shutdown()
-{
-  if (game_data.response.succeeded)
-  {
-    rc_api_destroy_fetch_game_data_response(&game_data);
-  }
-  if (session_data.response.succeeded)
-  {
-    rc_api_destroy_start_session_response(&session_data);
-  }
-  if (login_data.response.succeeded)
-  {
-    rc_api_destroy_login_response(&login_data);
-  }
-  rc_runtime_destroy(&runtime);
 }
 
 void Login()
@@ -235,6 +214,45 @@ void Award(unsigned int achievement_id)
   Request<rc_api_award_achievement_request_t, rc_api_award_achievement_response_t>(
       award_request, &award_response, rc_api_init_award_achievement_request,
       rc_api_process_award_achievement_response);
+}
+
+void EndSession()
+{
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  {
+    unlocked_icons[game_data.achievements[ix].id].clear();
+    locked_icons[game_data.achievements[ix].id].clear();
+  }
+  unlocked_icons.clear();
+  locked_icons.clear();
+  game_icon.clear();
+  if (game_data.response.succeeded)
+  {
+    rc_api_destroy_fetch_game_data_response(&game_data);
+  }
+  if (session_data.response.succeeded)
+  {
+    rc_api_destroy_start_session_response(&session_data);
+  }
+}
+
+void Logout()
+{
+  EndSession();
+  user_icon.clear();
+  if (login_data.response.succeeded)
+  {
+    rc_api_destroy_login_response(&login_data);
+  }
+}
+
+void Shutdown()
+{
+  Logout();
+  if (is_runtime_initialized)
+  {
+    rc_runtime_destroy(&runtime);
+  }
 }
 
 }; // namespace Achievements

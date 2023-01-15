@@ -11,11 +11,13 @@
 namespace Achievements
 {
 void Init();
-void Shutdown();
 void Login();
 void StartSession(Memory::MemoryManager* memmgr);
 void FetchData();
 void Activate();
 void DoFrame();
 void Award(unsigned int achievement_id);
+void EndSession();
+void Logout();
+void Shutdown();
 } // namespace Achievements
