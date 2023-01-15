@@ -16,6 +16,7 @@
 class QStackedWidget;
 class QString;
 
+class AchievementsWindow;
 class BreakpointWidget;
 struct BootParameters;
 class CheatsManager;
@@ -165,6 +166,7 @@ private:
   void ShowResourcePackManager();
   void ShowCheatsManager();
   void ShowRiivolutionBootWidget(const UICommon::GameFile& game);
+  void ShowAchievementsWindow();
 
   void NetPlayInit();
   bool NetPlayJoin();
@@ -237,6 +239,7 @@ private:
   std::array<GBATASInputWindow*, num_gc_controllers> m_gba_tas_input_windows{};
   static constexpr int num_wii_controllers = 4;
   std::array<WiiTASInputWindow*, num_wii_controllers> m_wii_tas_input_windows{};
+  AchievementsWindow* m_achievements_window = nullptr;
 
   BreakpointWidget* m_breakpoint_widget;
   CodeWidget* m_code_widget;

@@ -91,6 +91,7 @@ signals:
   void ShowResourcePackManager();
   void ShowSkylanderPortal();
   void ConnectWiiRemote(int id);
+  void ShowAchievementsWindow();
 
   // Options
   void Configure();

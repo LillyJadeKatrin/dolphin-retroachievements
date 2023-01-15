@@ -229,6 +229,10 @@ void MenuBar::AddToolsMenu()
 
   tools_menu->addSeparator();
 
+  tools_menu->addAction(tr("Achievements"), this, [this] { emit ShowAchievementsWindow(); });
+
+  tools_menu->addSeparator();
+
   QMenu* gc_ipl = tools_menu->addMenu(tr("Load GameCube Main Menu"));
 
   m_ntscj_ipl = gc_ipl->addAction(tr("NTSC-J"), this,
@@ -277,6 +281,7 @@ void MenuBar::AddToolsMenu()
   QMenu* menu = new QMenu(tr("Connect Wii Remotes"), tools_menu);
 
   tools_menu->addSeparator();
+
   tools_menu->addMenu(menu);
 
   for (int i = 0; i < 4; i++)

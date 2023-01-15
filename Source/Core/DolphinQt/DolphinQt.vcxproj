@@ -31,10 +31,8 @@
       <AdditionalIncludeDirectories>$(ProjectDir)Settings;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(ProjectDir)TAS;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(ProjectDir)VideoInterface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-
       <!--Qt 6.3.0 headers use std::aligned_storage instead of alignas-->
       <PreprocessorDefinitions>_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-
       <!--Jump through some hoops to generate a pch file local to this project-->
       <AdditionalIncludeDirectories>$(SourceDir)PCH;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -47,6 +45,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDialog.cpp" />
+    <ClCompile Include="Config\AchievementsWindow.cpp" />
     <ClCompile Include="CheatSearchFactoryWidget.cpp" />
     <ClCompile Include="CheatSearchWidget.cpp" />
     <ClCompile Include="CheatsManager.cpp" />
@@ -220,6 +219,7 @@
     also be modified using the VS UI.
     -->
   <ItemGroup>
+    <QtMoc Include="Config\AchievementsWindow.h" />
     <ClInclude Include="Config\CheatCodeEditor.h" />
     <ClInclude Include="Config\GameConfigEdit.h" />
     <ClInclude Include="Config\Mapping\MappingCommon.h" />
