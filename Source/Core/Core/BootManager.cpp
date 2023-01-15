@@ -166,7 +166,7 @@ bool BootCore(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
 
   Achievements::StartSession(&Core::System::GetInstance().GetMemory());
   Achievements::FetchData();
-  Achievements::Activate();
+  Achievements::ActivateAM();
 
   const bool load_ipl = !StartUp.bWii && !Config::Get(Config::MAIN_SKIP_IPL) &&
                         std::holds_alternative<BootParameters::Disc>(boot->parameters);

@@ -192,10 +192,10 @@ void FetchData()
   }
 }
 
-void Activate()
+void ActivateAM()
 {
   if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
-      !session_data.response.succeeded || !game_data.response.succeeded)
+      !session_data.response.succeeded || !game_data.response.succeeded || !sett_achievements_enabled)
     return;
   // TODO lillyjade: only loading the first cheevo for testing purposes
   // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
@@ -217,7 +217,7 @@ void DoFrame()
 void Award(unsigned int achievement_id)
 {
   if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
-      !session_data.response.succeeded || !game_data.response.succeeded)
+      !session_data.response.succeeded || !game_data.response.succeeded || !sett_achievements_enabled)
     return;
   rc_api_award_achievement_request_t award_request = {
       .username = username,
@@ -229,6 +229,14 @@ void Award(unsigned int achievement_id)
   Request<rc_api_award_achievement_request_t, rc_api_award_achievement_response_t>(
       award_request, &award_response, rc_api_init_award_achievement_request,
       rc_api_process_award_achievement_response);
+}
+
+void DeactivateAM()
+{
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  {
+    rc_runtime_deactivate_achievement(&runtime, game_data.achievements[ix].id);
+  }
 }
 
 void EndSession()
