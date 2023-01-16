@@ -16,6 +16,7 @@
 #include <Common/HttpRequest.h>
 #include <VideoCommon/TextureConfig.h>
 #include <VideoBackends/Software/SWTexture.h>
+#include "Config/AchievementSettings.h"
 
 namespace Achievements
 {
@@ -114,7 +115,7 @@ void DisplayUnlocked(unsigned int achievement_id)
       OSD::AddMessage(std::format("Unlocked: {} ({})", game_data.achievements[ix].title,
                                   game_data.achievements[ix].points),
                       OSD::Duration::VERY_LONG, OSD::Color::GREEN,
-                      (sett_badge_icons_enabled)
+                      (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
                           ?(&(*unlocked_icons[game_data.achievements[ix].id].begin()))
                           :(nullptr));
     }
@@ -136,7 +137,7 @@ void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
 
 void Init()
 {
-  if (!is_runtime_initialized && sett_integration_enabled)
+  if (!is_runtime_initialized && Config::Get(Config::RA_INTEGRATION_ENABLED))
   {
     rc_runtime_init(&runtime);
   }
@@ -144,20 +145,20 @@ void Init()
 
 void Login()
 {
-  if (!sett_integration_enabled || !is_runtime_initialized)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized)
     return;
   rc_api_login_request_t login_request = {.username = username, .password = password};
   Request<rc_api_login_request_t, rc_api_login_response_t>(
       login_request, &login_data, rc_api_init_login_request, rc_api_process_login_response);
   rc_api_fetch_image_request_t icon_request = {.image_name = login_data.username,
                                                .image_type = RC_IMAGE_TYPE_USER};
-  if (sett_badge_icons_enabled)
+  if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
     IconRequest(icon_request, user_icon);
 }
 
 void StartSession(Memory::MemoryManager* memmgr)
 {
-  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized || !login_data.response.succeeded)
     return;
   rc_api_start_session_request_t start_session_request = {
       .username = username, .api_token = login_data.api_token, .game_id = game_id};
@@ -169,7 +170,8 @@ void StartSession(Memory::MemoryManager* memmgr)
 
 void FetchData()
 {
-  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded || !session_data.response.succeeded)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded)
     return;
   rc_api_fetch_game_data_request_t fetch_data_request = {
       .username = username, .api_token = login_data.api_token, .game_id = game_id};
@@ -178,7 +180,7 @@ void FetchData()
       rc_api_process_fetch_game_data_response);
   rc_api_fetch_image_request_t icon_request = {.image_name = game_data.image_name,
                                                .image_type = RC_IMAGE_TYPE_GAME};
-  if (sett_badge_icons_enabled)
+  if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
   {
     IconRequest(icon_request, user_icon);
     for (unsigned int ix = 0; ix < partial_list_limit; ix++)
@@ -195,8 +197,9 @@ void FetchData()
 
 void ActivateAM()
 {
-  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
-      !session_data.response.succeeded || !game_data.response.succeeded || !sett_achievements_enabled)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded ||
+      !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED))
     return;
   // TODO lillyjade: only loading the first cheevo for testing purposes
   // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
@@ -209,7 +212,8 @@ void ActivateAM()
 
 void DoFrame()
 {
-  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded ||
       !session_data.response.succeeded || !game_data.response.succeeded)
     return;
   rc_runtime_do_frame(&runtime, &AchievementEventHandler, &MemoryPeeker, nullptr, nullptr);
@@ -217,8 +221,9 @@ void DoFrame()
 
 void Award(unsigned int achievement_id)
 {
-  if (!sett_integration_enabled || !is_runtime_initialized || !login_data.response.succeeded ||
-      !session_data.response.succeeded || !game_data.response.succeeded || !sett_achievements_enabled)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded ||
+      !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED))
     return;
   rc_api_award_achievement_request_t award_request = {
       .username = username,

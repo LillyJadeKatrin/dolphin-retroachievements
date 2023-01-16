@@ -41,4 +41,5 @@ private:
   QCheckBox* m_common_badge_icons_enabled_input;
   QCheckBox* m_common_test_mode_enabled_input;
   QCheckBox* m_common_unofficial_enabled_input;
+  QCheckBox* m_common_encore_enabled_input;
 };

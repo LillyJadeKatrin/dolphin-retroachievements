@@ -81,9 +81,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\AchievementManager.h" />
+    <ClInclude Include="Core\Config\AchievementSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\AchievementManager.cpp" />
+    <ClCompile Include="Core\Config\AchievementSettings.cpp" />
   </ItemGroup>
   <UsingTask TaskName="GetProductVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>

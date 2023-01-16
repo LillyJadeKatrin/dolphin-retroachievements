@@ -20,6 +20,7 @@
 #include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
 #include "DolphinQt/QtUtils/SignalBlocking.h"
 #include "DolphinQt/Settings.h"
+#include <Core/Config/AchievementSettings.h>
 
 AchievementSettingsWidget::AchievementSettingsWidget(QWidget* parent) : QWidget(parent)
 {
@@ -43,6 +44,7 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_badge_icons_enabled_input = new QCheckBox(tr("Enable Badge Icons"));
   m_common_test_mode_enabled_input = new QCheckBox(tr("Enable Test Mode"));
   m_common_unofficial_enabled_input = new QCheckBox(tr("Enable Unofficial Achievements"));
+  m_common_encore_enabled_input = new QCheckBox(tr("Enable Encore Achievements"));
 
   m_common_layout->addWidget(m_common_integration_enabled_input);
   m_common_layout->addWidget(m_common_achievements_enabled_input);
@@ -52,6 +54,7 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_layout->addWidget(m_common_badge_icons_enabled_input);
   m_common_layout->addWidget(m_common_test_mode_enabled_input);
   m_common_layout->addWidget(m_common_unofficial_enabled_input);
+  m_common_layout->addWidget(m_common_encore_enabled_input);
 
   m_common_box->setLayout(m_common_layout);
 
@@ -80,6 +83,8 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
+  connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::SaveSettings);
 }
 
 void AchievementSettingsWidget::OnControllerInterfaceConfigure()
@@ -93,31 +98,43 @@ void AchievementSettingsWidget::OnControllerInterfaceConfigure()
 void AchievementSettingsWidget::LoadSettings()
 {
   SignalBlocking(m_common_integration_enabled_input)
-      ->setChecked(Achievements::sett_integration_enabled);
+      ->setChecked(Config::Get(Config::RA_INTEGRATION_ENABLED));
   SignalBlocking(m_common_achievements_enabled_input)
-      ->setChecked(Achievements::sett_achievements_enabled);
+      ->setChecked(Config::Get(Config::RA_ACHIEVEMENTS_ENABLED));
   SignalBlocking(m_common_leaderboards_enabled_input)
-      ->setChecked(Achievements::sett_leaderboards_enabled);
+      ->setChecked(Config::Get(Config::RA_LEADERBOARDS_ENABLED));
   SignalBlocking(m_common_rich_presence_enabled_input)
-      ->setChecked(Achievements::sett_rich_presence_enabled);
+      ->setChecked(Config::Get(Config::RA_RICH_PRESENCE_ENABLED));
   SignalBlocking(m_common_hardcore_enabled_input)
-      ->setChecked(Achievements::sett_hardcore_enabled);
+      ->setChecked(Config::Get(Config::RA_HARDCORE_ENABLED));
   SignalBlocking(m_common_badge_icons_enabled_input)
-      ->setChecked(Achievements::sett_badge_icons_enabled);
+      ->setChecked(Config::Get(Config::RA_BADGE_ICONS_ENABLED));
   SignalBlocking(m_common_test_mode_enabled_input)
-      ->setChecked(Achievements::sett_test_mode_enabled);
+      ->setChecked(Config::Get(Config::RA_TEST_MODE_ENABLED));
   SignalBlocking(m_common_unofficial_enabled_input)
-      ->setChecked(Achievements::sett_unofficial_enabled);
+      ->setChecked(Config::Get(Config::RA_UNOFFICIAL_ENABLED));
+  SignalBlocking(m_common_encore_enabled_input)
+      ->setChecked(Config::Get(Config::RA_ENCORE_ENABLED));
 }
 
 void AchievementSettingsWidget::SaveSettings()
 {
-  Achievements::sett_integration_enabled = m_common_integration_enabled_input->isChecked();
-  Achievements::sett_achievements_enabled = m_common_achievements_enabled_input->isChecked();
-  Achievements::sett_leaderboards_enabled = m_common_leaderboards_enabled_input->isChecked();
-  Achievements::sett_rich_presence_enabled = m_common_rich_presence_enabled_input->isChecked();
-  Achievements::sett_hardcore_enabled = m_common_hardcore_enabled_input->isChecked();
-  Achievements::sett_badge_icons_enabled = m_common_badge_icons_enabled_input->isChecked();
-  Achievements::sett_test_mode_enabled = m_common_test_mode_enabled_input->isChecked();
-  Achievements::sett_unofficial_enabled = m_common_unofficial_enabled_input->isChecked();
+  Config::SetBaseOrCurrent(Config::RA_INTEGRATION_ENABLED,
+                           m_common_integration_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_ACHIEVEMENTS_ENABLED,
+                           m_common_achievements_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_LEADERBOARDS_ENABLED,
+                           m_common_leaderboards_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_RICH_PRESENCE_ENABLED,
+                           m_common_rich_presence_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED,
+                           m_common_hardcore_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_BADGE_ICONS_ENABLED,
+                           m_common_badge_icons_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_TEST_MODE_ENABLED,
+                           m_common_test_mode_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_UNOFFICIAL_ENABLED,
+                           m_common_unofficial_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_ENCORE_ENABLED, m_common_encore_enabled_input->isChecked());
+  Config::Save();
 }
