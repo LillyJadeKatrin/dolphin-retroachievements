@@ -119,22 +119,41 @@ void AchievementSettingsWidget::LoadSettings()
 
 void AchievementSettingsWidget::SaveSettings()
 {
-  Config::SetBaseOrCurrent(Config::RA_INTEGRATION_ENABLED,
-                           m_common_integration_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_ACHIEVEMENTS_ENABLED,
-                           m_common_achievements_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_LEADERBOARDS_ENABLED,
-                           m_common_leaderboards_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_RICH_PRESENCE_ENABLED,
-                           m_common_rich_presence_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED,
-                           m_common_hardcore_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_BADGE_ICONS_ENABLED,
-                           m_common_badge_icons_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_TEST_MODE_ENABLED,
-                           m_common_test_mode_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_UNOFFICIAL_ENABLED,
-                           m_common_unofficial_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_ENCORE_ENABLED, m_common_encore_enabled_input->isChecked());
+  if (m_common_integration_enabled_input)
+    Config::Ach::EnableRAIntegration();
+  else
+    Config::Ach::DisableRAIntegration();
+  if (m_common_achievements_enabled_input)
+    Config::Ach::EnableAchievements();
+  else
+    Config::Ach::DisableAchievements();
+  if (m_common_leaderboards_enabled_input)
+    Config::Ach::EnableLeaderboards();
+  else
+    Config::Ach::DisableLeaderboards();
+  if (m_common_rich_presence_enabled_input)
+    Config::Ach::EnableRichPresence();
+  else
+    Config::Ach::DisableRichPresence();
+  if (m_common_hardcore_enabled_input)
+    Config::Ach::EnableHardcore();
+  else
+    Config::Ach::DisableHardcore();
+  if (m_common_badge_icons_enabled_input)
+    Config::Ach::EnableBadgeIcons();
+  else
+    Config::Ach::DisableBadgeIcons();
+  if (m_common_test_mode_enabled_input)
+    Config::Ach::EnableTestMode();
+  else
+    Config::Ach::DisableTestMode();
+  if (m_common_unofficial_enabled_input)
+    Config::Ach::EnableUnofficial();
+  else
+    Config::Ach::DisableUnofficial();
+  if (m_common_encore_enabled_input)
+    Config::Ach::EnableEncore();
+  else
+    Config::Ach::DisableEncore();
   Config::Save();
 }

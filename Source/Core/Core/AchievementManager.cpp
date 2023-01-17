@@ -65,14 +65,13 @@ void Request(RcRequest rc_request, RcResponse* rc_response,
 
 void IconRequest(rc_api_fetch_image_request_t rc_request, std::vector<u8> &icon_buff)
 {
+  icon_buff.clear();
   rc_api_request_t api_request;
   Common::HttpRequest http_request;
   rc_api_init_fetch_image_request(&api_request, &rc_request);
   auto http_response = http_request.Get(api_request.url);
   if (http_response.has_value() && http_response.value().size() > 0)
     icon_buff = http_response.value();
-  else
-    icon_buff.clear();
 }
 
 unsigned MemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
@@ -173,11 +172,14 @@ void FetchData()
   if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
       !login_data.response.succeeded || !session_data.response.succeeded)
     return;
-  rc_api_fetch_game_data_request_t fetch_data_request = {
-      .username = username, .api_token = login_data.api_token, .game_id = game_id};
-  Request<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
-      fetch_data_request, &game_data, rc_api_init_fetch_game_data_request,
-      rc_api_process_fetch_game_data_response);
+  if (!game_data.response.succeeded)
+  {
+    rc_api_fetch_game_data_request_t fetch_data_request = {
+        .username = username, .api_token = login_data.api_token, .game_id = game_id};
+    Request<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
+        fetch_data_request, &game_data, rc_api_init_fetch_game_data_request,
+        rc_api_process_fetch_game_data_response);
+  }
   rc_api_fetch_image_request_t icon_request = {.image_name = game_data.image_name,
                                                .image_type = RC_IMAGE_TYPE_GAME};
   if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
@@ -188,9 +190,11 @@ void FetchData()
     {
       icon_request.image_name = game_data.achievements[ix].badge_name;
       icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT;
-      IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
+      if (!unlocked_icons[game_data.achievements[ix].id].empty())
+        IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
       icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
-      IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
+      if (!locked_icons[game_data.achievements[ix].id].empty())
+        IconRequest(icon_request, locked_icons[game_data.achievements[ix].id]);
     }
   }
 }
@@ -205,8 +209,27 @@ void ActivateAM()
   // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   for (unsigned int ix = 0; ix < partial_list_limit; ix++)
   {
-    rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id,
-                                    game_data.achievements[ix].definition, nullptr, 0);
+    if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_CORE ||
+      Config::Get(Config::RA_UNOFFICIAL_ENABLED))
+      rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id,
+                                      game_data.achievements[ix].definition, nullptr, 0);
+  }
+}
+
+void ActivateUnofficialAM()
+{
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded ||
+      !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED)
+      || !Config::Get(Config::RA_UNOFFICIAL_ENABLED))
+    return;
+  // TODO lillyjade: only loading the first cheevo for testing purposes
+  // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  for (unsigned int ix = 0; ix < partial_list_limit; ix++)
+  {
+    if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
+      rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id,
+                                      game_data.achievements[ix].definition, nullptr, 0);
   }
 }
 
@@ -242,6 +265,15 @@ void DeactivateAM()
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   {
     rc_runtime_deactivate_achievement(&runtime, game_data.achievements[ix].id);
+  }
+}
+
+void DeactivateUnofficialAM()
+{
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  {
+    if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
+      rc_runtime_deactivate_achievement(&runtime, game_data.achievements[ix].id);
   }
 }
 
