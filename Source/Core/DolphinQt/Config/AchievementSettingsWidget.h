@@ -12,6 +12,7 @@
 #include <array>
 
 class QCheckBox;
+class QLineEdit;
 class QGroupBox;
 class QVBoxLayout;
 class QPushButton;
@@ -32,6 +33,8 @@ private:
   void SaveSettings();
 
   void ToggleRAIntegration();
+  void Login();
+  void Logout();
   void ToggleAchievements();
 //  void ToggleLeaderboards();
 //  void ToggleRichPresence();
@@ -44,6 +47,13 @@ private:
   QGroupBox* m_common_box;
   QVBoxLayout* m_common_layout;
   QCheckBox* m_common_integration_enabled_input;
+  QLabel* m_common_login_failed;
+  QLabel* m_common_username_label;
+  QLineEdit* m_common_username_input;
+  QLabel* m_common_password_label;
+  QLineEdit* m_common_password_input;
+  QPushButton* m_common_login_button;
+  QPushButton* m_common_logout_button;
   QCheckBox* m_common_achievements_enabled_input;
   QCheckBox* m_common_leaderboards_enabled_input;
   QCheckBox* m_common_rich_presence_enabled_input;

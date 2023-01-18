@@ -152,6 +152,8 @@ bool IsSettingSaveable(const Config::Location& config_location)
     // Achievements
 
     &Config::RA_INTEGRATION_ENABLED.GetLocation(),
+    &Config::RA_USERNAME.GetLocation(),
+    &Config::RA_API_TOKEN.GetLocation(),
     &Config::RA_ACHIEVEMENTS_ENABLED.GetLocation(),
     &Config::RA_LEADERBOARDS_ENABLED.GetLocation(),
     &Config::RA_RICH_PRESENCE_ENABLED.GetLocation(),

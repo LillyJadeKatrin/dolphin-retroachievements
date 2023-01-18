@@ -34,8 +34,6 @@ std::vector<u8> game_icon;
 std::vector<u8> user_icon;
 
 // TODO lillyjade: Temporary hardcoded test data - CLEAN BEFORE PUSHING
-static const char* username = "";
-static const char* password = "";
 static unsigned int game_id = 3417;
 static const char* game_hash = "ada3c364c783021884b066a4ad7ee49c";
 static unsigned int partial_list_limit = 1;
@@ -139,20 +137,44 @@ void Init()
   if (!is_runtime_initialized && Config::Get(Config::RA_INTEGRATION_ENABLED))
   {
     rc_runtime_init(&runtime);
+    is_runtime_initialized = true;
   }
 }
 
 void Login()
 {
-  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      Config::Get(Config::RA_USERNAME).empty() || Config::Get(Config::RA_API_TOKEN).empty())
     return;
-  rc_api_login_request_t login_request = {.username = username, .password = password};
+  std::string username = Config::Get(Config::RA_USERNAME);
+  std::string api_token = Config::Get(Config::RA_API_TOKEN);
+  rc_api_login_request_t login_request = {.username = username.c_str(),
+                                          .api_token = api_token.c_str()};
   Request<rc_api_login_request_t, rc_api_login_response_t>(
       login_request, &login_data, rc_api_init_login_request, rc_api_process_login_response);
   rc_api_fetch_image_request_t icon_request = {.image_name = login_data.username,
                                                .image_type = RC_IMAGE_TYPE_USER};
+  if (Config::Get(Config::RA_BADGE_ICONS_ENABLED) && login_data.response.succeeded)
+    IconRequest(icon_request, user_icon);
+}
+
+std::string Login(std::string password)
+{
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      Config::Get(Config::RA_USERNAME).empty() || password.empty())
+    return "";
+  std::string username = Config::Get(Config::RA_USERNAME);
+  rc_api_login_request_t login_request = {.username = username.c_str(),
+                                          .password = password.c_str()};
+  Request<rc_api_login_request_t, rc_api_login_response_t>(
+      login_request, &login_data, rc_api_init_login_request, rc_api_process_login_response);
+  rc_api_fetch_image_request_t icon_request = {.image_name = login_data.username,
+                                               .image_type = RC_IMAGE_TYPE_USER};
+  if (!login_data.response.succeeded)
+    return "";
   if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
     IconRequest(icon_request, user_icon);
+  return std::string(login_data.api_token);
 }
 
 void StartSession(Memory::MemoryManager* memmgr)
@@ -160,7 +182,7 @@ void StartSession(Memory::MemoryManager* memmgr)
   if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized || !login_data.response.succeeded)
     return;
   rc_api_start_session_request_t start_session_request = {
-      .username = username, .api_token = login_data.api_token, .game_id = game_id};
+      .username = login_data.username, .api_token = login_data.api_token, .game_id = game_id};
   Request<rc_api_start_session_request_t, rc_api_start_session_response_t>(
       start_session_request, &session_data,
       rc_api_init_start_session_request, rc_api_process_start_session_response);
@@ -175,7 +197,7 @@ void FetchData()
   if (!game_data.response.succeeded)
   {
     rc_api_fetch_game_data_request_t fetch_data_request = {
-        .username = username, .api_token = login_data.api_token, .game_id = game_id};
+        .username = login_data.username, .api_token = login_data.api_token, .game_id = game_id};
     Request<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
         fetch_data_request, &game_data, rc_api_init_fetch_game_data_request,
         rc_api_process_fetch_game_data_response);
@@ -249,7 +271,7 @@ void Award(unsigned int achievement_id)
       !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED))
     return;
   rc_api_award_achievement_request_t award_request = {
-      .username = username,
+      .username = login_data.username,
       .api_token = login_data.api_token,
       .achievement_id = achievement_id,
       .hardcore = 0,

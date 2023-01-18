@@ -12,6 +12,7 @@ namespace Achievements
 {
 void Init();
 void Login();
+std::string Login(std::string password);
 void StartSession(Memory::MemoryManager* memmgr);
 void FetchData();
 void ActivateAM();

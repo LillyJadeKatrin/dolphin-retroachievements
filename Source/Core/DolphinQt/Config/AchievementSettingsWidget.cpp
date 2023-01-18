@@ -9,7 +9,10 @@
 
 #include <QCheckBox>
 #include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
+#include <QString>
 #include <QVBoxLayout>
 
 #include "Core/AchievementManager.h"
@@ -37,6 +40,16 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_box = new QGroupBox(tr("Common"));
   m_common_layout = new QVBoxLayout();
   m_common_integration_enabled_input = new QCheckBox(tr("Enable RetroAchievements Integration"));
+  m_common_login_failed = new QLabel(tr("Login Failed"));
+  m_common_login_failed->setStyleSheet(QStringLiteral("QLabel { color : red; }"));
+  m_common_login_failed->setVisible(false);
+  m_common_username_label = new QLabel(tr("Username"));
+  m_common_username_input = new QLineEdit(tr("Username"));
+  m_common_password_label = new QLabel(tr("Password"));
+  m_common_password_input = new QLineEdit(QStringLiteral(""));
+  m_common_password_input->setEchoMode(QLineEdit::Password);
+  m_common_login_button = new QPushButton(tr("Login"));
+  m_common_logout_button = new QPushButton(tr("Logout"));
   m_common_achievements_enabled_input = new QCheckBox(tr("Enable Achievements"));
   m_common_leaderboards_enabled_input = new QCheckBox(tr("Enable Leaderboards"));
   m_common_rich_presence_enabled_input = new QCheckBox(tr("Enable Rich Presence"));
@@ -47,6 +60,13 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_encore_enabled_input = new QCheckBox(tr("Enable Encore Achievements"));
 
   m_common_layout->addWidget(m_common_integration_enabled_input);
+  m_common_layout->addWidget(m_common_login_failed);
+  m_common_layout->addWidget(m_common_username_label);
+  m_common_layout->addWidget(m_common_username_input);
+  m_common_layout->addWidget(m_common_password_label);
+  m_common_layout->addWidget(m_common_password_input);
+  m_common_layout->addWidget(m_common_login_button);
+  m_common_layout->addWidget(m_common_logout_button);
   m_common_layout->addWidget(m_common_achievements_enabled_input);
   m_common_layout->addWidget(m_common_leaderboards_enabled_input);
   m_common_layout->addWidget(m_common_rich_presence_enabled_input);
@@ -69,6 +89,10 @@ void AchievementSettingsWidget::ConnectWidgets()
 {
   connect(m_common_integration_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
+  connect(m_common_login_button, &QPushButton::pressed, this,
+          &AchievementSettingsWidget::SaveSettings);
+  connect(m_common_logout_button, &QPushButton::pressed, this,
+          &AchievementSettingsWidget::SaveSettings);
   connect(m_common_achievements_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_leaderboards_enabled_input, &QCheckBox::toggled, this,
@@ -88,6 +112,10 @@ void AchievementSettingsWidget::ConnectWidgets()
 
   connect(m_common_integration_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleRAIntegration);
+  connect(m_common_login_button, &QPushButton::pressed, this,
+          &AchievementSettingsWidget::Login);
+  connect(m_common_logout_button, &QPushButton::pressed, this,
+          &AchievementSettingsWidget::Logout);
   connect(m_common_achievements_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleAchievements);
 //  connect(m_common_leaderboards_enabled_input, &QCheckBox::toggled, this,
@@ -118,6 +146,27 @@ void AchievementSettingsWidget::LoadSettings()
 {
   SignalBlocking(m_common_integration_enabled_input)
       ->setChecked(Config::Get(Config::RA_INTEGRATION_ENABLED));
+
+  SignalBlocking(m_common_username_label)
+      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
+  if (!Config::Get(Config::RA_USERNAME).empty())
+    SignalBlocking(m_common_username_input)
+      ->setText(QString::fromStdString(Config::Get(Config::RA_USERNAME)));
+  SignalBlocking(m_common_username_input)
+      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED) &&
+        Config::Get(Config::RA_API_TOKEN).empty());
+  SignalBlocking(m_common_password_label)->setVisible(Config::Get(Config::RA_API_TOKEN).empty());
+  SignalBlocking(m_common_password_label)
+      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
+  SignalBlocking(m_common_password_input)->setVisible(Config::Get(Config::RA_API_TOKEN).empty());
+  SignalBlocking(m_common_password_input)
+      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
+  SignalBlocking(m_common_login_button)->setVisible(Config::Get(Config::RA_API_TOKEN).empty());
+  SignalBlocking(m_common_login_button)
+      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
+  SignalBlocking(m_common_logout_button)->setVisible(!Config::Get(Config::RA_API_TOKEN).empty());
+  SignalBlocking(m_common_logout_button)
+      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
 
   SignalBlocking(m_common_achievements_enabled_input)
       ->setChecked(Config::Get(Config::RA_ACHIEVEMENTS_ENABLED));
@@ -192,6 +241,24 @@ void AchievementSettingsWidget::ToggleRAIntegration()
     Achievements::Init();
   else
     Achievements::Shutdown();
+}
+
+void AchievementSettingsWidget::Login()
+{
+  Config::SetBaseOrCurrent(Config::RA_USERNAME, m_common_username_input->text().toStdString());
+  Config::Save();
+  Config::SetBaseOrCurrent(Config::RA_API_TOKEN,
+                           Achievements::Login(m_common_password_input->text().toStdString()));
+  Config::Save();
+  m_common_password_input->setText(QString());
+  m_common_login_failed->setVisible(Config::Get(Config::RA_API_TOKEN).empty());
+}
+
+void AchievementSettingsWidget::Logout()
+{
+  Achievements::Logout();
+  Config::SetBaseOrCurrent(Config::RA_API_TOKEN, "");
+  Config::Save();
 }
 
 void AchievementSettingsWidget::ToggleAchievements()

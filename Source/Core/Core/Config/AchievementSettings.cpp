@@ -16,6 +16,8 @@ namespace Config
 {
 // Configuration Information
 const Info<bool> RA_INTEGRATION_ENABLED{{System::Achievements, "General", "IntegrationEnabled"}, false};
+const Info<std::string> RA_USERNAME{{System::Achievements, "General", "Username"}, ""};
+const Info<std::string> RA_API_TOKEN{{System::Achievements, "General", "ApiToken"}, ""};
 const Info<bool> RA_ACHIEVEMENTS_ENABLED{{System::Achievements, "General", "AchievementsEnabled"},
                                          false};
 const Info<bool> RA_LEADERBOARDS_ENABLED{{System::Achievements, "General", "LeaderboardsEnabled"},

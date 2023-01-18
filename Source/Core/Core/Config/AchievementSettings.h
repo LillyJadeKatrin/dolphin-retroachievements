@@ -13,6 +13,8 @@ namespace Config
 {
 // Configuration Information
 extern const Info<bool> RA_INTEGRATION_ENABLED;
+extern const Info<std::string> RA_USERNAME;
+extern const Info<std::string> RA_API_TOKEN;
 extern const Info<bool> RA_ACHIEVEMENTS_ENABLED;
 extern const Info<bool> RA_LEADERBOARDS_ENABLED;
 extern const Info<bool> RA_RICH_PRESENCE_ENABLED;
