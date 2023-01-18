@@ -31,6 +31,16 @@ private:
   void LoadSettings();
   void SaveSettings();
 
+  void ToggleRAIntegration();
+  void ToggleAchievements();
+//  void ToggleLeaderboards();
+//  void ToggleRichPresence();
+//  void ToggleHardcore();
+  void ToggleBadgeIcons();
+//  void ToggleTestMode();
+  void ToggleUnofficial();
+//  void ToggleEncore();
+
   QGroupBox* m_common_box;
   QVBoxLayout* m_common_layout;
   QCheckBox* m_common_integration_enabled_input;

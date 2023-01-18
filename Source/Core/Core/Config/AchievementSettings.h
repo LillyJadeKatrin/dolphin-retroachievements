@@ -21,27 +21,4 @@ extern const Info<bool> RA_BADGE_ICONS_ENABLED;
 extern const Info<bool> RA_TEST_MODE_ENABLED;
 extern const Info<bool> RA_UNOFFICIAL_ENABLED;
 extern const Info<bool> RA_ENCORE_ENABLED;
-
-namespace Ach
-{
-void EnableRAIntegration();
-void DisableRAIntegration();
-void EnableAchievements();
-void DisableAchievements();
-void EnableLeaderboards();
-void DisableLeaderboards();
-void EnableRichPresence();
-void DisableRichPresence();
-void EnableHardcore();
-void DisableHardcore();
-void EnableBadgeIcons();
-void DisableBadgeIcons();
-void EnableTestMode();
-void DisableTestMode();
-void EnableUnofficial();
-void DisableUnofficial();
-void EnableEncore();
-void DisableEncore();
-}  // namespace Ach
-
 }  // namespace Config
