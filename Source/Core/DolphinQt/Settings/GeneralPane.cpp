@@ -116,9 +116,7 @@ void GeneralPane::OnHardcoreModeToggled(bool enabled)
     auto* model = qobject_cast<QStandardItemModel*>(m_combobox_speedlimit->model());
     for (int ix = 1; ix < 10; ix++)
       model->item(ix)->setEnabled(true);
-    // TODO lillyjade : I don't know how to check for whether or not a game is running
-    // from right here just yet.
-    m_checkbox_cheats->setEnabled(true);
+    m_checkbox_cheats->setEnabled(!Core::IsRunning());
   }
 }
 

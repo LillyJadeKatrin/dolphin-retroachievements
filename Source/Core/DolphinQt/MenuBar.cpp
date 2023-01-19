@@ -200,10 +200,8 @@ void MenuBar::OnDebugModeToggled(bool enabled)
 
 void MenuBar::OnHardcoreModeToggled(bool enabled)
 {
-  // TODO lillyjade : I don't know how to check for whether or not a game is running
-  // from right here just yet.
-  m_frame_advance_action->setEnabled(!enabled);
-  m_state_load_menu->setEnabled(!enabled);
+  m_frame_advance_action->setEnabled(Core::IsRunning());
+  m_state_load_menu->setEnabled(Core::IsRunning());
 }
 
 void MenuBar::AddFileMenu()
