@@ -223,8 +223,7 @@ void AchievementSettingsWidget::SaveSettings()
                            m_common_leaderboards_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_RICH_PRESENCE_ENABLED,
                            m_common_rich_presence_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED,
-                           m_common_hardcore_enabled_input->isChecked());
+  Settings::Instance().SetHardcoreModeEnabled(m_common_hardcore_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_BADGE_ICONS_ENABLED,
                            m_common_badge_icons_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_TEST_MODE_ENABLED,
@@ -288,8 +287,6 @@ void AchievementSettingsWidget::ToggleRichPresence()
 
 void AchievementSettingsWidget::ToggleHardcore()
 {
-  if (Config::Get(Config::RA_HARDCORE_ENABLED))
-  else
 }*/
 
 void AchievementSettingsWidget::ToggleBadgeIcons()

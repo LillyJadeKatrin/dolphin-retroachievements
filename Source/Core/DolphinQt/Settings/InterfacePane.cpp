@@ -83,6 +83,9 @@ InterfacePane::InterfacePane(QWidget* parent) : QWidget(parent)
   CreateLayout();
   LoadConfig();
   ConnectLayout();
+
+  connect(&Settings::Instance(), &Settings::HardcoreModeToggled, this,
+          &InterfacePane::OnHardcoreModeToggled);
 }
 
 void InterfacePane::CreateLayout()
@@ -295,7 +298,7 @@ void InterfacePane::OnSaveConfig()
   Settings::Instance().SetDebugModeEnabled(m_checkbox_show_debugging_ui->isChecked());
   Settings::Instance().SetUserStylesEnabled(m_checkbox_use_userstyle->isChecked());
   Settings::Instance().SetCurrentUserStyle(m_combobox_userstyle->currentData().toString());
-
+  
   const bool visible = m_checkbox_use_userstyle->isChecked();
 
   m_combobox_userstyle->setVisible(visible);
@@ -330,6 +333,15 @@ void InterfacePane::OnSaveConfig()
   Config::SetBase(Config::MAIN_DISABLE_SCREENSAVER, m_checkbox_disable_screensaver->isChecked());
 
   Config::Save();
+}
+
+void InterfacePane::OnHardcoreModeToggled(bool enabled)
+{
+  m_checkbox_show_debugging_ui->setEnabled(!enabled);
+  if (enabled)
+  {
+    m_checkbox_show_debugging_ui->setChecked(false);
+  }
 }
 
 void InterfacePane::OnCursorVisibleMovement()

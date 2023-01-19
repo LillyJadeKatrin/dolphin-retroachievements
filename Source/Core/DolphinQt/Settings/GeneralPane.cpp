@@ -31,6 +31,7 @@
 #ifdef USE_DISCORD_PRESENCE
 #include "UICommon/DiscordPresence.h"
 #endif
+#include <qstandarditemmodel.h>
 
 constexpr int AUTO_UPDATE_DISABLE_INDEX = 0;
 constexpr int AUTO_UPDATE_BETA_INDEX = 1;
@@ -55,6 +56,8 @@ GeneralPane::GeneralPane(QWidget* parent) : QWidget(parent)
   connect(&Settings::Instance(), &Settings::EmulationStateChanged, this,
           &GeneralPane::OnEmulationStateChanged);
   connect(&Settings::Instance(), &Settings::ConfigChanged, this, &GeneralPane::LoadConfig);
+  connect(&Settings::Instance(), &Settings::HardcoreModeToggled, this,
+          &GeneralPane::OnHardcoreModeToggled);
 
   OnEmulationStateChanged(Core::GetState());
 }
@@ -83,12 +86,40 @@ void GeneralPane::OnEmulationStateChanged(Core::State state)
   const bool running = state != Core::State::Uninitialized;
 
   m_checkbox_dualcore->setEnabled(!running);
-  m_checkbox_cheats->setEnabled(!running);
   m_checkbox_override_region_settings->setEnabled(!running);
 #ifdef USE_DISCORD_PRESENCE
   m_checkbox_discord_presence->setEnabled(!running);
 #endif
   m_combobox_fallback_region->setEnabled(!running);
+
+  if (Settings::Instance().IsHardcoreModeEnabled()) {
+    m_checkbox_cheats->setEnabled(false);
+  }
+  else {
+    m_checkbox_cheats->setEnabled(!running);
+  }
+}
+
+void GeneralPane::OnHardcoreModeToggled(bool enabled)
+{
+  if (enabled)
+  {
+    m_checkbox_cheats->setEnabled(false);
+    m_checkbox_cheats->setChecked(false);
+    auto* model = qobject_cast<QStandardItemModel*>(m_combobox_speedlimit->model());
+    // TODO lillyjade : this feels like a magic number, see if I can const it somehow
+    for (int ix = 1; ix < 10; ix++)
+      model->item(ix)->setEnabled(false);
+  }
+  else
+  {
+    auto* model = qobject_cast<QStandardItemModel*>(m_combobox_speedlimit->model());
+    for (int ix = 1; ix < 10; ix++)
+      model->item(ix)->setEnabled(true);
+    // TODO lillyjade : I don't know how to check for whether or not a game is running
+    // from right here just yet.
+    m_checkbox_cheats->setEnabled(true);
+  }
 }
 
 void GeneralPane::ConnectLayout()

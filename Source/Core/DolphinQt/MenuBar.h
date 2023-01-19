@@ -184,6 +184,7 @@ private:
   void OnRecordingStatusChanged(bool recording);
   void OnReadOnlyModeChanged(bool read_only);
   void OnDebugModeToggled(bool enabled);
+  void OnHardcoreModeToggled(bool enabled);
 
   QString GetSignatureSelector() const;
 
