@@ -121,15 +121,8 @@ void MenuBar::OnEmulationStateChanged(Core::State state)
   m_screenshot_action->setEnabled(running);
   m_state_save_menu->setEnabled(running);
 
-  if (Settings::Instance().IsHardcoreModeEnabled())
-  {
-    m_frame_advance_action->setEnabled(false);
-    m_state_load_menu->setEnabled(false);
-  }
-  {
-    m_frame_advance_action->setEnabled(running);
-    m_state_load_menu->setEnabled(running);
-  }
+  m_frame_advance_action->setEnabled(!Settings::Instance().IsHardcoreModeEnabled() && running);
+  m_state_load_menu->setEnabled(!Settings::Instance().IsHardcoreModeEnabled() && running);
 
   // Movie
   m_recording_read_only->setEnabled(running);
@@ -200,8 +193,8 @@ void MenuBar::OnDebugModeToggled(bool enabled)
 
 void MenuBar::OnHardcoreModeToggled(bool enabled)
 {
-  m_frame_advance_action->setEnabled(Core::IsRunning());
-  m_state_load_menu->setEnabled(Core::IsRunning());
+  m_frame_advance_action->setEnabled(!enabled && Core::IsRunning());
+  m_state_load_menu->setEnabled(!enabled && Core::IsRunning());
 }
 
 void MenuBar::AddFileMenu()
