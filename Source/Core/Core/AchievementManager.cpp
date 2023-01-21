@@ -339,3 +339,199 @@ void Shutdown()
 }
 
 }; // namespace Achievements
+
+//#ifdef ENABLE_RAINTEGRATION
+// RA_Interface ends up including windows.h, with its silly macros.
+//#include "common/RedtapeWindows.h"
+#include "RA_Interface.h"
+#include "RA_Consoles.h"
+#include "Core.h"
+#include "System.h"
+#include "Core/HW/ProcessorInterface.h"
+#include <cstring>
+
+namespace Achievements::RAIntegration
+{
+static void InitializeRAIntegration(void* main_window_handle);
+
+static int RACallbackIsActive();
+static void RACallbackCauseUnpause();
+static void RACallbackCausePause();
+static void RACallbackRebuildMenu();
+static void RACallbackEstimateTitle(char* buf);
+static void RACallbackResetEmulator();
+static void RACallbackLoadROM(const char* unused);
+static unsigned char RACallbackReadMemory(unsigned int address);
+static unsigned int RACallbackReadBlock(unsigned int address, unsigned char* buffer,
+                                        unsigned int bytes);
+static void RACallbackWriteMemory(unsigned int address, unsigned char value);
+
+static bool s_raintegration_initialized = false;
+}  // namespace Achievements::RAIntegration
+
+/* void Achievements::SwitchToRAIntegration()
+{
+  s_using_raintegration = true;
+  s_active = true;
+
+  // Not strictly the case, but just in case we gate anything by IsLoggedIn().
+  s_logged_in = true;
+}*/
+
+void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
+{
+  RA_InitClient((HWND)main_window_handle, "Dolphin", "Nightly");
+  RA_SetUserAgentDetail("Dolphin Nightly");
+
+  RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause,
+                            RACallbackRebuildMenu, RACallbackEstimateTitle, RACallbackResetEmulator,
+                            RACallbackLoadROM);
+  RA_SetConsoleID(PlayStation2);
+
+  // EE physical memory and scratchpad are currently exposed (matching direct rcheevos
+  // implementation).
+  RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory,
+                       memory_manager->GetExRamSizeReal());
+  RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
+
+  // Fire off a login anyway. Saves going into the menu and doing it.
+  RA_AttemptLogin(0);
+
+  s_raintegration_initialized = true;
+
+  // this is pretty lame, but we may as well persist until we exit anyway
+  std::atexit(RA_Shutdown);
+}
+
+void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
+{
+  if (s_raintegration_initialized)
+  {
+    RA_UpdateHWnd((HWND)new_handle);
+    return;
+  }
+
+  InitializeRAIntegration(new_handle);
+}
+
+void Achievements::RAIntegration::GameChanged()
+{
+  if (game_data.response.succeeded)
+    RA_ActivateGame(game_data.id);
+}
+
+bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
+{
+  int mblen = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr,
+                                  0, nullptr, nullptr);
+  if (mblen < 0)
+    return false;
+
+  dest.resize(mblen);
+  if (mblen > 0 && WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()),
+                                       dest.data(), mblen, nullptr, nullptr) < 0)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+std::string WideStringToUTF8String(const std::wstring_view& str)
+{
+  std::string ret;
+  if (!WideStringToUTF8String(ret, str))
+    ret.clear();
+
+  return ret;
+}
+
+std::vector<std::tuple<int, std::string, bool>> Achievements::RAIntegration::GetMenuItems()
+{ 
+  std::array<RA_MenuItem, 64> items;
+  const int num_items = RA_GetPopupMenuItems(items.data());
+
+  std::vector<std::tuple<int, std::string, bool>> ret;
+  ret.reserve(static_cast<u32>(num_items));
+  
+  for (int i = 0; i < num_items; i++)
+  {
+    const RA_MenuItem& it = items[i];
+    if (!it.sLabel)
+    {
+      // separator
+      ret.emplace_back(0, std::string(), false);
+    }
+    else
+    {
+      // option, maybe checkable
+      ret.emplace_back(static_cast<int>(it.nID), WideStringToUTF8String(it.sLabel), it.bChecked);
+    }
+  }
+
+  return ret;
+}
+
+void Achievements::RAIntegration::ActivateMenuItem(int item)
+{
+  RA_InvokeDialog(item);
+}
+
+int Achievements::RAIntegration::RACallbackIsActive()
+{
+  return (game_data.response.succeeded)?(game_data.id):0;
+}
+
+void Achievements::RAIntegration::RACallbackCauseUnpause()
+{
+  if (Core::GetState() != Core::State::Uninitialized)
+    Core::SetState(Core::State::Running);
+}
+
+void Achievements::RAIntegration::RACallbackCausePause()
+{
+  if (Core::GetState() != Core::State::Uninitialized)
+    Core::SetState(Core::State::Paused);
+}
+
+void Achievements::RAIntegration::RACallbackRebuildMenu()
+{
+  // unused, we build the menu on demand
+}
+
+void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
+{
+  strcpy(buf, game_data.title);
+}
+
+void Achievements::RAIntegration::RACallbackResetEmulator()
+{
+  auto& system = Core::System::GetInstance();
+  system.GetProcessorInterface().ResetButton_Tap();
+}
+
+void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
+{
+  // unused
+//  UNREFERENCED_PARAMETER(unused);
+}
+
+unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
+{
+  return memory_manager->Read_U8(address);
+}
+
+unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int address,
+                                                              unsigned char* buffer,
+                                                              unsigned int bytes)
+{
+  memory_manager->CopyFromEmu(buffer, address, bytes);
+  return bytes;
+}
+
+void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
+{
+  memory_manager->Write_U8(value, address);
+}
+
+//#endif

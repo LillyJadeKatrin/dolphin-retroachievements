@@ -25,3 +25,13 @@ void EndSession();
 void Logout();
 void Shutdown();
 } // namespace Achievements
+
+// #ifdef ENABLE_RAINTEGRATION
+namespace Achievements::RAIntegration
+{
+void MainWindowChanged(void* new_handle);
+void GameChanged();
+std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
+void ActivateMenuItem(int item);
+}  // namespace Achievements::RAIntegration
+// #endif
