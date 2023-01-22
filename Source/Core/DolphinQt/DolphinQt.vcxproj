@@ -7,6 +7,12 @@
     <ProjectName>Dolphin</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
   <Import Project="$(VSPropsDir)Configuration.Application.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -446,6 +452,9 @@
     <DataTxtFiles Include="$(DolphinRootDir)Data\license.txt" />
     <BinaryFiles Include="$(TargetPath)" />
     <AllInputFiles Include="@(DataSysFiles);@(DataTxtFiles);@(BinaryFiles)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Binary\x64\RA_Integration.dll" />
   </ItemGroup>
   <Target Name="AfterBuild" Inputs="@(AllInputFiles)" Outputs="@(AllInputFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying Data directory..." Importance="High" />

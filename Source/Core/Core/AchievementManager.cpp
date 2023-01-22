@@ -342,6 +342,7 @@ void Shutdown()
 
 //#ifdef ENABLE_RAINTEGRATION
 // RA_Interface ends up including windows.h, with its silly macros.
+#include <Windows.h>
 //#include "common/RedtapeWindows.h"
 #include "RA_Interface.h"
 #include "RA_Consoles.h"
@@ -390,8 +391,9 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
   // EE physical memory and scratchpad are currently exposed (matching direct rcheevos
   // implementation).
+  // TODO lillyjade : FIND THIS NUMBER HOLY FUCK
   RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory,
-                       memory_manager->GetExRamSizeReal());
+                       32*1024*1024+16*1024);
   RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
 
   // Fire off a login anyway. Saves going into the menu and doing it.

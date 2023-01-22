@@ -167,6 +167,7 @@ private:
   void ShowCheatsManager();
   void ShowRiivolutionBootWidget(const UICommon::GameFile& game);
   void ShowAchievementsWindow();
+  void ActivateRAMenuItem(int id);
 
   void NetPlayInit();
   bool NetPlayJoin();
