@@ -391,10 +391,7 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
   // EE physical memory and scratchpad are currently exposed (matching direct rcheevos
   // implementation).
-  // TODO lillyjade : FIND THIS NUMBER HOLY FUCK
-  RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory,
-                       32*1024*1024+16*1024);
-  RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
+  ReinstallMemoryBanks();
 
   // Fire off a login anyway. Saves going into the menu and doing it.
   RA_AttemptLogin(0);
@@ -403,6 +400,19 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
   // this is pretty lame, but we may as well persist until we exit anyway
   std::atexit(RA_Shutdown);
+}
+
+void Achievements::RAIntegration::ReinstallMemoryBanks()
+{
+  RA_ClearMemoryBanks();
+  int memory_bank_size = 0;
+  if (Core::GetState() != Core::State::Uninitialized)
+  {
+    memory_bank_size = memory_manager->GetExRamSizeReal();
+  }
+  RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, memory_bank_size);
+  RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
+
 }
 
 void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
@@ -418,6 +428,7 @@ void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
 
 void Achievements::RAIntegration::GameChanged()
 {
+  ReinstallMemoryBanks();
   if (game_data.response.succeeded)
     RA_ActivateGame(game_data.id);
 }

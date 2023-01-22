@@ -530,6 +530,8 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
 
   HW::Init(NetPlay::IsNetPlayRunning() ? &(boot_session_data.GetNetplaySettings()->sram) : nullptr);
 
+  Achievements::RAIntegration::GameChanged();
+
   Common::ScopeGuard hw_guard{[] {
     // We must set up this flag before executing HW::Shutdown()
     s_hardware_initialized = false;

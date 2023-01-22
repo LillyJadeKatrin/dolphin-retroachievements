@@ -29,6 +29,7 @@ void Shutdown();
 // #ifdef ENABLE_RAINTEGRATION
 namespace Achievements::RAIntegration
 {
+void ReinstallMemoryBanks();
 void MainWindowChanged(void* new_handle);
 void GameChanged();
 std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
