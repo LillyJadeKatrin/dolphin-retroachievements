@@ -31,7 +31,7 @@ namespace Achievements::RAIntegration
 {
 void ReinstallMemoryBanks();
 void MainWindowChanged(void* new_handle);
-void GameChanged();
+void GameChanged(bool isWii);
 std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
 void ActivateMenuItem(int item);
 }  // namespace Achievements::RAIntegration

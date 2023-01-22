@@ -350,6 +350,7 @@ void Shutdown()
 #include "System.h"
 #include "Core/HW/ProcessorInterface.h"
 #include <cstring>
+#include "Common/scmrev.h"
 
 namespace Achievements::RAIntegration
 {
@@ -381,13 +382,12 @@ static bool s_raintegration_initialized = false;
 
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
-  RA_InitClient((HWND)main_window_handle, "Dolphin", "Nightly");
-  RA_SetUserAgentDetail("Dolphin Nightly");
+  RA_InitClient((HWND)main_window_handle, "Dolphin", SCM_DESC_STR);
+  RA_SetUserAgentDetail(std::format("Dolphin {} {}", SCM_DESC_STR, SCM_BRANCH_STR).c_str());
 
   RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause,
                             RACallbackRebuildMenu, RACallbackEstimateTitle, RACallbackResetEmulator,
                             RACallbackLoadROM);
-  RA_SetConsoleID(PlayStation2);
 
   // EE physical memory and scratchpad are currently exposed (matching direct rcheevos
   // implementation).
@@ -426,11 +426,14 @@ void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
   InitializeRAIntegration(new_handle);
 }
 
-void Achievements::RAIntegration::GameChanged()
+void Achievements::RAIntegration::GameChanged(bool isWii)
 {
   ReinstallMemoryBanks();
   if (game_data.response.succeeded)
+  {
+    RA_SetConsoleID(isWii ? WII : GameCube);
     RA_ActivateGame(game_data.id);
+  }
 }
 
 bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
