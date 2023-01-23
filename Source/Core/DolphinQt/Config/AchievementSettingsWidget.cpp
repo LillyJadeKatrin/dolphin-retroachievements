@@ -188,6 +188,7 @@ void AchievementSettingsWidget::LoadSettings()
       ->setChecked(Config::Get(Config::RA_HARDCORE_ENABLED));
   SignalBlocking(m_common_hardcore_enabled_input)
       ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
+  Settings::Instance().SetHardcoreModeEnabled(m_common_hardcore_enabled_input->isChecked());
 
   SignalBlocking(m_common_badge_icons_enabled_input)
       ->setChecked(Config::Get(Config::RA_BADGE_ICONS_ENABLED));

@@ -139,6 +139,7 @@
 // This #define within X11/X.h conflicts with our WiimoteSource enum.
 #undef None
 #endif
+#include <Core/Config/AchievementSettings.h>
 
 #if defined(__unix__) || defined(__unix) || defined(__APPLE__)
 void MainWindow::OnSignal()
@@ -227,6 +228,8 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   // Apparently this has to be done before CreateComponents() so it's initialized.
   Achievements::Init();
   Achievements::Login();
+  // If this is true upon startup need to immediately disable cheats and debug
+  Settings::Instance().SetHardcoreModeEnabled(Config::Get(Config::RA_HARDCORE_ENABLED));
   Achievements::RAIntegration::MainWindowChanged((HANDLE)winId());
 
   CreateComponents();

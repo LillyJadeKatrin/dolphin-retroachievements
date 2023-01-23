@@ -466,10 +466,11 @@ void Settings::SetHardcoreModeEnabled(bool enabled)
   {
     Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, enabled);
     emit HardcoreModeToggled(enabled);
-    if (enabled) {
-      SetCheatsEnabled(false);
-      SetDebugModeEnabled(false);
-    }
+  }
+  if (enabled)
+  {
+    SetCheatsEnabled(false);
+    SetDebugModeEnabled(false);
   }
 }
 
