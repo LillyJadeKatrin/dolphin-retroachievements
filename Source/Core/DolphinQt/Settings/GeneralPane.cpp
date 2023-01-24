@@ -110,6 +110,8 @@ void GeneralPane::OnHardcoreModeToggled(bool enabled)
     // TODO lillyjade : this feels like a magic number, see if I can const it somehow
     for (int ix = 1; ix < 10; ix++)
       model->item(ix)->setEnabled(false);
+    if (m_combobox_speedlimit->currentIndex() < 10 && m_combobox_speedlimit->currentIndex() > 0)
+      m_combobox_speedlimit->setCurrentIndex(10);
   }
   else
   {
@@ -200,6 +202,10 @@ void GeneralPane::CreateBasic()
 
     m_combobox_speedlimit->addItem(str);
   }
+  auto* model = qobject_cast<QStandardItemModel*>(m_combobox_speedlimit->model());
+  // TODO lillyjade : this feels like a magic number, see if I can const it somehow
+  for (int ix = 1; ix < 10; ix++)
+    model->item(ix)->setEnabled(!Settings::Instance().IsHardcoreModeEnabled());
 
   speed_limit_layout->addRow(tr("&Speed Limit:"), m_combobox_speedlimit);
 }
