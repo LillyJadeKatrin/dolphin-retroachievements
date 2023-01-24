@@ -34,6 +34,7 @@
 #include "Core/Config/MainSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "Core/HW/ProcessorInterface.h"
 #include "Core/IOS/IOS.h"
 #include "Core/NetPlayClient.h"
 #include "Core/NetPlayServer.h"
@@ -475,6 +476,8 @@ void Settings::SetHardcoreModeEnabled(bool enabled)
     SetDebugModeEnabled(false);
     if (Config::Get(Config::MAIN_EMULATION_SPEED) < 1.0f)
       Config::SetBaseOrCurrent(Config::MAIN_EMULATION_SPEED, 1.0f);
+    auto& system = Core::System::GetInstance();
+    system.GetProcessorInterface().ResetButton_Tap();
   }
 }
 

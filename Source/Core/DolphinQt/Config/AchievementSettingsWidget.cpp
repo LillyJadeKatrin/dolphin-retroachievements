@@ -240,7 +240,10 @@ void AchievementSettingsWidget::ToggleRAIntegration()
   if (Config::Get(Config::RA_INTEGRATION_ENABLED))
     Achievements::Init();
   else
+  {
+    Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, false);
     Achievements::Shutdown();
+  }
 }
 
 void AchievementSettingsWidget::Login()
