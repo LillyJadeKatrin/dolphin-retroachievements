@@ -246,6 +246,8 @@ void InterfacePane::LoadConfig()
       ->setChecked(Config::Get(Config::MAIN_USE_BUILT_IN_TITLE_DATABASE));
   SignalBlocking(m_checkbox_show_debugging_ui)
       ->setChecked(Settings::Instance().IsDebugModeEnabled());
+  SignalBlocking(m_checkbox_show_debugging_ui)
+      ->setEnabled(!Settings::Instance().IsHardcoreModeEnabled());
   SignalBlocking(m_combobox_language)
       ->setCurrentIndex(m_combobox_language->findData(
           QString::fromStdString(Config::Get(Config::MAIN_INTERFACE_LANGUAGE))));

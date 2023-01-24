@@ -448,11 +448,13 @@ void Settings::ResetNetPlayServer(NetPlay::NetPlayServer* server)
 
 bool Settings::GetCheatsEnabled() const
 {
-  return Config::Get(Config::MAIN_ENABLE_CHEATS);
+  return !IsHardcoreModeEnabled() && Config::Get(Config::MAIN_ENABLE_CHEATS);
 }
 
 void Settings::SetCheatsEnabled(bool enabled)
 {
+  if (IsHardcoreModeEnabled())
+    enabled = false;
   if (Config::Get(Config::MAIN_ENABLE_CHEATS) != enabled)
   {
     Config::SetBaseOrCurrent(Config::MAIN_ENABLE_CHEATS, enabled);
@@ -481,6 +483,8 @@ bool Settings::IsHardcoreModeEnabled() const
 
 void Settings::SetDebugModeEnabled(bool enabled)
 {
+  if (IsHardcoreModeEnabled())
+    enabled = false;
   if (IsDebugModeEnabled() != enabled)
   {
     Config::SetBaseOrCurrent(Config::MAIN_ENABLE_DEBUGGING, enabled);
@@ -492,7 +496,7 @@ void Settings::SetDebugModeEnabled(bool enabled)
 
 bool Settings::IsDebugModeEnabled() const
 {
-  return Config::Get(Config::MAIN_ENABLE_DEBUGGING);
+  return !IsHardcoreModeEnabled() && Config::Get(Config::MAIN_ENABLE_DEBUGGING);
 }
 
 void Settings::SetRegistersVisible(bool enabled)
