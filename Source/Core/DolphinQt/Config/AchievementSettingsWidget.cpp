@@ -24,6 +24,7 @@
 #include "DolphinQt/QtUtils/SignalBlocking.h"
 #include "DolphinQt/Settings.h"
 #include <Core/Config/AchievementSettings.h>
+#include <ModalMessageBox.h>
 
 AchievementSettingsWidget::AchievementSettingsWidget(QWidget* parent) : QWidget(parent)
 {
@@ -99,8 +100,8 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_hardcore_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
+//  connect(m_common_hardcore_enabled_input, &QCheckBox::toggled, this,
+//          &AchievementSettingsWidget::SaveSettings);
   connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_test_mode_enabled_input, &QCheckBox::toggled, this,
@@ -122,8 +123,8 @@ void AchievementSettingsWidget::ConnectWidgets()
 //          &AchievementSettingsWidget::ToggleLeaderboards);
 //  connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
 //          &AchievementSettingsWidget::ToggleRichPresence);
-//  connect(m_common_hardcore_enabled_input, &QCheckBox::toggled, this,
-//          &AchievementSettingsWidget::ToggleHardcore);
+  connect(m_common_hardcore_enabled_input, &QCheckBox::clicked, this,
+          &AchievementSettingsWidget::ToggleHardcore);
   connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleBadgeIcons);
 //  connect(m_common_test_mode_enabled_input, &QCheckBox::toggled, this,
@@ -287,11 +288,55 @@ void AchievementSettingsWidget::ToggleRichPresence()
     Achievements::ActivateRP();
   else
     Achievements::DeactivateRP();
-}
+}*/
 
 void AchievementSettingsWidget::ToggleHardcore()
 {
-}*/
+  if (!Config::Get(Config::RA_HARDCORE_ENABLED))
+  {
+    auto confirm = ModalMessageBox::question(static_cast<QWidget*>(this), tr("Confirm"),
+                                             tr("Hardcore mode doubles the number of points "
+                                               "you earn for each achievement, enables "
+                                               "leaderboard submissions, and is "
+                                               "necessary for mastering games.\n"
+                                               "HOWEVER, enabling Hardcore mode will "
+                                               "disable loading savestates, cheats, "
+                                               "debug mode, frame advance, and emulator "
+                                               "speeds less than 1x, and will immediately "
+                                               "reset your current game.\n"
+                                               "Do you want to turn on Hardcore mode?"),
+                                             QMessageBox::Yes | QMessageBox::No,
+                                             QMessageBox::NoButton, Qt::ApplicationModal);
+    if (confirm == QMessageBox::Yes)
+      Settings::Instance().SetHardcoreModeEnabled(true);
+    else
+    {
+      Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, false);
+      m_common_hardcore_enabled_input->setChecked(false);
+    }
+  }
+  else
+  {
+    auto confirm = ModalMessageBox::question(static_cast<QWidget*>(this), tr("Confirm"),
+                                             tr("Disabling Hardcore mode will re-enable "
+                                                "loading savestates, cheats, debug mode, "
+                                                "frame advance, and emulator speeds less "
+                                                "than 1x.\nHOWEVER, it will disable "
+                                                "leaderboard submissions and cannot be "
+                                                "turned back on without resetting your "
+                                                "game.\n"
+                                                "Do you want to turn off Hardcore mode?"),
+                                             QMessageBox::Yes | QMessageBox::No,
+                                             QMessageBox::NoButton, Qt::ApplicationModal);
+    if (confirm == QMessageBox::Yes)
+      Settings::Instance().SetHardcoreModeEnabled(false);
+    else
+    {
+      Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, true);
+      m_common_hardcore_enabled_input->setChecked(true);
+    }
+  }
+}
 
 void AchievementSettingsWidget::ToggleBadgeIcons()
 {

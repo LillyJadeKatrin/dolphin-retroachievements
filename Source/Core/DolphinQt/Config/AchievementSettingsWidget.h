@@ -38,7 +38,7 @@ private:
   void ToggleAchievements();
 //  void ToggleLeaderboards();
 //  void ToggleRichPresence();
-//  void ToggleHardcore();
+  void ToggleHardcore();
   void ToggleBadgeIcons();
 //  void ToggleTestMode();
   void ToggleUnofficial();
