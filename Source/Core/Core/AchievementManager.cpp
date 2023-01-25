@@ -10,6 +10,7 @@
 #include <rcheevos/include/rc_api_runtime.h>
 #include <rcheevos/include/rc_api_user.h>
 
+#include "Common/ChunkFile.h"
 #include "Core/HW/Memmap.h"
 #include "VideoCommon/OnScreenDisplay.h"
 #include <iostream>
@@ -262,6 +263,21 @@ void DoFrame()
       !session_data.response.succeeded || !game_data.response.succeeded)
     return;
   rc_runtime_do_frame(&runtime, &AchievementEventHandler, &MemoryPeeker, nullptr, nullptr);
+}
+
+void DoState(PointerWrap& p)
+{
+  p.Do(runtime.triggers);
+  p.Do(runtime.trigger_count);
+  p.Do(runtime.trigger_capacity);
+  p.Do(runtime.lboards);
+  p.Do(runtime.lboard_count);
+  p.Do(runtime.lboard_capacity);
+  p.Do(runtime.richpresence);
+  p.Do(runtime.memrefs);
+  p.Do(runtime.next_memref);
+  p.Do(runtime.variables);
+  p.Do(runtime.next_variable);
 }
 
 void Award(unsigned int achievement_id)

@@ -18,6 +18,7 @@ void FetchData();
 void ActivateAM();
 void ActivateUnofficialAM();
 void DoFrame();
+void DoState(PointerWrap& p);
 void Award(unsigned int achievement_id);
 void DeactivateAM();
 void DeactivateUnofficialAM();
