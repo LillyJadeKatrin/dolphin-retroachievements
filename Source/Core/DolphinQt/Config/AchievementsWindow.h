@@ -8,7 +8,7 @@
 #pragma once
 #include <QDialog>
 
-class AchievementSettingsWidget;
+class QTabWidget;
 class QDialogButtonBox;
 
 class AchievementsWindow : public QDialog
@@ -22,5 +22,5 @@ private:
   void ConnectWidgets();
 
   QDialogButtonBox* m_button_box;
-  AchievementSettingsWidget* m_settings;
+  QTabWidget* m_tab_widget;
 };
