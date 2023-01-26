@@ -36,9 +36,9 @@ AchievementProgressWidget::AchievementProgressWidget(QWidget* parent) : QWidget(
   m_common_box = new QGroupBox(tr("Common"));
   m_common_layout = new QVBoxLayout();
 
-  for (unsigned int ix = 0; ix < Achievements::GameData()->num_achievements; ix++)
+  for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
   {
-    m_common_layout->addWidget(CreateAchievementBox(Achievements::GameData()->achievements + ix));
+    m_common_layout->addWidget(CreateAchievementBox(Achievements::GetGameData()->achievements + ix));
   }
 
   m_common_box->setLayout(m_common_layout);

@@ -26,6 +26,8 @@ static bool is_runtime_initialized = false;
 static rc_api_login_response_t login_data{};
 static rc_api_start_session_response_t session_data{};
 static rc_api_fetch_game_data_response_t game_data{};
+static rc_api_fetch_user_unlocks_response_t hardcore_unlock_data{};
+static rc_api_fetch_user_unlocks_response_t softcore_unlock_data{};
 
 static Memory::MemoryManager* memory_manager = nullptr;
 
@@ -202,6 +204,17 @@ void FetchData()
     Request<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
         fetch_data_request, &game_data, rc_api_init_fetch_game_data_request,
         rc_api_process_fetch_game_data_response);
+    rc_api_fetch_user_unlocks_request_t fetch_unlocks_request = {.username = login_data.username,
+                                                                 .api_token = login_data.api_token,
+                                                                 .game_id = game_id,
+                                                                 .hardcore = true};
+    Request<rc_api_fetch_user_unlocks_request_t, rc_api_fetch_user_unlocks_response_t>(
+        fetch_unlocks_request, &hardcore_unlock_data, rc_api_init_fetch_user_unlocks_request,
+        rc_api_process_fetch_user_unlocks_response);
+    fetch_unlocks_request.hardcore = false;
+    Request<rc_api_fetch_user_unlocks_request_t, rc_api_fetch_user_unlocks_response_t>(
+        fetch_unlocks_request, &softcore_unlock_data, rc_api_init_fetch_user_unlocks_request,
+        rc_api_process_fetch_user_unlocks_response);
   }
   rc_api_fetch_image_request_t icon_request = {.image_name = game_data.image_name,
                                                .image_type = RC_IMAGE_TYPE_GAME};
@@ -298,9 +311,59 @@ void Award(unsigned int achievement_id)
       rc_api_process_award_achievement_response);
 }
 
-rc_api_fetch_game_data_response_t* GameData()
+rc_api_login_response_t* GetUserStatus()
+{
+  return &login_data;
+}
+
+const std::vector<u8>* GetUserIcon()
+{
+  return &user_icon;
+}
+
+rc_api_fetch_user_unlocks_response_t* GetHardcoreGameProgress()
+{
+  return &hardcore_unlock_data;
+}
+
+rc_api_fetch_user_unlocks_response_t* GetSoftcoreGameProgress()
+{
+  return &softcore_unlock_data;
+}
+
+const std::vector<u8>* GetGameIcon()
+{
+  return &game_icon;
+}
+
+rc_api_fetch_game_data_response_t* GetGameData()
 {
   return &game_data;
+}
+
+State GetAchievementStatus(unsigned int id)
+{
+  for (unsigned int ix = 0; ix < hardcore_unlock_data.num_achievement_ids; ix++)
+  {
+    if (hardcore_unlock_data.achievement_ids[ix] == id)
+      return HARDCORE;
+  }
+  for (unsigned int ix = 0; ix < softcore_unlock_data.num_achievement_ids; ix++)
+  {
+    if (softcore_unlock_data.achievement_ids[ix] == id)
+      return SOFTCORE;
+  }
+  return LOCKED;
+}
+
+const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked)
+{
+  return (locked) ? (&locked_icons[id]) : (&unlocked_icons[id]);
+}
+
+void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target)
+{
+  rc_runtime_get_achievement_measured(&runtime, id, value, target);
 }
 
 void DeactivateAM()
@@ -330,6 +393,14 @@ void EndSession()
   unlocked_icons.clear();
   locked_icons.clear();
   game_icon.clear();
+  if (softcore_unlock_data.response.succeeded)
+  {
+    rc_api_destroy_fetch_user_unlocks_response(&softcore_unlock_data);
+  }
+  if (hardcore_unlock_data.response.succeeded)
+  {
+    rc_api_destroy_fetch_user_unlocks_response(&hardcore_unlock_data);
+  }
   if (game_data.response.succeeded)
   {
     rc_api_destroy_fetch_game_data_response(&game_data);

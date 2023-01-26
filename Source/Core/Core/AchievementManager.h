@@ -16,6 +16,13 @@ struct rc_api_achievement_definition_t;
 
 namespace Achievements
 {
+enum State
+{
+  LOCKED,
+  SOFTCORE,
+  HARDCORE
+};
+
 void Init();
 void Login();
 std::string Login(std::string password);
@@ -28,7 +35,15 @@ void DoFrame();
 void DoState(PointerWrap& p);
 void Award(unsigned int achievement_id);
 
-rc_api_fetch_game_data_response_t* GameData();
+rc_api_login_response_t* GetUserStatus();
+const std::vector<u8>* GetUserIcon();
+rc_api_fetch_user_unlocks_response_t* GetHardcoreGameProgress();
+rc_api_fetch_user_unlocks_response_t* GetSoftcoreGameProgress();
+const std::vector<u8>* GetGameIcon();
+rc_api_fetch_game_data_response_t* GetGameData();
+State GetAchievementStatus(unsigned int id);
+const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked);
+void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target);
 
 void DeactivateAM();
 void DeactivateUnofficialAM();
