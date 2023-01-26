@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dolphin", "Core\DolphinQt\DolphinQt.vcxproj", "{FA3FA62B-6F58-4B86-9453-4D149940A066}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CC99A910-3752-4465-95AA-7DC240D92A99} = {CC99A910-3752-4465-95AA-7DC240D92A99}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolphinNoGUI", "Core\DolphinNoGUI\DolphinNoGUI.vcxproj", "{974E563D-23F8-4E8F-9083-F62876B04E08}"
 EndProject
@@ -92,7 +95,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spng", "..\Externals\libspn
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rcheevos", "..\Externals\rcheevos\rcheevos.vcxproj", "{CC99A910-3752-4465-95AA-7DC240D92A99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RAInterface", "..\Externals\RAInterface\rainterface.vcxproj", "{CC5C1380-E863-4674-BCAD-1134B7ACD0B8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rainterface", "..\Externals\RAInterface\rainterface.vcxproj", "{CC5C1380-E863-4674-BCAD-1134B7ACD0B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

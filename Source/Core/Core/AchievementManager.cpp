@@ -298,6 +298,11 @@ void Award(unsigned int achievement_id)
       rc_api_process_award_achievement_response);
 }
 
+rc_api_fetch_game_data_response_t* GameData()
+{
+  return &game_data;
+}
+
 void DeactivateAM()
 {
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)

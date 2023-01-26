@@ -8,6 +8,7 @@
 #include "DolphinQt/Config/AchievementsWindow.h"
 
 #include <QDialogButtonBox>
+#include <QTabWidget>
 #include <QVBoxLayout>
 
 #include "DolphinQt/Config/AchievementProgressWidget.h"
