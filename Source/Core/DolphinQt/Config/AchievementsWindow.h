@@ -10,6 +10,9 @@
 
 class QTabWidget;
 class QDialogButtonBox;
+class QGroupBox;
+class QLabel;
+class QProgressBar;
 
 class AchievementsWindow : public QDialog
 {
@@ -19,8 +22,18 @@ public:
 
 private:
   void CreateMainLayout();
+  void CreateGeneralBlock();
   void ConnectWidgets();
 
+  QGroupBox* m_general_box;
   QDialogButtonBox* m_button_box;
   QTabWidget* m_tab_widget;
+
+  QLabel* m_user_icon;
+  QLabel* m_user_name;
+  QLabel* m_user_points;
+  QLabel* m_game_icon;
+  QLabel* m_game_name;
+  QLabel* m_game_points;
+  QProgressBar* m_game_progress;
 };

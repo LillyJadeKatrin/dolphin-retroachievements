@@ -220,17 +220,18 @@ void FetchData()
                                                .image_type = RC_IMAGE_TYPE_GAME};
   if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
   {
-    IconRequest(icon_request, user_icon);
+    IconRequest(icon_request, game_icon);
     for (unsigned int ix = 0; ix < partial_list_limit; ix++)
     //      for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
     {
-      icon_request.image_name = game_data.achievements[ix].badge_name;
-      icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT;
-      if (!unlocked_icons[game_data.achievements[ix].id].empty())
-        IconRequest(icon_request, unlocked_icons[game_data.achievements[ix].id]);
-      icon_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
-      if (!locked_icons[game_data.achievements[ix].id].empty())
-        IconRequest(icon_request, locked_icons[game_data.achievements[ix].id]);
+      rc_api_fetch_image_request_t badge_request = {.image_name =
+                                                        game_data.achievements[ix].badge_name,
+                                                    .image_type = RC_IMAGE_TYPE_ACHIEVEMENT};
+      if (unlocked_icons[game_data.achievements[ix].id].empty())
+        IconRequest(badge_request, unlocked_icons[game_data.achievements[ix].id]);
+      badge_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
+      if (locked_icons[game_data.achievements[ix].id].empty())
+        IconRequest(badge_request, locked_icons[game_data.achievements[ix].id]);
     }
   }
 }
