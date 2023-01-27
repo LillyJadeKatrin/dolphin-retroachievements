@@ -39,7 +39,7 @@ std::vector<u8> user_icon;
 // TODO lillyjade: Temporary hardcoded test data - CLEAN BEFORE PUSHING
 static unsigned int game_id = 3417;
 static const char* game_hash = "ada3c364c783021884b066a4ad7ee49c";
-static unsigned int partial_list_limit = 1;
+static unsigned int partial_list_limit = 3;
 
 namespace  // Hide from use outside this file
 {

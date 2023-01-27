@@ -36,7 +36,7 @@ AchievementProgressWidget::AchievementProgressWidget(QWidget* parent) : QWidget(
   m_common_box = new QGroupBox(tr("Common"));
   m_common_layout = new QVBoxLayout();
 
-  for (unsigned int ix = 0; ix < 1; ix++)
+  for (unsigned int ix = 0; ix < 3; ix++)
   //  for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
   {
     m_common_layout->addWidget(CreateAchievementBox(Achievements::GetGameData()->achievements + ix));
@@ -66,15 +66,13 @@ QGroupBox* AchievementProgressWidget::CreateAchievementBox(const rc_api_achievem
   QLabel* a_points = new QLabel(QString::fromStdString(std::format("{} points", achievement->points)));
   QProgressBar* a_progress_bar = new QProgressBar();
 
-  QVBoxLayout* a_col_left = new QVBoxLayout();
-  a_col_left->addWidget(a_icon);
-  a_col_left->addWidget(a_points);
   QVBoxLayout* a_col_right = new QVBoxLayout();
   a_col_right->addWidget(a_title);
   a_col_right->addWidget(a_description);
+  a_col_right->addWidget(a_points);
   a_col_right->addWidget(a_progress_bar);
   QHBoxLayout* a_total = new QHBoxLayout();
-  a_total->addLayout(a_col_left);
+  a_total->addWidget(a_icon);
   a_total->addLayout(a_col_right);
   QGroupBox* a_group_box = new QGroupBox();
   a_group_box->setLayout(a_total);

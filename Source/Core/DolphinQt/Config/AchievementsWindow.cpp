@@ -88,12 +88,13 @@ void AchievementsWindow::CreateGeneralBlock()
                            (int)Achievements::GetGameIcon()->size());
 
   m_user_icon = new QLabel();
-  m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon));
+  m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon)
+                             .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   m_user_icon->adjustSize();
   m_user_name = new QLabel(QString::fromStdString(user_name));
   m_user_points = new QLabel(QString::fromStdString(user_points));
   m_game_icon = new QLabel();
-  m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon));
+  m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon).scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   m_game_icon->adjustSize();
   m_game_name = new QLabel(QString::fromStdString(game_name));
   m_game_points = new QLabel(QString::fromStdString(game_points));
