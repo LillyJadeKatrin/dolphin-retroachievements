@@ -38,7 +38,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(QWidget* parent) : QWidget(
 
 void AchievementSettingsWidget::CreateLayout()
 {
-  m_common_box = new QGroupBox(tr("Common"));
+  m_common_box = new QGroupBox();
   m_common_layout = new QVBoxLayout();
   m_common_integration_enabled_input = new QCheckBox(tr("Enable RetroAchievements Integration"));
   m_common_login_failed = new QLabel(tr("Login Failed"));

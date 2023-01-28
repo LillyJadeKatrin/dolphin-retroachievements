@@ -33,11 +33,11 @@
 
 AchievementProgressWidget::AchievementProgressWidget(QWidget* parent) : QWidget(parent)
 {
-  m_common_box = new QGroupBox(tr("Common"));
+  m_common_box = new QGroupBox();
   m_common_layout = new QVBoxLayout();
 
   for (unsigned int ix = 0; ix < 3; ix++)
-  //  for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
+  //for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
   {
     m_common_layout->addWidget(CreateAchievementBox(Achievements::GetGameData()->achievements + ix));
   }
@@ -59,12 +59,25 @@ QGroupBox* AchievementProgressWidget::CreateAchievementBox(const rc_api_achievem
   QLabel* a_icon = new QLabel();
   a_icon->setPixmap(QPixmap::fromImage(i_icon));
   a_icon->adjustSize();
+  a_icon->setFixedWidth(64);
   QLabel* a_title =
       new QLabel(QString::fromLocal8Bit(achievement->title, strlen(achievement->title)));
   QLabel* a_description =
       new QLabel(QString::fromLocal8Bit(achievement->description, strlen(achievement->description)));
   QLabel* a_points = new QLabel(QString::fromStdString(std::format("{} points", achievement->points)));
   QProgressBar* a_progress_bar = new QProgressBar();
+  unsigned int value = 0;
+  unsigned int target = 0;
+  Achievements::GetAchievementProgress(achievement->id, &value, &target);
+  if (target > 0)
+  {
+    a_progress_bar->setRange(0, target);
+    a_progress_bar->setValue(value);
+  }
+  else
+  {
+    a_progress_bar->setVisible(false);
+  }
 
   QVBoxLayout* a_col_right = new QVBoxLayout();
   a_col_right->addWidget(a_title);

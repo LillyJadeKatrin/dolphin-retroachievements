@@ -35,5 +35,6 @@ private:
   QLabel* m_game_icon;
   QLabel* m_game_name;
   QLabel* m_game_points;
-  QProgressBar* m_game_progress;
+  QProgressBar* m_game_progress_hard;
+  QProgressBar* m_game_progress_soft;
 };

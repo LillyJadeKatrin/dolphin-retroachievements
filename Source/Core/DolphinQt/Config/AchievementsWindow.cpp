@@ -98,26 +98,24 @@ void AchievementsWindow::CreateGeneralBlock()
   m_game_icon->adjustSize();
   m_game_name = new QLabel(QString::fromStdString(game_name));
   m_game_points = new QLabel(QString::fromStdString(game_points));
-  m_game_progress = new QProgressBar();
+//  m_game_progress_hard = new QProgressBar();
+//  m_game_progress_hard->setRange(0, Achievements::GetGameData()->num_achievements);
+//  m_game_progress_hard->setStyle(QString::fromLocal8Bit("background-color:transparent"));
+  m_game_progress_soft = new QProgressBar();
+  m_game_progress_soft->setRange(0, Achievements::GetGameData()->num_achievements);
+  m_game_progress_soft->setValue(Achievements::GetHardcoreGameProgress()->num_achievement_ids +
+                                 Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
 
-  QVBoxLayout* m_user_right_col = new QVBoxLayout();
-  m_user_right_col->addWidget(m_user_name);
-  m_user_right_col->addWidget(m_user_points);
-  QHBoxLayout* m_user_block = new QHBoxLayout();
-  m_user_block->addWidget(m_user_icon);
-  m_user_block->addLayout(m_user_right_col);
   QVBoxLayout* m_game_right_col = new QVBoxLayout();
   m_game_right_col->addWidget(m_game_name);
   m_game_right_col->addWidget(m_game_points);
-  m_game_right_col->addWidget(m_game_progress);
+  m_game_right_col->addWidget(m_game_progress_soft);
   QHBoxLayout* m_game_block = new QHBoxLayout();
+  m_game_block->addWidget(m_user_icon);
   m_game_block->addWidget(m_game_icon);
   m_game_block->addLayout(m_game_right_col);
-  QVBoxLayout* m_total_general = new QVBoxLayout();
-  m_total_general->addLayout(m_user_block);
-  m_total_general->addLayout(m_game_block);
   m_general_box = new QGroupBox();
-  m_general_box->setLayout(m_total_general);
+  m_general_box->setLayout(m_game_block);
 }
 
 void AchievementsWindow::CreateMainLayout()
