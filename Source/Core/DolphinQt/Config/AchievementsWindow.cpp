@@ -37,9 +37,9 @@ void AchievementsWindow::CreateGeneralBlock()
       Achievements::GetHardcoreGameProgress()->achievement_ids +
           Achievements::GetHardcoreGameProgress()->num_achievement_ids);
   std::set<unsigned int> softcore_ids(
-      Achievements::GetHardcoreGameProgress()->achievement_ids,
-      Achievements::GetHardcoreGameProgress()->achievement_ids +
-          Achievements::GetHardcoreGameProgress()->num_achievement_ids);
+      Achievements::GetSoftcoreGameProgress()->achievement_ids,
+      Achievements::GetSoftcoreGameProgress()->achievement_ids +
+          Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
   unsigned int hardcore_points = 0;
   unsigned int softcore_points = 0;
   unsigned int total_points = 0;
@@ -79,6 +79,11 @@ void AchievementsWindow::CreateGeneralBlock()
         Achievements::GetGameData()->num_achievements,
         hardcore_points, total_points);
   }
+  std::string game_color = Achievements::GRAY;
+  if (hardcore_points == total_points)
+    game_color = Achievements::GOLD;
+  else if (hardcore_points + softcore_points == total_points)
+    game_color = Achievements::BLUE;
 
   QImage i_user_icon;
   i_user_icon.loadFromData(Achievements::GetUserIcon()->begin()._Ptr,
@@ -91,11 +96,13 @@ void AchievementsWindow::CreateGeneralBlock()
   m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon)
                              .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   m_user_icon->adjustSize();
+  m_user_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
   m_user_name = new QLabel(QString::fromStdString(user_name));
   m_user_points = new QLabel(QString::fromStdString(user_points));
   m_game_icon = new QLabel();
   m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon).scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   m_game_icon->adjustSize();
+  m_game_icon->setStyleSheet(QString::fromStdString(std::format("border: 4px solid {}", game_color)));
   m_game_name = new QLabel(QString::fromStdString(game_name));
   m_game_points = new QLabel(QString::fromStdString(game_points));
 //  m_game_progress_hard = new QProgressBar();

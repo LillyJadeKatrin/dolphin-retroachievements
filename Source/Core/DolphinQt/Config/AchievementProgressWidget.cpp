@@ -51,15 +51,44 @@ AchievementProgressWidget::AchievementProgressWidget(QWidget* parent) : QWidget(
   setLayout(layout);
 }
 
+std::string GetAchievementColor(unsigned int id)
+{
+  bool uploaded_hardcore = false;
+  for (unsigned int ix = 0; ix < Achievements::GetHardcoreGameProgress()->num_achievement_ids; ix++)
+  {
+    if (Achievements::GetHardcoreGameProgress()->achievement_ids[ix] == id)
+    {
+      uploaded_hardcore = true;
+      continue;
+    }
+  }
+  bool uploaded_softcore = false;
+  for (unsigned int ix = 0; ix < Achievements::GetSoftcoreGameProgress()->num_achievement_ids; ix++)
+  {
+    if (Achievements::GetSoftcoreGameProgress()->achievement_ids[ix] == id)
+    {
+      uploaded_softcore = true;
+      continue;
+    }
+  }
+  if (Achievements::GetHardcoreAchievementStatus(id) > 0 || uploaded_hardcore)
+    return Achievements::GOLD;
+  if (Achievements::GetSoftcoreAchievementStatus(id) > 0 || uploaded_softcore)
+    return Achievements::BLUE;
+  return Achievements::GRAY;
+}
+
 QGroupBox* AchievementProgressWidget::CreateAchievementBox(const rc_api_achievement_definition_t* achievement)
 {
+  std::string color = GetAchievementColor(achievement->id);
   QImage i_icon;
-  i_icon.loadFromData(Achievements::GetAchievementBadge(achievement->id, false)->begin()._Ptr,
-                      (int)Achievements::GetAchievementBadge(achievement->id, false)->size());
+  i_icon.loadFromData(Achievements::GetAchievementBadge(achievement->id, color == Achievements::GRAY)->begin()._Ptr,
+      (int)Achievements::GetAchievementBadge(achievement->id, color == Achievements::GRAY)->size());
   QLabel* a_icon = new QLabel();
   a_icon->setPixmap(QPixmap::fromImage(i_icon));
   a_icon->adjustSize();
-  a_icon->setFixedWidth(64);
+  a_icon->setFixedWidth(72);
+  a_icon->setStyleSheet(QString::fromStdString(std::format("border: 4px solid {}", color)));
   QLabel* a_title =
       new QLabel(QString::fromLocal8Bit(achievement->title, strlen(achievement->title)));
   QLabel* a_description =

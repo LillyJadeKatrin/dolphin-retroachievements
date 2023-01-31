@@ -16,12 +16,9 @@ struct rc_api_achievement_definition_t;
 
 namespace Achievements
 {
-enum State
-{
-  LOCKED,
-  SOFTCORE,
-  HARDCORE
-};
+const std::string GRAY = "transparent";
+const std::string GOLD = "#FFD700";
+const std::string BLUE = "#0B71C1";
 
 void Init();
 void Login();
@@ -41,7 +38,8 @@ rc_api_fetch_user_unlocks_response_t* GetHardcoreGameProgress();
 rc_api_fetch_user_unlocks_response_t* GetSoftcoreGameProgress();
 const std::vector<u8>* GetGameIcon();
 rc_api_fetch_game_data_response_t* GetGameData();
-State GetAchievementStatus(unsigned int id);
+int GetHardcoreAchievementStatus(unsigned int id);
+int GetSoftcoreAchievementStatus(unsigned int id);
 const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked);
 void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target);
 

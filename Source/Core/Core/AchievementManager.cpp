@@ -31,6 +31,8 @@ static rc_api_fetch_user_unlocks_response_t softcore_unlock_data{};
 
 static Memory::MemoryManager* memory_manager = nullptr;
 
+static std::multiset<unsigned int> hardcore_unlocks;
+static std::multiset<unsigned int> softcore_unlocks;
 static std::map<unsigned int, std::vector<u8>> unlocked_icons;
 static std::map<unsigned int, std::vector<u8>> locked_icons;
 std::vector<u8> game_icon;
@@ -128,6 +130,14 @@ void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
   switch (runtime_event->type)
   {
   case RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED:
+    if (Config::Get(Config::RA_HARDCORE_ENABLED))
+    {
+      hardcore_unlocks.insert(runtime_event->id);
+    }
+    else
+    {
+      softcore_unlocks.insert(runtime_event->id);
+    }
     Award(runtime_event->id);
     DisplayUnlocked(runtime_event->id);
     break;
@@ -342,19 +352,14 @@ rc_api_fetch_game_data_response_t* GetGameData()
   return &game_data;
 }
 
-State GetAchievementStatus(unsigned int id)
+int GetHardcoreAchievementStatus(unsigned int id)
 {
-  for (unsigned int ix = 0; ix < hardcore_unlock_data.num_achievement_ids; ix++)
-  {
-    if (hardcore_unlock_data.achievement_ids[ix] == id)
-      return HARDCORE;
-  }
-  for (unsigned int ix = 0; ix < softcore_unlock_data.num_achievement_ids; ix++)
-  {
-    if (softcore_unlock_data.achievement_ids[ix] == id)
-      return SOFTCORE;
-  }
-  return LOCKED;
+  return (int)hardcore_unlocks.count(id);
+}
+
+int GetSoftcoreAchievementStatus(unsigned int id)
+{
+  return (int)softcore_unlocks.count(id);
 }
 
 const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked)
