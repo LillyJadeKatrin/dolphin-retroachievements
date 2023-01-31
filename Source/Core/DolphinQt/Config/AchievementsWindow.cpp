@@ -30,99 +30,124 @@ AchievementsWindow::AchievementsWindow(QWidget* parent) : QDialog(parent)
   ConnectWidgets();
 }
 
+void AchievementsWindow::showEvent(QShowEvent* event)
+{
+  QDialog::showEvent(event);
+  update();
+}
+
 void AchievementsWindow::CreateGeneralBlock()
 {
-  std::set<unsigned int> hardcore_ids(
-      Achievements::GetHardcoreGameProgress()->achievement_ids,
-      Achievements::GetHardcoreGameProgress()->achievement_ids +
-          Achievements::GetHardcoreGameProgress()->num_achievement_ids);
-  std::set<unsigned int> softcore_ids(
-      Achievements::GetSoftcoreGameProgress()->achievement_ids,
-      Achievements::GetSoftcoreGameProgress()->achievement_ids +
-          Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
-  unsigned int hardcore_points = 0;
-  unsigned int softcore_points = 0;
-  unsigned int total_points = 0;
-  for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
+  if (Achievements::GetUserStatus()->response.succeeded)
   {
-    unsigned int id = Achievements::GetGameData()->achievements[ix].id;
-    unsigned int points = Achievements::GetGameData()->achievements[ix].points;
-    total_points += points;
-    if (hardcore_ids.count(id) > 0)
-      hardcore_points += points;
-    if (softcore_ids.count(id) > 0)
-      softcore_points += points;
+    std::string user_name(Achievements::GetUserStatus()->display_name);
+    std::string user_points = std::format("{} points", Achievements::GetUserStatus()->score);
+
+    QImage i_user_icon;
+    i_user_icon.loadFromData(Achievements::GetUserIcon()->begin()._Ptr,
+                             (int)Achievements::GetUserIcon()->size());
+
+    m_user_icon = new QLabel();
+    m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon)
+                               .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    m_user_icon->adjustSize();
+    m_user_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+    m_user_name = new QLabel(QString::fromStdString(user_name));
+    m_user_points = new QLabel(QString::fromStdString(user_points));
+
+    if (Achievements::GetGameData()->response.succeeded)
+    {
+      std::set<unsigned int> hardcore_ids(
+          Achievements::GetHardcoreGameProgress()->achievement_ids,
+          Achievements::GetHardcoreGameProgress()->achievement_ids +
+              Achievements::GetHardcoreGameProgress()->num_achievement_ids);
+      std::set<unsigned int> softcore_ids(
+          Achievements::GetSoftcoreGameProgress()->achievement_ids,
+          Achievements::GetSoftcoreGameProgress()->achievement_ids +
+              Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
+      unsigned int hardcore_points = 0;
+      unsigned int softcore_points = 0;
+      unsigned int total_points = 0;
+      for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
+      {
+        unsigned int id = Achievements::GetGameData()->achievements[ix].id;
+        unsigned int points = Achievements::GetGameData()->achievements[ix].points;
+        total_points += points;
+        if (hardcore_ids.count(id) > 0)
+          hardcore_points += points;
+        if (softcore_ids.count(id) > 0)
+          softcore_points += points;
+      }
+
+      std::string game_name(Achievements::GetGameData()->title);
+      std::string game_points;
+      if (softcore_points > 0)
+      {
+        game_points = std::format(
+            "{} has unlocked {}/{} achievements ({} hardcore) worth {}/{} points ({} hardcore)",
+            user_name,
+            Achievements::GetHardcoreGameProgress()->num_achievement_ids +
+                Achievements::GetSoftcoreGameProgress()->num_achievement_ids,
+            Achievements::GetGameData()->num_achievements,
+            Achievements::GetHardcoreGameProgress()->num_achievement_ids,
+            hardcore_points + softcore_points, total_points, hardcore_points);
+      }
+      else
+      {
+        game_points = std::format(
+            "{} has unlocked {}/{} achievements worth {}/{} points", user_name,
+            Achievements::GetHardcoreGameProgress()->num_achievement_ids,
+            Achievements::GetGameData()->num_achievements, hardcore_points, total_points);
+      }
+      std::string game_color = Achievements::GRAY;
+      if (hardcore_points == total_points)
+        game_color = Achievements::GOLD;
+      else if (hardcore_points + softcore_points == total_points)
+        game_color = Achievements::BLUE;
+
+      QImage i_game_icon;
+      i_game_icon.loadFromData(Achievements::GetGameIcon()->begin()._Ptr,
+                               (int)Achievements::GetGameIcon()->size());
+
+      m_game_icon = new QLabel();
+      m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon)
+                                 .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+      m_game_icon->adjustSize();
+      m_game_icon->setStyleSheet(
+          QString::fromStdString(std::format("border: 4px solid {}", game_color)));
+      m_game_name = new QLabel(QString::fromStdString(game_name));
+      m_game_points = new QLabel(QString::fromStdString(game_points));
+      //  m_game_progress_hard = new QProgressBar();
+      //  m_game_progress_hard->setRange(0, Achievements::GetGameData()->num_achievements);
+      //  m_game_progress_hard->setStyle(QString::fromLocal8Bit("background-color:transparent"));
+      m_game_progress_soft = new QProgressBar();
+      m_game_progress_soft->setRange(0, Achievements::GetGameData()->num_achievements);
+      m_game_progress_soft->setValue(Achievements::GetHardcoreGameProgress()->num_achievement_ids +
+                                     Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
+
+      QVBoxLayout* m_game_right_col = new QVBoxLayout();
+      m_game_right_col->addWidget(m_game_name);
+      m_game_right_col->addWidget(m_game_points);
+      m_game_right_col->addWidget(m_game_progress_soft);
+      QHBoxLayout* m_game_block = new QHBoxLayout();
+      m_game_block->addWidget(m_user_icon);
+      m_game_block->addWidget(m_game_icon);
+      m_game_block->addLayout(m_game_right_col);
+      m_general_box = new QGroupBox();
+      m_general_box->setLayout(m_game_block);
+    }
+    else
+    {
+      QVBoxLayout* m_user_right_col = new QVBoxLayout();
+      m_user_right_col->addWidget(m_user_name);
+      m_user_right_col->addWidget(m_user_points);
+      QHBoxLayout* m_user_block = new QHBoxLayout();
+      m_user_block->addWidget(m_user_icon);
+      m_user_block->addLayout(m_user_right_col);
+      m_general_box = new QGroupBox();
+      m_general_box->setLayout(m_user_block);
+    }
   }
-
-  std::string user_name(Achievements::GetUserStatus()->display_name);
-  std::string user_points = std::format("{} points", Achievements::GetUserStatus()->score);
-  std::string game_name(Achievements::GetGameData()->title);
-  std::string game_points;
-  if (softcore_points > 0)
-  {
-    game_points = std::format(
-        "{} has unlocked {}/{} achievements ({} hardcore) worth {}/{} points ({} hardcore)",
-      user_name,
-      Achievements::GetHardcoreGameProgress()->num_achievement_ids + Achievements::GetSoftcoreGameProgress()->num_achievement_ids,
-      Achievements::GetGameData()->num_achievements,
-      Achievements::GetHardcoreGameProgress()->num_achievement_ids,
-      hardcore_points + softcore_points,
-      total_points,
-      hardcore_points);
-  }
-  else
-  {
-    game_points = std::format(
-        "{} has unlocked {}/{} achievements worth {}/{} points",
-        user_name,
-        Achievements::GetHardcoreGameProgress()->num_achievement_ids,
-        Achievements::GetGameData()->num_achievements,
-        hardcore_points, total_points);
-  }
-  std::string game_color = Achievements::GRAY;
-  if (hardcore_points == total_points)
-    game_color = Achievements::GOLD;
-  else if (hardcore_points + softcore_points == total_points)
-    game_color = Achievements::BLUE;
-
-  QImage i_user_icon;
-  i_user_icon.loadFromData(Achievements::GetUserIcon()->begin()._Ptr,
-                           (int)Achievements::GetUserIcon()->size());
-  QImage i_game_icon;
-  i_game_icon.loadFromData(Achievements::GetGameIcon()->begin()._Ptr,
-                           (int)Achievements::GetGameIcon()->size());
-
-  m_user_icon = new QLabel();
-  m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon)
-                             .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-  m_user_icon->adjustSize();
-  m_user_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
-  m_user_name = new QLabel(QString::fromStdString(user_name));
-  m_user_points = new QLabel(QString::fromStdString(user_points));
-  m_game_icon = new QLabel();
-  m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon).scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-  m_game_icon->adjustSize();
-  m_game_icon->setStyleSheet(QString::fromStdString(std::format("border: 4px solid {}", game_color)));
-  m_game_name = new QLabel(QString::fromStdString(game_name));
-  m_game_points = new QLabel(QString::fromStdString(game_points));
-//  m_game_progress_hard = new QProgressBar();
-//  m_game_progress_hard->setRange(0, Achievements::GetGameData()->num_achievements);
-//  m_game_progress_hard->setStyle(QString::fromLocal8Bit("background-color:transparent"));
-  m_game_progress_soft = new QProgressBar();
-  m_game_progress_soft->setRange(0, Achievements::GetGameData()->num_achievements);
-  m_game_progress_soft->setValue(Achievements::GetHardcoreGameProgress()->num_achievement_ids +
-                                 Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
-
-  QVBoxLayout* m_game_right_col = new QVBoxLayout();
-  m_game_right_col->addWidget(m_game_name);
-  m_game_right_col->addWidget(m_game_points);
-  m_game_right_col->addWidget(m_game_progress_soft);
-  QHBoxLayout* m_game_block = new QHBoxLayout();
-  m_game_block->addWidget(m_user_icon);
-  m_game_block->addWidget(m_game_icon);
-  m_game_block->addLayout(m_game_right_col);
-  m_general_box = new QGroupBox();
-  m_general_box->setLayout(m_game_block);
 }
 
 void AchievementsWindow::CreateMainLayout()
@@ -136,10 +161,14 @@ void AchievementsWindow::CreateMainLayout()
                        tr("Settings"));
   m_tab_widget->addTab(GetWrappedWidget(new AchievementProgressWidget(m_tab_widget), this, 125, 100),
                        tr("Progress"));
+  m_tab_widget->setTabEnabled(1, Achievements::GetGameData()->response.succeeded);
 
   m_button_box = new QDialogButtonBox(QDialogButtonBox::Close);
 
-  layout->addWidget(m_general_box);
+  if (Achievements::GetUserStatus()->response.succeeded)
+  {
+    layout->addWidget(m_general_box);
+  }
   layout->addWidget(m_tab_widget);
   layout->addStretch();
   layout->addWidget(m_button_box);

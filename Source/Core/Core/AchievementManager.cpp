@@ -23,11 +23,11 @@ namespace Achievements
 {
 static rc_runtime_t runtime{};
 static bool is_runtime_initialized = false;
-static rc_api_login_response_t login_data{};
-static rc_api_start_session_response_t session_data{};
-static rc_api_fetch_game_data_response_t game_data{};
-static rc_api_fetch_user_unlocks_response_t hardcore_unlock_data{};
-static rc_api_fetch_user_unlocks_response_t softcore_unlock_data{};
+static rc_api_login_response_t login_data{.response{.succeeded = 0}};
+static rc_api_start_session_response_t session_data{.response{.succeeded = 0}};
+static rc_api_fetch_game_data_response_t game_data{.response{.succeeded = 0}};
+static rc_api_fetch_user_unlocks_response_t hardcore_unlock_data{.response{.succeeded = 0}};
+static rc_api_fetch_user_unlocks_response_t softcore_unlock_data{.response{.succeeded = 0}};
 
 static Memory::MemoryManager* memory_manager = nullptr;
 
@@ -402,18 +402,22 @@ void EndSession()
   if (softcore_unlock_data.response.succeeded)
   {
     rc_api_destroy_fetch_user_unlocks_response(&softcore_unlock_data);
+    softcore_unlock_data.response.succeeded = 0;
   }
   if (hardcore_unlock_data.response.succeeded)
   {
     rc_api_destroy_fetch_user_unlocks_response(&hardcore_unlock_data);
+    hardcore_unlock_data.response.succeeded = 0;
   }
   if (game_data.response.succeeded)
   {
     rc_api_destroy_fetch_game_data_response(&game_data);
+    game_data.response.succeeded = 0;
   }
   if (session_data.response.succeeded)
   {
     rc_api_destroy_start_session_response(&session_data);
+    session_data.response.succeeded = 0;
   }
 }
 
@@ -424,6 +428,7 @@ void Logout()
   if (login_data.response.succeeded)
   {
     rc_api_destroy_login_response(&login_data);
+    login_data.response.succeeded = 0;
   }
 }
 
@@ -433,6 +438,7 @@ void Shutdown()
   if (is_runtime_initialized)
   {
     rc_runtime_destroy(&runtime);
+    is_runtime_initialized = false;
   }
 }
 

@@ -22,6 +22,7 @@ public:
 
 private:
   void CreateMainLayout();
+  void showEvent(QShowEvent* event);
   void CreateGeneralBlock();
   void ConnectWidgets();
 
