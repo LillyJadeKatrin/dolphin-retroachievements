@@ -39,8 +39,8 @@ std::vector<u8> game_icon;
 std::vector<u8> user_icon;
 
 // TODO lillyjade: Temporary hardcoded test data - CLEAN BEFORE PUSHING
-static unsigned int game_id = 3417;
-static const char* game_hash = "ada3c364c783021884b066a4ad7ee49c";
+static unsigned int game_id = 3100;
+static const char* game_hash = "99046127f9f846ead4911b89ecba5729";
 static unsigned int partial_list_limit = 3;
 
 namespace  // Hide from use outside this file
@@ -231,8 +231,8 @@ void FetchData()
   if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
   {
     IconRequest(icon_request, game_icon);
-    for (unsigned int ix = 0; ix < partial_list_limit; ix++)
-    //      for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+    //for (unsigned int ix = 0; ix < partial_list_limit; ix++)
+    for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
     {
       rc_api_fetch_image_request_t badge_request = {.image_name =
                                                         game_data.achievements[ix].badge_name,
@@ -253,8 +253,8 @@ void ActivateAM()
       !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED))
     return;
   // TODO lillyjade: only loading the first cheevo for testing purposes
-  // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
-  for (unsigned int ix = 0; ix < partial_list_limit; ix++)
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  //for (unsigned int ix = 0; ix < partial_list_limit; ix++)
   {
     if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_CORE ||
       Config::Get(Config::RA_UNOFFICIAL_ENABLED))
@@ -535,7 +535,8 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
   ReinstallMemoryBanks();
   if (game_data.response.succeeded)
   {
-    RA_SetConsoleID(isWii ? WII : GameCube);
+//    RA_SetConsoleID(isWii ? WII : GameCube);
+    RA_SetConsoleID(PlayStation2);
     RA_ActivateGame(game_data.id);
   }
 }
