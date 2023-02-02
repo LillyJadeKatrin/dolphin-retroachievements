@@ -19,6 +19,8 @@
 #include <VideoBackends/Software/SWTexture.h>
 #include "Config/AchievementSettings.h"
 
+#define RA_TEST
+
 namespace Achievements
 {
 static rc_runtime_t runtime{};
@@ -39,17 +41,172 @@ std::vector<u8> game_icon;
 std::vector<u8> user_icon;
 
 // TODO lillyjade: Temporary hardcoded test data - CLEAN BEFORE PUSHING
-static unsigned int game_id = 3100;
-static const char* game_hash = "99046127f9f846ead4911b89ecba5729";
-static unsigned int partial_list_limit = 3;
+static unsigned int game_id = 3417;
+static const char* game_hash = "ada3c364c783021884b066a4ad7ee49c";
+//static unsigned int partial_list_limit = 3;
 
 namespace  // Hide from use outside this file
 {
+#ifdef RA_TEST
+#include "RA_Consoles.h"
+template <typename RcRequest, typename RcResponse>
+void TestRequest(RcRequest rc_request, RcResponse* rc_response,
+                 int (*init_request)(rc_api_request_t* request, const RcRequest* api_params),
+                 int (*process_response)(RcResponse* response, const char* server_response))
+{
+}
+
+template <>
+void TestRequest<rc_api_login_request_t, rc_api_login_response_t>(
+    rc_api_login_request_t rc_request, rc_api_login_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request, const rc_api_login_request_t* api_params),
+    int (*process_response)(rc_api_login_response_t* response, const char* server_response))
+{
+  rc_response->username = "CoolFlipper";
+  rc_response->api_token = "AwesomeToken";
+  rc_response->display_name = "Cool Flipper the Cheevo Dolphin";
+  rc_response->num_unread_messages = 42;
+  rc_response->score = 42069;
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_start_session_request_t, rc_api_start_session_response_t>(
+    rc_api_start_session_request_t rc_request, rc_api_start_session_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request,
+                        const rc_api_start_session_request_t* api_params),
+    int (*process_response)(rc_api_start_session_response_t* response, const char* server_response))
+{
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
+    rc_api_fetch_game_data_request_t rc_request, rc_api_fetch_game_data_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request,
+                        const rc_api_fetch_game_data_request_t* api_params),
+    int (*process_response)(rc_api_fetch_game_data_response_t* response,
+                            const char* server_response))
+{
+  rc_response->id = 3417;
+  rc_response->title = "Foo's Magical Adventure";
+  rc_response->console_id = ConsoleID::GameCube;
+  rc_response->image_name = "066091";
+  rc_response->num_achievements = 6;
+  rc_response->achievements =
+      (rc_api_achievement_definition_t*)calloc(6, sizeof(rc_api_achievement_definition_t));
+  for (int ix = 0; ix < 6; ix++)
+  {
+    rc_response->achievements[ix].id = 34170 + ix;
+    rc_response->achievements[ix].category = RC_ACHIEVEMENT_CATEGORY_CORE;
+    rc_response->achievements[ix].points = ix;
+    rc_response->achievements[ix].author = "TheFetishMachine";
+    rc_response->achievements[ix].created = 1;
+    rc_response->achievements[ix].updated = 2;
+  }
+  rc_response->achievements[0].title = "Trigger 1";
+  rc_response->achievements[0].description =
+      "An achievement with a trigger already hardcore unlocked.";
+  rc_response->achievements[0].badge_name = "236583";
+  rc_response->achievements[0].definition = "";
+  rc_response->achievements[1].title = "Measured 1";
+  rc_response->achievements[1].description =
+      "An achievement with a measure already hardcore unlocked.";
+  rc_response->achievements[1].badge_name = "236671";
+  rc_response->achievements[1].definition = "";
+  rc_response->achievements[2].title = "Trigger 2";
+  rc_response->achievements[2].description =
+      "An achievement with a trigger already softcore unlocked.";
+  rc_response->achievements[2].badge_name = "236636";
+  rc_response->achievements[2].definition = "";
+  rc_response->achievements[3].title = "Measured 2";
+  rc_response->achievements[3].description =
+      "An achievement with a measure already softcore unlocked.";
+  rc_response->achievements[3].badge_name = "236630";
+  rc_response->achievements[3].definition = "";
+  rc_response->achievements[4].title = "Trigger 3";
+  rc_response->achievements[4].description =
+      "An achievement with a trigger still locked.";
+  rc_response->achievements[4].badge_name = "236608";
+  rc_response->achievements[4].definition = "";
+  rc_response->achievements[5].title = "Measured 3";
+  rc_response->achievements[5].description =
+      "An achievement with a measure still locked.";
+  rc_response->achievements[5].badge_name = "236638";
+  rc_response->achievements[5].definition = "";
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_fetch_user_unlocks_request_t, rc_api_fetch_user_unlocks_response_t>(
+    rc_api_fetch_user_unlocks_request_t rc_request,
+    rc_api_fetch_user_unlocks_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request,
+                        const rc_api_fetch_user_unlocks_request_t* api_params),
+    int (*process_response)(rc_api_fetch_user_unlocks_response_t* response,
+                            const char* server_response))
+{
+  rc_response->num_achievement_ids = (rc_request.hardcore) ? 2 : 4;
+  rc_response->achievement_ids =
+      (unsigned int*)calloc(4, sizeof(unsigned int));
+  for (int ix = 0; ix < 4; ix++)
+    rc_response->achievement_ids[ix] = 34170 + ix;
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_award_achievement_request_t, rc_api_award_achievement_response_t>(
+    rc_api_award_achievement_request_t rc_request, rc_api_award_achievement_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request,
+                        const rc_api_award_achievement_request_t* api_params),
+    int (*process_response)(rc_api_award_achievement_response_t* response,
+                            const char* server_response))
+{
+  rc_response->awarded_achievement_id = rc_request.achievement_id;
+  rc_response->response.succeeded = 1;
+}
+
+
+unsigned TestMemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
+{
+  // TODO lillyjade: Hack to spoof SA2B as SA2
+  if (address == 0x24ee60)  // state
+                            //  address = 0x3BD81B;
+    address = 0x803AD81B;
+  if (address == 0x24ee64)  // level ID
+                            //  address = 0x3BD821;
+                            //  address = 0x803AD821;
+    return 0x0d;
+  if (address == 0x26a1fe)
+    return 1;
+  if (address == 0x26adb8)  // score
+                            //  address = 0x1F8263;
+                            //  address = 0x801E8263;
+    address = 0x801EEC07;
+  switch (num_bytes)
+  {
+  case 1:
+    return memory_manager->Read_U8(address);
+  case 2:
+    return memory_manager->Read_U16(address);
+  case 4:
+    return memory_manager->Read_U32(address);
+  case 8:
+    return memory_manager->Read_U64(address);
+  default:
+    return 0u;
+  }
+}
+#endif // RA_TEST
+
 template <typename RcRequest, typename RcResponse>
 void Request(RcRequest rc_request, RcResponse* rc_response,
              int (*init_request)(rc_api_request_t* request, const RcRequest* api_params),
              int (*process_response)(RcResponse* response, const char* server_response))
 {
+#ifdef RA_TEST
+  return TestRequest(rc_request, rc_response, init_request, process_response);
+#endif  // RA_TEST
   rc_api_request_t api_request;
   Common::HttpRequest http_request;
   init_request(&api_request, &rc_request);
@@ -79,20 +236,9 @@ void IconRequest(rc_api_fetch_image_request_t rc_request, std::vector<u8> &icon_
 
 unsigned MemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
 {
-  // TODO lillyjade: Hack to spoof SA2B as SA2
-  if (address == 0x24ee60) // state
-  //  address = 0x3BD81B;
-    address = 0x803AD81B;
-  if (address == 0x24ee64) // level ID
-  //  address = 0x3BD821;
-  //  address = 0x803AD821;
-    return 0x0d;
-  if (address == 0x26a1fe)
-    return 1;
-  if (address == 0x26adb8) // score
-  //  address = 0x1F8263;
-  //  address = 0x801E8263;
-    address = 0x801EEC07;
+#ifdef RA_TEST
+  return TestMemoryPeeker(address, num_bytes, ud);
+#else  // RA_TEST
   switch (num_bytes)
   {
   case 1:
@@ -106,6 +252,7 @@ unsigned MemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
   default:
     return 0u;
   }
+#endif  // RA_TEST
 }
 
 void DisplayUnlocked(unsigned int achievement_id)
@@ -271,8 +418,8 @@ void ActivateUnofficialAM()
       || !Config::Get(Config::RA_UNOFFICIAL_ENABLED))
     return;
   // TODO lillyjade: only loading the first cheevo for testing purposes
-  // for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
-  for (unsigned int ix = 0; ix < partial_list_limit; ix++)
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  //for (unsigned int ix = 0; ix < partial_list_limit; ix++)
   {
     if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
       rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id,
