@@ -1867,12 +1867,17 @@ void MainWindow::OnConnectWiiRemote(int id)
 
 void MainWindow::ShowAchievementsWindow()
 {
-  if (!m_achievements_window)
-  {
+  // TODO lillyjade: this is such a terrible hack but right now
+  // it's the fastest and easiest way to refresh the window when
+  // it opens
+  if (m_achievements_window)
+    delete m_achievements_window;
+//  if (!m_achievements_window)
+//  {
     m_achievements_window = new AchievementsWindow(this);
     // TODO lillyjade: hotkeys are a later feature
 //    InstallHotkeyFilter(m_achievements_window);
-  }
+//  }
 
   m_achievements_window->show();
   m_achievements_window->raise();

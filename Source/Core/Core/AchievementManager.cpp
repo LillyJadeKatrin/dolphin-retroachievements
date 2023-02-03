@@ -108,32 +108,35 @@ void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_respon
   rc_response->achievements[0].description =
       "An achievement with a trigger already hardcore unlocked.";
   rc_response->achievements[0].badge_name = "236583";
-  rc_response->achievements[0].definition = "";
+  rc_response->achievements[0].definition =
+      "R:0xH1cc1d1<d0xH1cc1d1_0xH3ad81b=16_d0xH1eec07=0_T:0xH1eec07>0";
   rc_response->achievements[1].title = "Measured 1";
   rc_response->achievements[1].description =
       "An achievement with a measure already hardcore unlocked.";
   rc_response->achievements[1].badge_name = "236671";
-  rc_response->achievements[1].definition = "";
+  rc_response->achievements[1].definition = "M:0xH1cc1d1>99";
   rc_response->achievements[2].title = "Trigger 2";
   rc_response->achievements[2].description =
       "An achievement with a trigger already softcore unlocked.";
   rc_response->achievements[2].badge_name = "236636";
-  rc_response->achievements[2].definition = "";
+  rc_response->achievements[2].definition =
+      "R:0xH1cc1d1<d0xH1cc1d1_0xH3ad81b=16_d0xH1eec07=0_T:0xH1eec07>0";
   rc_response->achievements[3].title = "Measured 2";
   rc_response->achievements[3].description =
       "An achievement with a measure already softcore unlocked.";
   rc_response->achievements[3].badge_name = "236630";
-  rc_response->achievements[3].definition = "";
+  rc_response->achievements[3].definition = "M:0xH1cc1d1>99";
   rc_response->achievements[4].title = "Trigger 3";
   rc_response->achievements[4].description =
       "An achievement with a trigger still locked.";
   rc_response->achievements[4].badge_name = "236608";
-  rc_response->achievements[4].definition = "";
+  rc_response->achievements[4].definition =
+      "R:0xH1cc1d1<d0xH1cc1d1_0xH3ad81b=16_d0xH1eec07=0_T:0xH1eec07>0";
   rc_response->achievements[5].title = "Measured 3";
   rc_response->achievements[5].description =
       "An achievement with a measure still locked.";
   rc_response->achievements[5].badge_name = "236638";
-  rc_response->achievements[5].definition = "";
+  rc_response->achievements[5].definition = "M:0xH1cc1d1>99";
   rc_response->response.succeeded = 1;
 }
 
@@ -146,11 +149,10 @@ void TestRequest<rc_api_fetch_user_unlocks_request_t, rc_api_fetch_user_unlocks_
     int (*process_response)(rc_api_fetch_user_unlocks_response_t* response,
                             const char* server_response))
 {
-  rc_response->num_achievement_ids = (rc_request.hardcore) ? 2 : 4;
-  rc_response->achievement_ids =
-      (unsigned int*)calloc(4, sizeof(unsigned int));
-  for (int ix = 0; ix < 4; ix++)
-    rc_response->achievement_ids[ix] = 34170 + ix;
+  rc_response->num_achievement_ids = 2;
+  rc_response->achievement_ids = (unsigned int*)calloc(2, sizeof(unsigned int));
+  rc_response->achievement_ids[0] = (rc_request.hardcore) ? 34170 : 34172;
+  rc_response->achievement_ids[1] = (rc_request.hardcore) ? 34171 : 34173;
   rc_response->response.succeeded = 1;
 }
 
@@ -206,7 +208,7 @@ void Request(RcRequest rc_request, RcResponse* rc_response,
 {
 #ifdef RA_TEST
   return TestRequest(rc_request, rc_response, init_request, process_response);
-#endif  // RA_TEST
+#else  // RA_TEST
   rc_api_request_t api_request;
   Common::HttpRequest http_request;
   init_request(&api_request, &rc_request);
@@ -221,6 +223,7 @@ void Request(RcRequest rc_request, RcResponse* rc_response,
     process_response(rc_response, (const char*)response_str);
     free(response_str);
   }
+  #endif // RA_TEST
 }
 
 void IconRequest(rc_api_fetch_image_request_t rc_request, std::vector<u8> &icon_buff)
@@ -236,23 +239,19 @@ void IconRequest(rc_api_fetch_image_request_t rc_request, std::vector<u8> &icon_
 
 unsigned MemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
 {
-#ifdef RA_TEST
-  return TestMemoryPeeker(address, num_bytes, ud);
-#else  // RA_TEST
   switch (num_bytes)
   {
   case 1:
-    return memory_manager->Read_U8(address);
+    return memory_manager->Read_U8(address + 0x80000000);
   case 2:
-    return memory_manager->Read_U16(address);
+    return memory_manager->Read_U16(address + 0x80000000);
   case 4:
-    return memory_manager->Read_U32(address);
+    return memory_manager->Read_U32(address + 0x80000000);
   case 8:
-    return memory_manager->Read_U64(address);
+    return memory_manager->Read_U64(address + 0x80000000);
   default:
     return 0u;
   }
-#endif  // RA_TEST
 }
 
 void DisplayUnlocked(unsigned int achievement_id)
