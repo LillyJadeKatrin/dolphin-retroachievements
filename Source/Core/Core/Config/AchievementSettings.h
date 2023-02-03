@@ -20,7 +20,6 @@ extern const Info<bool> RA_LEADERBOARDS_ENABLED;
 extern const Info<bool> RA_RICH_PRESENCE_ENABLED;
 extern const Info<bool> RA_HARDCORE_ENABLED;
 extern const Info<bool> RA_BADGE_ICONS_ENABLED;
-extern const Info<bool> RA_TEST_MODE_ENABLED;
 extern const Info<bool> RA_UNOFFICIAL_ENABLED;
 extern const Info<bool> RA_ENCORE_ENABLED;
 }  // namespace Config

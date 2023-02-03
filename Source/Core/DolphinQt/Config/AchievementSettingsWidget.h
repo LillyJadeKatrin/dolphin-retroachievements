@@ -40,9 +40,8 @@ private:
 //  void ToggleRichPresence();
   void ToggleHardcore();
   void ToggleBadgeIcons();
-//  void ToggleTestMode();
   void ToggleUnofficial();
-//  void ToggleEncore();
+  void ToggleEncore();
 
   QGroupBox* m_common_box;
   QVBoxLayout* m_common_layout;
@@ -59,7 +58,6 @@ private:
   QCheckBox* m_common_rich_presence_enabled_input;
   QCheckBox* m_common_hardcore_enabled_input;
   QCheckBox* m_common_badge_icons_enabled_input;
-  QCheckBox* m_common_test_mode_enabled_input;
   QCheckBox* m_common_unofficial_enabled_input;
   QCheckBox* m_common_encore_enabled_input;
 };

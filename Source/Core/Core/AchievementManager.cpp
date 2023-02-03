@@ -167,38 +167,6 @@ void TestRequest<rc_api_award_achievement_request_t, rc_api_award_achievement_re
   rc_response->awarded_achievement_id = rc_request.achievement_id;
   rc_response->response.succeeded = 1;
 }
-
-
-unsigned TestMemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
-{
-  // TODO lillyjade: Hack to spoof SA2B as SA2
-  if (address == 0x24ee60)  // state
-                            //  address = 0x3BD81B;
-    address = 0x803AD81B;
-  if (address == 0x24ee64)  // level ID
-                            //  address = 0x3BD821;
-                            //  address = 0x803AD821;
-    return 0x0d;
-  if (address == 0x26a1fe)
-    return 1;
-  if (address == 0x26adb8)  // score
-                            //  address = 0x1F8263;
-                            //  address = 0x801E8263;
-    address = 0x801EEC07;
-  switch (num_bytes)
-  {
-  case 1:
-    return memory_manager->Read_U8(address);
-  case 2:
-    return memory_manager->Read_U16(address);
-  case 4:
-    return memory_manager->Read_U32(address);
-  case 8:
-    return memory_manager->Read_U64(address);
-  default:
-    return 0u;
-  }
-}
 #endif // RA_TEST
 
 template <typename RcRequest, typename RcResponse>
@@ -262,7 +230,10 @@ void DisplayUnlocked(unsigned int achievement_id)
     {
       OSD::AddMessage(std::format("Unlocked: {} ({})", game_data.achievements[ix].title,
                                   game_data.achievements[ix].points),
-                      OSD::Duration::VERY_LONG, OSD::Color::GREEN,
+                      OSD::Duration::VERY_LONG,
+                      (Config::Get(Config::RA_HARDCORE_ENABLED))
+                          ?(OSD::Color::YELLOW)
+                          :(OSD::Color::CYAN),
                       (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
                           ?(&(*unlocked_icons[game_data.achievements[ix].id].begin()))
                           :(nullptr));
@@ -286,6 +257,19 @@ void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
     }
     Award(runtime_event->id);
     DisplayUnlocked(runtime_event->id);
+    if (Config::Get(Config::RA_ENCORE_ENABLED))
+    {
+      for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+      {
+        if (game_data.achievements[ix].id == runtime_event->id)
+          rc_runtime_activate_achievement(&runtime, runtime_event->id,
+                                          game_data.achievements[ix].definition, nullptr, 0);
+      }
+    }
+    else
+    {
+      rc_runtime_deactivate_achievement(&runtime, runtime_event->id);
+    }
     break;
   }
 }
@@ -398,31 +382,51 @@ void ActivateAM()
       !login_data.response.succeeded || !session_data.response.succeeded ||
       !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED))
     return;
-  // TODO lillyjade: only loading the first cheevo for testing purposes
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
-  //for (unsigned int ix = 0; ix < partial_list_limit; ix++)
   {
-    if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_CORE ||
-      Config::Get(Config::RA_UNOFFICIAL_ENABLED))
-      rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id,
-                                      game_data.achievements[ix].definition, nullptr, 0);
-  }
-}
+    // Could probably make this call individually but I'm trying to keep my use of
+    // rc_runtime_get_achievement minimal
+    bool active = (rc_runtime_get_achievement(&runtime, game_data.achievements[ix].id) != nullptr);
 
-void ActivateUnofficialAM()
-{
-  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
-      !login_data.response.succeeded || !session_data.response.succeeded ||
-      !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED)
-      || !Config::Get(Config::RA_UNOFFICIAL_ENABLED))
-    return;
-  // TODO lillyjade: only loading the first cheevo for testing purposes
-  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
-  //for (unsigned int ix = 0; ix < partial_list_limit; ix++)
-  {
-    if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
-      rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id,
-                                      game_data.achievements[ix].definition, nullptr, 0);
+    bool unlocked = (hardcore_unlocks.count(game_data.achievements[ix].id) > 0);
+    if (!unlocked)
+    {
+      for (unsigned int jx = 0; jx < hardcore_unlock_data.num_achievement_ids; jx++)
+      {
+        if (hardcore_unlock_data.achievement_ids[jx] == game_data.achievements[ix].id)
+        {
+          unlocked = true;
+          continue;
+        }
+      }
+    }
+    if (!unlocked && !Config::Get(Config::RA_HARDCORE_ENABLED))
+    {
+      unlocked = (softcore_unlocks.count(game_data.achievements[ix].id) > 0);
+      if (!unlocked)
+      {
+        for (unsigned int jx = 0; jx < softcore_unlock_data.num_achievement_ids; jx++)
+        {
+          if (softcore_unlock_data.achievement_ids[jx] == game_data.achievements[ix].id)
+          {
+            unlocked = true;
+            continue;
+          }
+        }
+      }
+    }
+
+    bool activate = true;
+    if (!Config::Get(Config::RA_UNOFFICIAL_ENABLED) &&
+        game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
+      activate = false;
+    if (unlocked && !Config::Get(Config::RA_ENCORE_ENABLED))
+      activate = false;
+
+    if (!active && activate)
+      rc_runtime_activate_achievement(&runtime, game_data.achievements[ix].id, game_data.achievements[ix].definition, nullptr, 0);
+    if (active && !activate)
+      rc_runtime_deactivate_achievement(&runtime, game_data.achievements[ix].id);
   }
 }
 
@@ -523,15 +527,6 @@ void DeactivateAM()
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   {
     rc_runtime_deactivate_achievement(&runtime, game_data.achievements[ix].id);
-  }
-}
-
-void DeactivateUnofficialAM()
-{
-  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
-  {
-    if (game_data.achievements[ix].category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
-      rc_runtime_deactivate_achievement(&runtime, game_data.achievements[ix].id);
   }
 }
 

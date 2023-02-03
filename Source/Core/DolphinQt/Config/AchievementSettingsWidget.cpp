@@ -56,7 +56,6 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_rich_presence_enabled_input = new QCheckBox(tr("Enable Rich Presence"));
   m_common_hardcore_enabled_input = new QCheckBox(tr("Enable Hardcore Mode"));
   m_common_badge_icons_enabled_input = new QCheckBox(tr("Enable Badge Icons"));
-  m_common_test_mode_enabled_input = new QCheckBox(tr("Enable Test Mode"));
   m_common_unofficial_enabled_input = new QCheckBox(tr("Enable Unofficial Achievements"));
   m_common_encore_enabled_input = new QCheckBox(tr("Enable Encore Achievements"));
 
@@ -73,7 +72,6 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_layout->addWidget(m_common_rich_presence_enabled_input);
   m_common_layout->addWidget(m_common_hardcore_enabled_input);
   m_common_layout->addWidget(m_common_badge_icons_enabled_input);
-  m_common_layout->addWidget(m_common_test_mode_enabled_input);
   m_common_layout->addWidget(m_common_unofficial_enabled_input);
   m_common_layout->addWidget(m_common_encore_enabled_input);
 
@@ -104,8 +102,6 @@ void AchievementSettingsWidget::ConnectWidgets()
 //          &AchievementSettingsWidget::SaveSettings);
   connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_test_mode_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
   connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
@@ -127,12 +123,10 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::ToggleHardcore);
   connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleBadgeIcons);
-//  connect(m_common_test_mode_enabled_input, &QCheckBox::toggled, this,
-//          &AchievementSettingsWidget::ToggleTestMode);
   connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleUnofficial);
-//  connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
-//          &AchievementSettingsWidget::ToggleEncore);
+  connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleEncore);
 }
 
 void AchievementSettingsWidget::OnControllerInterfaceConfigure()
@@ -196,12 +190,6 @@ void AchievementSettingsWidget::LoadSettings()
   SignalBlocking(m_common_badge_icons_enabled_input)
       ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED));
 
-  SignalBlocking(m_common_test_mode_enabled_input)
-      ->setChecked(Config::Get(Config::RA_TEST_MODE_ENABLED));
-  SignalBlocking(m_common_test_mode_enabled_input)
-      ->setEnabled(Config::Get(Config::RA_INTEGRATION_ENABLED) &&
-                   Config::Get(Config::RA_ACHIEVEMENTS_ENABLED));
-
   SignalBlocking(m_common_unofficial_enabled_input)
       ->setChecked(Config::Get(Config::RA_UNOFFICIAL_ENABLED));
   SignalBlocking(m_common_unofficial_enabled_input)
@@ -228,8 +216,6 @@ void AchievementSettingsWidget::SaveSettings()
   Settings::Instance().SetHardcoreModeEnabled(m_common_hardcore_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_BADGE_ICONS_ENABLED,
                            m_common_badge_icons_enabled_input->isChecked());
-  Config::SetBaseOrCurrent(Config::RA_TEST_MODE_ENABLED,
-                           m_common_test_mode_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_UNOFFICIAL_ENABLED,
                            m_common_unofficial_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_ENCORE_ENABLED, m_common_encore_enabled_input->isChecked());
@@ -329,7 +315,12 @@ void AchievementSettingsWidget::ToggleHardcore()
                                              QMessageBox::Yes | QMessageBox::No,
                                              QMessageBox::NoButton, Qt::ApplicationModal);
     if (confirm == QMessageBox::Yes)
+    {
       Settings::Instance().SetHardcoreModeEnabled(false);
+      // Only really need to do this on hardcore disabled to disable softcore achievements
+      // because on hardcore enabled there should be a full game data delete and reload
+      Achievements::ActivateAM();
+    }
     else
     {
       Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, true);
@@ -347,23 +338,13 @@ void AchievementSettingsWidget::ToggleBadgeIcons()
   // as long as the game session is active, and will take no immediate
   // action if they are disabled.
 }
-/*
-void AchievementSettingsWidget::ToggleTestMode()
-{
-  if (Config::Get(Config::RA_TEST_MODE_ENABLED))
-  else
-}*/
 
 void AchievementSettingsWidget::ToggleUnofficial()
 {
-  if (Config::Get(Config::RA_UNOFFICIAL_ENABLED))
-    Achievements::ActivateUnofficialAM();
-  else
-    Achievements::DeactivateUnofficialAM();
+  Achievements::ActivateAM();
 }
-/*
+
 void AchievementSettingsWidget::ToggleEncore()
 {
-  if (Config::Get(Config::RA_ENCORE_ENABLED))
-  else
-}*/
+  Achievements::ActivateAM();
+}

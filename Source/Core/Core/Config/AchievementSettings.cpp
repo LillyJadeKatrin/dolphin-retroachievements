@@ -27,7 +27,6 @@ const Info<bool> RA_RICH_PRESENCE_ENABLED{{System::Achievements, "General", "Ric
 const Info<bool> RA_HARDCORE_ENABLED{{System::Achievements, "General", "HardcoreEnabled"}, false};
 const Info<bool> RA_BADGE_ICONS_ENABLED{{System::Achievements, "General", "BadgeIconsEnabled"},
                                         false};
-const Info<bool> RA_TEST_MODE_ENABLED{{System::Achievements, "General", "TestModeEnabled"}, false};
 const Info<bool> RA_UNOFFICIAL_ENABLED{{System::Achievements, "General", "UnofficialEnabled"},
                                        false};
 const Info<bool> RA_ENCORE_ENABLED{{System::Achievements, "General", "EncoreEnabled"}, false};

@@ -159,7 +159,6 @@ bool IsSettingSaveable(const Config::Location& config_location)
     &Config::RA_RICH_PRESENCE_ENABLED.GetLocation(),
     &Config::RA_HARDCORE_ENABLED.GetLocation(),
     &Config::RA_BADGE_ICONS_ENABLED.GetLocation(),
-    &Config::RA_TEST_MODE_ENABLED.GetLocation(),
     &Config::RA_UNOFFICIAL_ENABLED.GetLocation(),
     &Config::RA_ENCORE_ENABLED.GetLocation(),
   };
