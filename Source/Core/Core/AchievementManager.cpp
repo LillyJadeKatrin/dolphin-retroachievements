@@ -441,17 +441,15 @@ void DoFrame()
 
 void DoState(PointerWrap& p)
 {
-  p.Do(runtime.triggers);
-  p.Do(runtime.trigger_count);
-  p.Do(runtime.trigger_capacity);
-  p.Do(runtime.lboards);
-  p.Do(runtime.lboard_count);
-  p.Do(runtime.lboard_capacity);
-  p.Do(runtime.richpresence);
-  p.Do(runtime.memrefs);
-  p.Do(runtime.next_memref);
-  p.Do(runtime.variables);
-  p.Do(runtime.next_variable);
+  // TODO lillyjade: if the three rc_runtime methods here are
+  // too expensive I can check for p.isReadMode before doing them.
+  // Currently they're harmless but wasteful, and code pretty.
+  int size = rc_runtime_progress_size(&runtime, nullptr);
+  p.Do(size);
+  const unsigned char* buffer = (const unsigned char*)malloc(size);
+  rc_runtime_serialize_progress((void*)buffer, &runtime, nullptr);
+  p.Do(buffer);
+  rc_runtime_deserialize_progress(&runtime, buffer, nullptr);
 }
 
 void Award(unsigned int achievement_id)
