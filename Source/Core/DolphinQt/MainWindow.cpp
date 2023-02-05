@@ -228,6 +228,10 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   // Apparently this has to be done before CreateComponents() so it's initialized.
   Achievements::Init();
   Achievements::Login();
+  if (Achievements::GetUserStatus()->response.succeeded)
+  {
+    ShowAchievementsWelcome();
+  }
   // If this is true upon startup need to immediately disable cheats and debug
   Settings::Instance().SetHardcoreModeEnabled(Config::Get(Config::RA_HARDCORE_ENABLED));
   Achievements::RAIntegration::MainWindowChanged((HANDLE)winId());
@@ -1885,6 +1889,48 @@ void MainWindow::ShowAchievementsWindow()
   m_achievements_window->show();
   m_achievements_window->raise();
   m_achievements_window->activateWindow();
+}
+
+void MainWindow::ShowAchievementsWelcome()
+{
+  std::string user_name = std::format("Welcome back {}!",
+    Achievements::GetUserStatus()->display_name);
+  std::string user_points = std::format("You have {} points",
+    Achievements::GetUserStatus()->score);
+  std::string user_messages =
+      std::format("and {} unread messages.", Achievements::GetUserStatus()->num_unread_messages);
+  std::string hardcore =
+      std::format("Hardcore mode is {}", (Config::Get(Config::RA_HARDCORE_ENABLED)) ? "ON" : "OFF");
+
+  QImage i_user_icon;
+  i_user_icon.loadFromData(Achievements::GetUserIcon()->begin()._Ptr,
+                           (int)Achievements::GetUserIcon()->size());
+
+  QLabel* m_user_icon = new QLabel();
+  m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon)
+                             .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+  m_user_icon->adjustSize();
+  m_user_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+  QLabel* m_user_name = new QLabel(QString::fromStdString(user_name));
+  QLabel* m_user_points = new QLabel(QString::fromStdString(user_points));
+  QLabel* m_user_messages = new QLabel(QString::fromStdString(user_messages));
+  QLabel* m_hardcore = new QLabel(QString::fromStdString(hardcore));
+
+  QVBoxLayout* m_user_right_col = new QVBoxLayout();
+  m_user_right_col->addWidget(m_user_name);
+  m_user_right_col->addWidget(m_user_points);
+  m_user_right_col->addWidget(m_user_messages);
+  m_user_right_col->addWidget(m_hardcore);
+  QHBoxLayout* m_user_block = new QHBoxLayout();
+  m_user_block->addWidget(m_user_icon);
+  m_user_block->addLayout(m_user_right_col);
+  QDialog m_welcome;
+  m_welcome.setLayout(m_user_block);
+
+  m_welcome.show();
+  m_welcome.raise();
+  m_welcome.activateWindow();
+  QThread::sleep(2);
 }
 
 void MainWindow::ActivateRAMenuItem(int id)
