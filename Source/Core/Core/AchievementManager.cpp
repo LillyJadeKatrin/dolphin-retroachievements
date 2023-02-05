@@ -528,6 +528,12 @@ void DeactivateAM()
   }
 }
 
+void ResetSession()
+{
+  EndSession();
+  StartSession(memory_manager);
+}
+
 void EndSession()
 {
   DeactivateAM();
@@ -676,7 +682,7 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
   if (game_data.response.succeeded)
   {
 //    RA_SetConsoleID(isWii ? WII : GameCube);
-    RA_SetConsoleID(PlayStation2);
+    RA_SetConsoleID(Dreamcast);
     RA_ActivateGame(game_data.id);
   }
 }

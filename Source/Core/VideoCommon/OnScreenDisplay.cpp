@@ -86,7 +86,9 @@ static float DrawMessage(int index, Message& msg, const ImVec2& position, int ti
     if (msg.icon != nullptr)
     {
       ImVec2 size(64, 64);
-      ImGui::Image(msg.icon, size);
+      // TODO lillyjade: Disabled until I can figure out how to properly load a .png
+      // into the texture cache
+//      ImGui::Image(msg.icon, size);
     }
     // Use %s in case message contains %.
     ImGui::TextColored(ARGBToImVec4(msg.color), "%s", msg.text.c_str());
