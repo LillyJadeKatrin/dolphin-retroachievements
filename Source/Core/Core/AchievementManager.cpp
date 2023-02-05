@@ -137,7 +137,7 @@ void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_respon
       "An achievement with a measure still locked.";
   rc_response->achievements[5].badge_name = "236638";
   rc_response->achievements[5].definition = "M:0xH1cc1d1>99";
-  rc_response->response.succeeded = 0;
+  rc_response->response.succeeded = 1;
 }
 
 template <>
@@ -292,6 +292,49 @@ void DisplayGameStart()
   }
 }
 
+void CheckMastery()
+{
+  std::set<unsigned int> hardcore_ids(hardcore_unlock_data.achievement_ids,
+                                      hardcore_unlock_data.achievement_ids +
+                                          hardcore_unlock_data.num_achievement_ids);
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  {
+    if (hardcore_unlocks.count(game_data.achievements[ix].id) +
+            hardcore_ids.count(game_data.achievements[ix].id) ==
+        0)
+      return;
+  }
+
+  OSD::AddMessage(
+      std::format("Congratulations! {} has mastered {}", login_data.display_name, game_data.title),
+      OSD::Duration::VERY_LONG, OSD::Color::YELLOW,
+      (Config::Get(Config::RA_BADGE_ICONS_ENABLED)) ? (&game_icon) : (nullptr));
+}
+
+void CheckCompletion()
+{
+  std::set<unsigned int> hardcore_ids(hardcore_unlock_data.achievement_ids,
+                                      hardcore_unlock_data.achievement_ids +
+                                          hardcore_unlock_data.num_achievement_ids);
+  std::set<unsigned int> softcore_ids(softcore_unlock_data.achievement_ids,
+                                      softcore_unlock_data.achievement_ids +
+                                          softcore_unlock_data.num_achievement_ids);
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  {
+    if (hardcore_unlocks.count(game_data.achievements[ix].id) +
+            hardcore_ids.count(game_data.achievements[ix].id) +
+            softcore_unlocks.count(game_data.achievements[ix].id) +
+            softcore_ids.count(game_data.achievements[ix].id) ==
+        0)
+      return;
+  }
+
+  OSD::AddMessage(
+      std::format("Congratulations! {} has completed {}", login_data.display_name, game_data.title),
+      OSD::Duration::VERY_LONG, OSD::Color::CYAN,
+      (Config::Get(Config::RA_BADGE_ICONS_ENABLED)) ? (&game_icon) : (nullptr));
+}
+
 void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
 {
   std::cout << std::endl;
@@ -308,6 +351,14 @@ void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
     }
     Award(runtime_event->id);
     DisplayUnlocked(runtime_event->id);
+    if (Config::Get(Config::RA_HARDCORE_ENABLED))
+    {
+      CheckMastery();
+    }
+    else
+    {
+      CheckCompletion();
+    }
     if (Config::Get(Config::RA_ENCORE_ENABLED))
     {
       for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
