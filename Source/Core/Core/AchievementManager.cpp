@@ -530,6 +530,7 @@ void DeactivateAM()
 
 void EndSession()
 {
+  DeactivateAM();
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   {
     unlocked_icons[game_data.achievements[ix].id].clear();

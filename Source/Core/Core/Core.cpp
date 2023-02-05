@@ -285,6 +285,8 @@ void Stop()  // - Hammertime!
   if (GetState() == State::Stopping || GetState() == State::Uninitialized)
     return;
 
+  Achievements::EndSession();
+
   s_is_stopping = true;
 
   CallOnStateChangedCallbacks(State::Stopping);
