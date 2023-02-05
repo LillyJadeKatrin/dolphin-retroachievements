@@ -970,9 +970,6 @@ void MainWindow::Reset()
 {
   if (Movie::IsRecordingInput())
     Movie::SetReset(true);
-  // TODO lillyjade: I hate putting this here so frigging much but I can't seem
-  // to find where the hardware resets the game, if it even does
-  Achievements::ResetSession();
   auto& system = Core::System::GetInstance();
   system.GetProcessorInterface().ResetButton_Tap();
 }

@@ -137,7 +137,7 @@ void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_respon
       "An achievement with a measure still locked.";
   rc_response->achievements[5].badge_name = "236638";
   rc_response->achievements[5].definition = "M:0xH1cc1d1>99";
-  rc_response->response.succeeded = 1;
+  rc_response->response.succeeded = 0;
 }
 
 template <>
@@ -231,13 +231,64 @@ void DisplayUnlocked(unsigned int achievement_id)
       OSD::AddMessage(std::format("Unlocked: {} ({})", game_data.achievements[ix].title,
                                   game_data.achievements[ix].points),
                       OSD::Duration::VERY_LONG,
-                      (Config::Get(Config::RA_HARDCORE_ENABLED))
-                          ?(OSD::Color::YELLOW)
-                          :(OSD::Color::CYAN),
-                      (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
-                          ?(&(*unlocked_icons[game_data.achievements[ix].id].begin()))
-                          :(nullptr));
+                      (Config::Get(Config::RA_HARDCORE_ENABLED)) ? (OSD::Color::YELLOW) :
+                                                                   (OSD::Color::CYAN),
+                      (Config::Get(Config::RA_BADGE_ICONS_ENABLED)) ?
+                          (&(*unlocked_icons[game_data.achievements[ix].id].begin())) :
+                          (nullptr));
+      return;
     }
+  }
+}
+
+void DisplayNoData()
+{
+  OSD::AddMessage("No RetroAchievements data found for this game.",
+                      OSD::Duration::VERY_LONG,
+                      OSD::Color::RED);
+}
+
+void DisplayGameStart()
+{
+  std::set<unsigned int> hardcore_ids(
+    hardcore_unlock_data.achievement_ids,
+    hardcore_unlock_data.achievement_ids +
+    hardcore_unlock_data.num_achievement_ids);
+  std::set<unsigned int> softcore_ids(softcore_unlock_data.achievement_ids,
+                                      softcore_unlock_data.achievement_ids +
+                                      softcore_unlock_data.num_achievement_ids);
+  unsigned int hardcore_points = 0;
+  unsigned int softcore_points = 0;
+  unsigned int total_points = 0;
+  for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+  {
+    unsigned int id = game_data.achievements[ix].id;
+    unsigned int points = game_data.achievements[ix].points;
+    total_points += points;
+    if (hardcore_ids.count(id) > 0)
+      hardcore_points += points;
+    if (softcore_ids.count(id) > 0)
+      softcore_points += points;
+  }
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+  {
+    OSD::AddMessage(std::format("You have {}/{} achievements worth {}/{} points",
+                                hardcore_unlock_data.num_achievement_ids,
+                                game_data.num_achievements, hardcore_points, total_points),
+                    OSD::Duration::VERY_LONG, OSD::Color::YELLOW,
+                    (Config::Get(Config::RA_BADGE_ICONS_ENABLED)) ? (&game_icon) : (nullptr));
+    OSD::AddMessage("Hardcore mode is ON", OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
+  }
+  else
+  {
+    OSD::AddMessage(std::format("You have {}/{} achievements worth {}/{} points",
+                                hardcore_unlock_data.num_achievement_ids +
+                                    softcore_unlock_data.num_achievement_ids,
+                                game_data.num_achievements, hardcore_points + softcore_points,
+                                total_points),
+                    OSD::Duration::VERY_LONG, OSD::Color::CYAN,
+                    (Config::Get(Config::RA_BADGE_ICONS_ENABLED)) ? (&game_icon) : (nullptr));
+    OSD::AddMessage("Hardcore mode is OFF", OSD::Duration::VERY_LONG, OSD::Color::CYAN);
   }
 }
 
@@ -356,23 +407,32 @@ void FetchData()
         fetch_unlocks_request, &softcore_unlock_data, rc_api_init_fetch_user_unlocks_request,
         rc_api_process_fetch_user_unlocks_response);
   }
-  rc_api_fetch_image_request_t icon_request = {.image_name = game_data.image_name,
-                                               .image_type = RC_IMAGE_TYPE_GAME};
-  if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
+  if (game_data.response.succeeded)
   {
-    IconRequest(icon_request, game_icon);
-    //for (unsigned int ix = 0; ix < partial_list_limit; ix++)
-    for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+    rc_api_fetch_image_request_t icon_request = {.image_name = game_data.image_name,
+                                                 .image_type = RC_IMAGE_TYPE_GAME};
+    if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
     {
-      rc_api_fetch_image_request_t badge_request = {.image_name =
-                                                        game_data.achievements[ix].badge_name,
-                                                    .image_type = RC_IMAGE_TYPE_ACHIEVEMENT};
-      if (unlocked_icons[game_data.achievements[ix].id].empty())
-        IconRequest(badge_request, unlocked_icons[game_data.achievements[ix].id]);
-      badge_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
-      if (locked_icons[game_data.achievements[ix].id].empty())
-        IconRequest(badge_request, locked_icons[game_data.achievements[ix].id]);
+      IconRequest(icon_request, game_icon);
+      // for (unsigned int ix = 0; ix < partial_list_limit; ix++)
+      for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+      {
+        rc_api_fetch_image_request_t badge_request = {.image_name =
+                                                          game_data.achievements[ix].badge_name,
+                                                      .image_type = RC_IMAGE_TYPE_ACHIEVEMENT};
+        if (unlocked_icons[game_data.achievements[ix].id].empty())
+          IconRequest(badge_request, unlocked_icons[game_data.achievements[ix].id]);
+        badge_request.image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED;
+        if (locked_icons[game_data.achievements[ix].id].empty())
+          IconRequest(badge_request, locked_icons[game_data.achievements[ix].id]);
+      }
     }
+
+    DisplayGameStart();
+  }
+  else
+  {
+    DisplayNoData();
   }
 }
 
