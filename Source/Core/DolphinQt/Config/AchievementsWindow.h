@@ -38,4 +38,5 @@ private:
   QLabel* m_game_points;
   QProgressBar* m_game_progress_hard;
   QProgressBar* m_game_progress_soft;
+  QLabel* m_rich_presence;
 };

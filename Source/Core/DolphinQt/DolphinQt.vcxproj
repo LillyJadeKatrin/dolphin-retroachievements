@@ -52,6 +52,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDialog.cpp" />
+    <ClCompile Include="Config\AchievementLeaderboardWidget.cpp" />
     <ClCompile Include="Config\AchievementProgressWidget.cpp" />
     <ClCompile Include="Config\AchievementSettingsWidget.cpp" />
     <ClCompile Include="Config\AchievementsWindow.cpp" />
@@ -231,6 +232,7 @@
     <QtMoc Include="Config\AchievementsWindow.h" />
     <QtMoc Include="Config\AchievementSettingsWidget.h" />
     <QtMoc Include="Config\AchievementProgressWidget.h" />
+    <QtMoc Include="Config\AchievementLeaderboardWidget.h" />
     <ClInclude Include="Config\CheatCodeEditor.h" />
     <ClInclude Include="Config\GameConfigEdit.h" />
     <ClInclude Include="Config\Mapping\MappingCommon.h" />

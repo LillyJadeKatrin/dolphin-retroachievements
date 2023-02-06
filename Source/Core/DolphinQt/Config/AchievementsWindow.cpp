@@ -16,10 +16,12 @@
 #include <QVBoxLayout>
 
 #include "Core/AchievementManager.h"
+#include "DolphinQt/Config/AchievementLeaderboardWidget.h"
 #include "DolphinQt/Config/AchievementProgressWidget.h"
 #include "DolphinQt/Config/AchievementSettingsWidget.h"
 #include "DolphinQt/QtUtils/WrapInScrollArea.h"
 #include <set>
+#include <Core/Config/AchievementSettings.h>
 
 AchievementsWindow::AchievementsWindow(QWidget* parent) : QDialog(parent)
 {
@@ -124,6 +126,7 @@ void AchievementsWindow::CreateGeneralBlock()
       m_game_progress_soft->setRange(0, Achievements::GetGameData()->num_achievements);
       m_game_progress_soft->setValue(Achievements::GetHardcoreGameProgress()->num_achievement_ids +
                                      Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
+      m_rich_presence = new QLabel(QString::fromStdString(Achievements::GetRichPresence()));
 
       QVBoxLayout* m_game_right_col = new QVBoxLayout();
       m_game_right_col->addWidget(m_game_name);
@@ -133,8 +136,11 @@ void AchievementsWindow::CreateGeneralBlock()
       m_game_block->addWidget(m_user_icon);
       m_game_block->addWidget(m_game_icon);
       m_game_block->addLayout(m_game_right_col);
+      QVBoxLayout* m_game_block_rp = new QVBoxLayout();
+      m_game_block_rp->addLayout(m_game_block);
+      m_game_block_rp->addWidget(m_rich_presence);
       m_general_box = new QGroupBox();
-      m_general_box->setLayout(m_game_block);
+      m_general_box->setLayout(m_game_block_rp);
     }
     else
     {
@@ -158,10 +164,15 @@ void AchievementsWindow::CreateMainLayout()
 
   m_tab_widget = new QTabWidget();
   m_tab_widget->addTab(GetWrappedWidget(new AchievementSettingsWidget(m_tab_widget), this, 125, 100),
-                       tr("Settings"));
-  m_tab_widget->addTab(GetWrappedWidget(new AchievementProgressWidget(m_tab_widget), this, 125, 100),
-                       tr("Progress"));
+      tr("Settings"));
+  m_tab_widget->addTab(
+      GetWrappedWidget(new AchievementProgressWidget(m_tab_widget), this, 125, 100),
+      tr("Progress"));
   m_tab_widget->setTabEnabled(1, Achievements::GetGameData()->response.succeeded);
+  m_tab_widget->addTab(
+      GetWrappedWidget(new AchievementLeaderboardWidget(m_tab_widget), this, 125, 100),
+      tr("Leaderboard"));
+  m_tab_widget->setTabEnabled(1, Config::Get(Config::RA_LEADERBOARDS_ENABLED));
 
   m_button_box = new QDialogButtonBox(QDialogButtonBox::Close);
 
