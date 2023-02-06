@@ -222,7 +222,7 @@ unsigned MemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
   }
 }
 
-void DisplayUnlocked(unsigned int achievement_id)
+void DisplayAchievementUnlocked(unsigned int achievement_id)
 {
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   {
@@ -335,43 +335,97 @@ void CheckCompletion()
       (Config::Get(Config::RA_BADGE_ICONS_ENABLED)) ? (&game_icon) : (nullptr));
 }
 
+void HandleAchievementTriggeredEvent(const rc_runtime_event_t* runtime_event)
+{
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+  {
+    hardcore_unlocks.insert(runtime_event->id);
+  }
+  else
+  {
+    softcore_unlocks.insert(runtime_event->id);
+  }
+  Award(runtime_event->id);
+  DisplayAchievementUnlocked(runtime_event->id);
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+  {
+    CheckMastery();
+  }
+  else
+  {
+    CheckCompletion();
+  }
+  if (Config::Get(Config::RA_ENCORE_ENABLED))
+  {
+    for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
+    {
+      if (game_data.achievements[ix].id == runtime_event->id)
+        rc_runtime_activate_achievement(&runtime, runtime_event->id,
+                                        game_data.achievements[ix].definition, nullptr, 0);
+    }
+  }
+  else
+  {
+    rc_runtime_deactivate_achievement(&runtime, runtime_event->id);
+  }
+}
+
+void HandleLeaderboardStartedEvent(const rc_runtime_event_t* runtime_event)
+{
+  for (unsigned int ix = 0; ix < game_data.num_leaderboards; ix++)
+  {
+    if (game_data.leaderboards[ix].id == runtime_event->id)
+    {
+      OSD::AddMessage(std::format("Attempting leaderboard: {}", game_data.leaderboards[ix].title),
+                      OSD::Duration::VERY_LONG, OSD::Color::GREEN);
+      return;
+    }
+  }
+}
+
+void HandleLeaderboardCanceledEvent(const rc_runtime_event_t* runtime_event)
+{
+  for (unsigned int ix = 0; ix < game_data.num_leaderboards; ix++)
+  {
+    if (game_data.leaderboards[ix].id == runtime_event->id)
+    {
+      OSD::AddMessage(std::format("Canceled leaderboard: {}", game_data.leaderboards[ix].title),
+                      OSD::Duration::VERY_LONG, OSD::Color::RED);
+      return;
+    }
+  }
+}
+
+void HandleLeaderboardTriggeredEvent(const rc_runtime_event_t* runtime_event)
+{
+  Submit(runtime_event->id, runtime_event->value);
+  for (unsigned int ix = 0; ix < game_data.num_leaderboards; ix++)
+  {
+    if (game_data.leaderboards[ix].id == runtime_event->id)
+    {
+      OSD::AddMessage(std::format("Submitted {} to leaderboard: {}", runtime_event->value, game_data.leaderboards[ix].title),
+                      OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
+      return;
+    }
+  }
+}
+
 void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
 {
   std::cout << std::endl;
   switch (runtime_event->type)
   {
   case RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED:
-    if (Config::Get(Config::RA_HARDCORE_ENABLED))
-    {
-      hardcore_unlocks.insert(runtime_event->id);
-    }
-    else
-    {
-      softcore_unlocks.insert(runtime_event->id);
-    }
-    Award(runtime_event->id);
-    DisplayUnlocked(runtime_event->id);
-    if (Config::Get(Config::RA_HARDCORE_ENABLED))
-    {
-      CheckMastery();
-    }
-    else
-    {
-      CheckCompletion();
-    }
-    if (Config::Get(Config::RA_ENCORE_ENABLED))
-    {
-      for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
-      {
-        if (game_data.achievements[ix].id == runtime_event->id)
-          rc_runtime_activate_achievement(&runtime, runtime_event->id,
-                                          game_data.achievements[ix].definition, nullptr, 0);
-      }
-    }
-    else
-    {
-      rc_runtime_deactivate_achievement(&runtime, runtime_event->id);
-    }
+    HandleAchievementTriggeredEvent(runtime_event);
+    break;
+  case RC_RUNTIME_EVENT_LBOARD_STARTED:
+    HandleLeaderboardStartedEvent(runtime_event);
+    break;
+  case RC_RUNTIME_EVENT_LBOARD_CANCELED:
+    HandleLeaderboardCanceledEvent(runtime_event);
+    break;
+  case RC_RUNTIME_EVENT_LBOARD_TRIGGERED:
+    HandleLeaderboardTriggeredEvent(runtime_event);
     break;
   }
 }
@@ -583,16 +637,33 @@ void Award(unsigned int achievement_id)
       !login_data.response.succeeded || !session_data.response.succeeded ||
       !game_data.response.succeeded || !Config::Get(Config::RA_ACHIEVEMENTS_ENABLED))
     return;
-  rc_api_award_achievement_request_t award_request = {
-      .username = login_data.username,
-      .api_token = login_data.api_token,
-      .achievement_id = achievement_id,
-      .hardcore = 0,
-      .game_hash = game_hash};
+  rc_api_award_achievement_request_t award_request = {.username = login_data.username,
+                                                      .api_token = login_data.api_token,
+                                                      .achievement_id = achievement_id,
+                                                      .hardcore = 0,
+                                                      .game_hash = game_hash};
   rc_api_award_achievement_response_t award_response = {};
   Request<rc_api_award_achievement_request_t, rc_api_award_achievement_response_t>(
       award_request, &award_response, rc_api_init_award_achievement_request,
       rc_api_process_award_achievement_response);
+}
+
+void Submit(unsigned int leaderboard_id, int value)
+{
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded ||
+      !game_data.response.succeeded || !Config::Get(Config::RA_HARDCORE_ENABLED) ||
+      !Config::Get(Config::RA_LEADERBOARDS_ENABLED))
+    return;
+  rc_api_submit_lboard_entry_request_t submit_request = {.username = login_data.username,
+                                                      .api_token = login_data.api_token,
+                                                      .leaderboard_id = leaderboard_id,
+                                                      .score = value,
+                                                      .game_hash = game_hash};
+  rc_api_submit_lboard_entry_response_t submit_response = {};
+  Request<rc_api_submit_lboard_entry_request_t, rc_api_submit_lboard_entry_response_t>(
+      submit_request, &submit_response, rc_api_init_submit_lboard_entry_request,
+      rc_api_process_submit_lboard_entry_response);
 }
 
 rc_api_login_response_t* GetUserStatus()

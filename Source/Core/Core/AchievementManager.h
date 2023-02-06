@@ -31,6 +31,7 @@ void ActivateLB();
 void DoFrame();
 void DoState(PointerWrap& p);
 void Award(unsigned int achievement_id);
+void Submit(unsigned int leaderboard_id, int value);
 
 rc_api_login_response_t* GetUserStatus();
 const std::vector<u8>* GetUserIcon();
