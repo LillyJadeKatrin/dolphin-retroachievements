@@ -26,6 +26,7 @@ std::string Login(std::string password);
 void StartSession(Memory::MemoryManager* memmgr);
 void FetchData();
 void ActivateAM();
+void ActivateLB();
 
 void DoFrame();
 void DoState(PointerWrap& p);
@@ -43,6 +44,7 @@ const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked);
 void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target);
 
 void DeactivateAM();
+void DeactivateLB();
 void ResetSession();
 void EndSession();
 void Logout();

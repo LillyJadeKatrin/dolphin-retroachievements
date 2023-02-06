@@ -29,6 +29,7 @@
 #include "Common/FileUtil.h"
 #include "Common/StringUtil.h"
 
+#include "Core/AchievementManager.h"
 #include "Core/Config/AchievementSettings.h"
 #include "Core/Config/FreeLookSettings.h"
 #include "Core/Config/GraphicsSettings.h"
@@ -469,6 +470,13 @@ void Settings::SetHardcoreModeEnabled(bool enabled)
   if (IsHardcoreModeEnabled() != enabled)
   {
     Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, enabled);
+    if (Config::Get(Config::RA_LEADERBOARDS_ENABLED))
+    {
+      if (enabled)
+        Achievements::ActivateLB();
+      else
+        Achievements::DeactivateLB();
+    }
     emit HardcoreModeToggled(enabled);
   }
   if (enabled)

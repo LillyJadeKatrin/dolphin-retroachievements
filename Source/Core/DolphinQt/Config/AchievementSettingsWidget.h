@@ -36,7 +36,7 @@ private:
   void Login();
   void Logout();
   void ToggleAchievements();
-//  void ToggleLeaderboards();
+  void ToggleLeaderboards();
 //  void ToggleRichPresence();
   void ToggleHardcore();
   void ToggleBadgeIcons();
