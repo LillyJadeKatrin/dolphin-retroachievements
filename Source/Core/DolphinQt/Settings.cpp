@@ -477,6 +477,8 @@ void Settings::SetHardcoreModeEnabled(bool enabled)
       else
         Achievements::DeactivateLB();
     }
+    if (enabled)
+      Core::Stop();
     emit HardcoreModeToggled(enabled);
   }
   if (enabled)
@@ -486,8 +488,6 @@ void Settings::SetHardcoreModeEnabled(bool enabled)
     if (Config::Get(Config::MAIN_EMULATION_SPEED) < 1.0f)
       Config::SetBaseOrCurrent(Config::MAIN_EMULATION_SPEED, 1.0f);
     Config::SetBaseOrCurrent(Config::FREE_LOOK_ENABLED, false);
-    auto& system = Core::System::GetInstance();
-    system.GetProcessorInterface().ResetButton_Tap();
   }
 }
 

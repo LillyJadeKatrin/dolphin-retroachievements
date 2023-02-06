@@ -146,14 +146,14 @@ void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_respon
   rc_response->leaderboards[0].id = 1234;
   rc_response->leaderboards[0].title = "Leaderboard 1";
   rc_response->leaderboards[0].description = "Mock leaderboard for testing";
-  rc_response->leaderboards[0].format = 0;
+  rc_response->leaderboards[0].format = 1;
   rc_response->leaderboards[0].hidden = 0;
   rc_response->leaderboards[0].lower_is_better = 0;
   rc_response->leaderboards[0].definition =
       "STA:0xh3ad81b=h1::CAN:0xh3ad81b=h15::SUB:s0xh3ad81b=8s0x3ad81b=hb::VAL:0xh1cc1d1";
   rc_response->rich_presence_script =
-      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [⭘:@Rings(0x0db270)]";
-//      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [â­˜:@Rings(0x0db270)]";
+      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [⭘:@Rings(0x1cc1d1)]";
+//      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [â­˜:@Rings(0x1cc1d1)]";
   rc_response->response.succeeded = 1;
 }
 
@@ -216,7 +216,7 @@ void TestRequest<rc_api_fetch_leaderboard_info_request_t, rc_api_fetch_leaderboa
                             const char* server_response))
 {
   rc_response->id = 1234;
-  rc_response->format = 0;
+  rc_response->format = 1;
   rc_response->lower_is_better = 0;
   rc_response->title = "Leaderboard 1";
   rc_response->description = "Mock leaderboard for testing";
@@ -1143,8 +1143,7 @@ void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 
 void Achievements::RAIntegration::RACallbackResetEmulator()
 {
-  auto& system = Core::System::GetInstance();
-  system.GetProcessorInterface().ResetButton_Tap();
+  Core::Stop();
 }
 
 void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
