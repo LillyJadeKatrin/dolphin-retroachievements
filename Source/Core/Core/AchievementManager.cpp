@@ -40,6 +40,8 @@ static std::map<unsigned int, std::vector<u8>> locked_icons;
 std::vector<u8> game_icon;
 std::vector<u8> user_icon;
 
+int frames_until_rp = 0;
+
 // TODO lillyjade: Temporary hardcoded test data - CLEAN BEFORE PUSHING
 static unsigned int game_id = 3417;
 static const char* game_hash = "ada3c364c783021884b066a4ad7ee49c";
@@ -626,6 +628,11 @@ void DoFrame()
       !session_data.response.succeeded || !game_data.response.succeeded)
     return;
   rc_runtime_do_frame(&runtime, &AchievementEventHandler, &MemoryPeeker, nullptr, nullptr);
+  if (--frames_until_rp <= 0)
+  {
+    Ping();
+    frames_until_rp = 60;
+  }
 }
 
 void DoState(PointerWrap& p)
@@ -656,6 +663,7 @@ void Award(unsigned int achievement_id)
   Request<rc_api_award_achievement_request_t, rc_api_award_achievement_response_t>(
       award_request, &award_response, rc_api_init_award_achievement_request,
       rc_api_process_award_achievement_response);
+  rc_api_destroy_award_achievement_response(&award_response);
 }
 
 void Submit(unsigned int leaderboard_id, int value)
@@ -674,6 +682,26 @@ void Submit(unsigned int leaderboard_id, int value)
   Request<rc_api_submit_lboard_entry_request_t, rc_api_submit_lboard_entry_response_t>(
       submit_request, &submit_response, rc_api_init_submit_lboard_entry_request,
       rc_api_process_submit_lboard_entry_response);
+  rc_api_destroy_submit_lboard_entry_response(&submit_response);
+}
+
+void Ping()
+{
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded ||
+      !game_data.response.succeeded || !Config::Get(Config::RA_RICH_PRESENCE_ENABLED))
+    return;
+  int rp_size = 65536;
+  char* rp_buffer = (char*)malloc(rp_size);
+  rc_runtime_get_richpresence(&runtime, rp_buffer, rp_size, MemoryPeeker, nullptr, nullptr);
+  rc_api_ping_request_t ping_request = {.username = login_data.username,
+                                        .api_token = login_data.api_token,
+                                        .game_id = game_data.id,
+                                        .rich_presence = rp_buffer};
+  rc_api_ping_response_t ping_response = {};
+  Request<rc_api_ping_request_t, rc_api_ping_response_t>(
+      ping_request, &ping_response, rc_api_init_ping_request, rc_api_process_ping_response);
+  rc_api_destroy_ping_response(&ping_response);
 }
 
 rc_api_login_response_t* GetUserStatus()
