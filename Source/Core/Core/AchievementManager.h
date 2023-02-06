@@ -9,6 +9,7 @@
 #include "Core/HW/Memmap.h"
 
 #include "rcheevos/include/rc_runtime.h"
+#include <rcheevos/include/rc_api_info.h>
 #include <rcheevos/include/rc_api_runtime.h>
 #include <rcheevos/include/rc_api_user.h>
 
@@ -45,6 +46,9 @@ int GetHardcoreAchievementStatus(unsigned int id);
 int GetSoftcoreAchievementStatus(unsigned int id);
 const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked);
 void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target);
+void GetLeader(unsigned int id, rc_api_fetch_leaderboard_info_response_t* response);
+void GetCompetition(unsigned int id, rc_api_fetch_leaderboard_info_response_t* response);
+std::string GetRichPresence();
 
 void DeactivateAM();
 void DeactivateLB();

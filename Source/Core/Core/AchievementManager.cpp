@@ -51,6 +51,7 @@ namespace  // Hide from use outside this file
 {
 #ifdef RA_TEST
 #include "RA_Consoles.h"
+#include <rcheevos/include/rc_api_info.h>
 template <typename RcRequest, typename RcResponse>
 void TestRequest(RcRequest rc_request, RcResponse* rc_response,
                  int (*init_request)(rc_api_request_t* request, const RcRequest* api_params),
@@ -200,9 +201,63 @@ template <>
 void TestRequest<rc_api_ping_request_t, rc_api_ping_response_t>(
     rc_api_ping_request_t rc_request, rc_api_ping_response_t* rc_response,
     int (*init_request)(rc_api_request_t* request, const rc_api_ping_request_t* api_params),
-    int (*process_response)(rc_api_ping_response_t* response,
+    int (*process_response)(rc_api_ping_response_t* response, const char* server_response))
+{
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_fetch_leaderboard_info_request_t, rc_api_fetch_leaderboard_info_response_t>(
+    rc_api_fetch_leaderboard_info_request_t rc_request,
+    rc_api_fetch_leaderboard_info_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request,
+                        const rc_api_fetch_leaderboard_info_request_t* api_params),
+    int (*process_response)(rc_api_fetch_leaderboard_info_response_t* response,
                             const char* server_response))
 {
+  rc_response->id = 1234;
+  rc_response->format = 0;
+  rc_response->lower_is_better = 0;
+  rc_response->title = "Leaderboard 1";
+  rc_response->description = "Mock leaderboard for testing";
+  rc_response->definition =
+      "STA:0xh3ad81b=h1::CAN:0xh3ad81b=h15::SUB:s0xh3ad81b=8s0x3ad81b=hb::VAL:0xh1cc1d1";
+  rc_response->game_id = 3417;
+  rc_response->author = "TheFetishMachine";
+  rc_response->created = 1;
+  rc_response->updated = 2;
+  if (rc_request.count == 1)
+  {
+    rc_response->num_entries = 1;
+    rc_response->entries =
+        (rc_api_lboard_info_entry_t*)calloc(1, sizeof(rc_api_lboard_info_entry_t));
+    rc_response->entries[0].username = "Infernum";
+    rc_response->entries[0].rank = 1;
+    rc_response->entries[0].index = 0;
+    rc_response->entries[0].score = 1000;
+    rc_response->entries[0].submitted = 3;
+  }
+  else
+  {
+    rc_response->num_entries = 3;
+    rc_response->entries =
+        (rc_api_lboard_info_entry_t*)calloc(3, sizeof(rc_api_lboard_info_entry_t));
+    rc_response->entries[0].username = "TheFetishMachine";
+    rc_response->entries[0].rank = 9;
+    rc_response->entries[0].index = 0;
+    rc_response->entries[0].score = 250;
+    rc_response->entries[0].submitted = 4;
+    rc_response->entries[1].username = "CoolFlipper";
+    rc_response->entries[1].rank = 10;
+    rc_response->entries[1].index = 1;
+    rc_response->entries[1].score = 225;
+    rc_response->entries[1].submitted = 6;
+    rc_response->entries[2].username = "LillyJade";
+    rc_response->entries[2].rank = 11;
+    rc_response->entries[2].index = 2;
+    rc_response->entries[2].score = 200;
+    rc_response->entries[2].submitted = 5;
+  }
   rc_response->response.succeeded = 1;
 }
 #endif // RA_TEST
@@ -229,6 +284,7 @@ void Request(RcRequest rc_request, RcResponse* rc_response,
     process_response(rc_response, (const char*)response_str);
     free(response_str);
   }
+  rc_api_destroy_request(&api_request);
   #endif // RA_TEST
 }
 
@@ -738,6 +794,7 @@ void Ping()
   Request<rc_api_ping_request_t, rc_api_ping_response_t>(
       ping_request, &ping_response, rc_api_init_ping_request, rc_api_process_ping_response);
   rc_api_destroy_ping_response(&ping_response);
+  delete rp_buffer;
 }
 
 rc_api_login_response_t* GetUserStatus()
@@ -788,6 +845,34 @@ const std::vector<u8>* GetAchievementBadge(unsigned int id, bool locked)
 void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target)
 {
   rc_runtime_get_achievement_measured(&runtime, id, value, target);
+}
+
+void GetLeader(unsigned int id, rc_api_fetch_leaderboard_info_response_t* response)
+{
+  rc_api_fetch_leaderboard_info_request_t leader_request = {
+      .leaderboard_id = id, .count = 1, .first_entry = 1};
+  Request<rc_api_fetch_leaderboard_info_request_t, rc_api_fetch_leaderboard_info_response_t>(
+      leader_request, response, rc_api_init_fetch_leaderboard_info_request,
+      rc_api_process_fetch_leaderboard_info_response);
+}
+
+void GetCompetition(unsigned int id, rc_api_fetch_leaderboard_info_response_t* response)
+{
+  rc_api_fetch_leaderboard_info_request_t leader_request = {
+      .leaderboard_id = id, .count = 3, .username = login_data.username};
+  Request<rc_api_fetch_leaderboard_info_request_t, rc_api_fetch_leaderboard_info_response_t>(
+      leader_request, response, rc_api_init_fetch_leaderboard_info_request,
+      rc_api_process_fetch_leaderboard_info_response);
+}
+
+std::string GetRichPresence()
+{
+  int rp_size = 65536;
+  char* rp_buffer = (char*)malloc(rp_size);
+  rc_runtime_get_richpresence(&runtime, rp_buffer, rp_size, MemoryPeeker, nullptr, nullptr);
+  std::string retval(rp_buffer);
+  delete rp_buffer;
+  return retval;
 }
 
 void DeactivateAM()
