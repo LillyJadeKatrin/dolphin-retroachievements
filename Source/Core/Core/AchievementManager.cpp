@@ -19,7 +19,7 @@
 #include <VideoBackends/Software/SWTexture.h>
 #include "Config/AchievementSettings.h"
 
-//#define RA_TEST
+#define RA_TEST
 
 namespace Achievements
 {
@@ -139,6 +139,20 @@ void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_respon
       "An achievement with a measure still locked.";
   rc_response->achievements[5].badge_name = "236638";
   rc_response->achievements[5].definition = "M:0xH1cc1d1>99";
+  rc_response->num_leaderboards = 1;
+  rc_response->leaderboards =
+      (rc_api_leaderboard_definition_t*)calloc(1, sizeof(rc_api_leaderboard_definition_t));
+  rc_response->leaderboards[0].id = 1234;
+  rc_response->leaderboards[0].title = "Leaderboard 1";
+  rc_response->leaderboards[0].description = "Mock leaderboard for testing";
+  rc_response->leaderboards[0].format = 0;
+  rc_response->leaderboards[0].hidden = 0;
+  rc_response->leaderboards[0].lower_is_better = 0;
+  rc_response->leaderboards[0].definition =
+      "STA:0xh3ad81b=h1::CAN:0xh3ad81b=h15::SUB:s0xh3ad81b=8s0x3ad81b=hb::VAL:0xh1cc1d1";
+  rc_response->rich_presence_script =
+      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [⭘:@Rings(0x0db270)]";
+//      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [â­˜:@Rings(0x0db270)]";
   rc_response->response.succeeded = 1;
 }
 
@@ -167,6 +181,28 @@ void TestRequest<rc_api_award_achievement_request_t, rc_api_award_achievement_re
                             const char* server_response))
 {
   rc_response->awarded_achievement_id = rc_request.achievement_id;
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_submit_lboard_entry_request_t, rc_api_submit_lboard_entry_response_t>(
+    rc_api_submit_lboard_entry_request_t rc_request,
+    rc_api_submit_lboard_entry_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request,
+                        const rc_api_submit_lboard_entry_request_t* api_params),
+    int (*process_response)(rc_api_submit_lboard_entry_response_t* response,
+                            const char* server_response))
+{
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_ping_request_t, rc_api_ping_response_t>(
+    rc_api_ping_request_t rc_request, rc_api_ping_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request, const rc_api_ping_request_t* api_params),
+    int (*process_response)(rc_api_ping_response_t* response,
+                            const char* server_response))
+{
   rc_response->response.succeeded = 1;
 }
 #endif // RA_TEST
@@ -631,7 +667,7 @@ void DoFrame()
   if (--frames_until_rp <= 0)
   {
     Ping();
-    frames_until_rp = 60;
+    frames_until_rp = 60 * 60;
   }
 }
 
