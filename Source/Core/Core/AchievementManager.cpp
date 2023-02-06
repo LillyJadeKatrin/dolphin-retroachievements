@@ -599,7 +599,8 @@ void ActivateLB()
 {
   if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
       !login_data.response.succeeded || !session_data.response.succeeded ||
-      !game_data.response.succeeded || !Config::Get(Config::RA_HARDCORE_ENABLED) || !Config::Get(Config::RA_LEADERBOARDS_ENABLED))
+      !game_data.response.succeeded || !Config::Get(Config::RA_HARDCORE_ENABLED) ||
+      !Config::Get(Config::RA_LEADERBOARDS_ENABLED))
     return;
   for (unsigned int ix = 0; ix < game_data.num_leaderboards; ix++)
   {
@@ -607,6 +608,15 @@ void ActivateLB()
       rc_runtime_activate_lboard(&runtime, game_data.leaderboards[ix].id,
                                  game_data.leaderboards[ix].definition, nullptr, 0);
   }
+}
+
+void ActivateRP()
+{
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded || !session_data.response.succeeded ||
+      !game_data.response.succeeded || !Config::Get(Config::RA_RICH_PRESENCE_ENABLED))
+    return;
+  rc_runtime_activate_richpresence(&runtime, game_data.rich_presence_script, nullptr, 0);
 }
 
 void DoFrame()
@@ -732,6 +742,11 @@ void DeactivateLB()
   }
 }
 
+void DeactivateRP()
+{
+  rc_runtime_activate_richpresence(&runtime, "", nullptr, 0);
+}
+
 void ResetSession()
 {
   EndSession();
@@ -742,6 +757,7 @@ void EndSession()
 {
   DeactivateAM();
   DeactivateLB();
+  DeactivateRP();
   for (unsigned int ix = 0; ix < game_data.num_achievements; ix++)
   {
     unlocked_icons[game_data.achievements[ix].id].clear();

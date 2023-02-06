@@ -117,8 +117,8 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::ToggleAchievements);
   connect(m_common_leaderboards_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleLeaderboards);
-//  connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
-//          &AchievementSettingsWidget::ToggleRichPresence);
+  connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleRichPresence);
   connect(m_common_hardcore_enabled_input, &QCheckBox::clicked, this,
           &AchievementSettingsWidget::ToggleHardcore);
   connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
@@ -266,14 +266,14 @@ void AchievementSettingsWidget::ToggleLeaderboards()
   else
     Achievements::DeactivateLB();
 }
-/*
+
 void AchievementSettingsWidget::ToggleRichPresence()
 {
   if (Config::Get(Config::RA_RICH_PRESENCE_ENABLED))
     Achievements::ActivateRP();
   else
     Achievements::DeactivateRP();
-}*/
+}
 
 void AchievementSettingsWidget::ToggleHardcore()
 {

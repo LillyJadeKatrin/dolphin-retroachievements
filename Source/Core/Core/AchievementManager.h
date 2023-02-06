@@ -27,6 +27,7 @@ void StartSession(Memory::MemoryManager* memmgr);
 void FetchData();
 void ActivateAM();
 void ActivateLB();
+void ActivateRP();
 
 void DoFrame();
 void DoState(PointerWrap& p);
@@ -46,6 +47,7 @@ void GetAchievementProgress(unsigned int id, unsigned* value, unsigned* target);
 
 void DeactivateAM();
 void DeactivateLB();
+void DeactivateRP();
 void ResetSession();
 void EndSession();
 void Logout();
