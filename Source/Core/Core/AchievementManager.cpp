@@ -737,7 +737,8 @@ void DoState(PointerWrap& p)
   const unsigned char* buffer = (const unsigned char*)malloc(size);
   rc_runtime_serialize_progress((void*)buffer, &runtime, nullptr);
   p.Do(buffer);
-  rc_runtime_deserialize_progress(&runtime, buffer, nullptr);
+  if (p.IsWriteMode())
+    rc_runtime_deserialize_progress(&runtime, buffer, nullptr);
 }
 
 void Award(unsigned int achievement_id)
