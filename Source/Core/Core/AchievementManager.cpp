@@ -730,6 +730,9 @@ void DoFrame()
       !session_data.response.succeeded || !game_data.response.succeeded)
     return;
   rc_runtime_do_frame(&runtime, &AchievementEventHandler, &MemoryPeeker, nullptr, nullptr);
+//#ifdef ENABLE_RAINTEGRATION
+  Achievements::RAIntegration::RAIDoFrame();
+//#endif
   if (--frames_until_rp <= 0)
   {
     Ping();
@@ -1066,6 +1069,11 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
     RA_SetConsoleID(Dreamcast);
     RA_ActivateGame(game_data.id);
   }
+}
+
+void Achievements::RAIntegration::RAIDoFrame()
+{
+  RA_DoAchievementsFrame();
 }
 
 bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
