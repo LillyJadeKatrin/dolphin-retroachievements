@@ -193,6 +193,7 @@ void AchievementsWindow::UpdateGeneralBlock()
   m_game_progress_soft->setValue(Achievements::GetHardcoreGameProgress()->num_achievement_ids +
                                   Achievements::GetSoftcoreGameProgress()->num_achievement_ids);
   m_rich_presence->setText(QString::fromStdString(Achievements::GetRichPresence()));
+  m_rich_presence->setVisible(Config::Get(Config::RA_RICH_PRESENCE_ENABLED));
 
   m_user_box->setVisible(false);
   m_game_box->setVisible(true);
