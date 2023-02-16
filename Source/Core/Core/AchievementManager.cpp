@@ -11,6 +11,7 @@
 #include <rcheevos/include/rc_api_user.h>
 
 #include "Common/ChunkFile.h"
+#include "Core/Core.h"
 #include "Core/HW/Memmap.h"
 #include "VideoCommon/OnScreenDisplay.h"
 #include <iostream>
@@ -547,7 +548,10 @@ void Login()
       login_request, &login_data, rc_api_init_login_request, rc_api_process_login_response);
   rc_api_fetch_image_request_t icon_request = {.image_name = login_data.username,
                                                .image_type = RC_IMAGE_TYPE_USER};
-  if (Config::Get(Config::RA_BADGE_ICONS_ENABLED) && login_data.response.succeeded)
+  if (!login_data.response.succeeded)
+    return;
+  ResetGame();
+  if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
     IconRequest(icon_request, user_icon);
 }
 
@@ -565,6 +569,7 @@ std::string Login(std::string password)
                                                .image_type = RC_IMAGE_TYPE_USER};
   if (!login_data.response.succeeded)
     return "";
+  ResetGame();
   if (Config::Get(Config::RA_BADGE_ICONS_ENABLED))
     IconRequest(icon_request, user_icon);
   return std::string(login_data.api_token);
@@ -711,6 +716,11 @@ void ActivateRP()
       !game_data.response.succeeded || !Config::Get(Config::RA_RICH_PRESENCE_ENABLED))
     return;
   rc_runtime_activate_richpresence(&runtime, game_data.rich_presence_script, nullptr, 0);
+}
+
+void ResetGame()
+{
+  Core::Stop();
 }
 
 void DoFrame()
@@ -1144,7 +1154,7 @@ void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 
 void Achievements::RAIntegration::RACallbackResetEmulator()
 {
-  Core::Stop();
+  ResetGame();
 }
 
 void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)

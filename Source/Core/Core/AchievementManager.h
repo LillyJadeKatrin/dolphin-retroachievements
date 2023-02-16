@@ -30,6 +30,7 @@ void ActivateAM();
 void ActivateLB();
 void ActivateRP();
 
+void ResetGame();
 void DoFrame();
 void DoState(PointerWrap& p);
 void Award(unsigned int achievement_id);

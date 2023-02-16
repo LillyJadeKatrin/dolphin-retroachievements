@@ -478,7 +478,7 @@ void Settings::SetHardcoreModeEnabled(bool enabled)
         Achievements::DeactivateLB();
     }
     if (enabled)
-      Core::Stop();
+      Achievements::ResetGame();
     emit HardcoreModeToggled(enabled);
   }
   if (enabled)
