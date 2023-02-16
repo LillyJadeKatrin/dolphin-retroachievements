@@ -87,25 +87,6 @@ void AchievementSettingsWidget::CreateLayout()
 void AchievementSettingsWidget::ConnectWidgets()
 {
   connect(m_common_integration_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleRAIntegration);
-  connect(m_common_login_button, &QPushButton::pressed, this, &AchievementSettingsWidget::Login);
-  connect(m_common_logout_button, &QPushButton::pressed, this, &AchievementSettingsWidget::Logout);
-  connect(m_common_achievements_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleAchievements);
-  connect(m_common_leaderboards_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleLeaderboards);
-  connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleRichPresence);
-  connect(m_common_hardcore_enabled_input, &QCheckBox::clicked, this,
-          &AchievementSettingsWidget::ToggleHardcore);
-  connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleBadgeIcons);
-  connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleUnofficial);
-  connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::ToggleEncore);
-  /*
-  connect(m_common_integration_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_login_button, &QPushButton::pressed, this,
           &AchievementSettingsWidget::SaveSettings);
@@ -124,7 +105,28 @@ void AchievementSettingsWidget::ConnectWidgets()
   connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::SaveSettings);
   connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);*/
+          &AchievementSettingsWidget::SaveSettings);
+
+  connect(m_common_integration_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleRAIntegration);
+  connect(m_common_login_button, &QPushButton::pressed, this,
+          &AchievementSettingsWidget::Login);
+  connect(m_common_logout_button, &QPushButton::pressed, this,
+          &AchievementSettingsWidget::Logout);
+  connect(m_common_achievements_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleAchievements);
+  connect(m_common_leaderboards_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleLeaderboards);
+  connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleRichPresence);
+  connect(m_common_hardcore_enabled_input, &QCheckBox::clicked, this,
+          &AchievementSettingsWidget::ToggleHardcore);
+  connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleBadgeIcons);
+  connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleUnofficial);
+  connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleEncore);
 }
 
 void AchievementSettingsWidget::OnControllerInterfaceConfigure()
@@ -229,18 +231,17 @@ void AchievementSettingsWidget::ToggleRAIntegration()
     Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED, false);
     Achievements::Shutdown();
   }
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::Login()
 {
   Config::SetBaseOrCurrent(Config::RA_USERNAME, m_common_username_input->text().toStdString());
+  Config::Save();
   Config::SetBaseOrCurrent(Config::RA_API_TOKEN,
                            Achievements::Login(m_common_password_input->text().toStdString()));
   Config::Save();
   m_common_password_input->setText(QString());
   m_common_login_failed->setVisible(Config::Get(Config::RA_API_TOKEN).empty());
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::Logout()
@@ -248,7 +249,6 @@ void AchievementSettingsWidget::Logout()
   Achievements::Logout();
   Config::SetBaseOrCurrent(Config::RA_API_TOKEN, "");
   Config::Save();
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleAchievements()
@@ -257,7 +257,6 @@ void AchievementSettingsWidget::ToggleAchievements()
     Achievements::ActivateAM();
   else
     Achievements::DeactivateAM();
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleLeaderboards()
@@ -266,7 +265,6 @@ void AchievementSettingsWidget::ToggleLeaderboards()
     Achievements::ActivateLB();
   else
     Achievements::DeactivateLB();
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleRichPresence()
@@ -275,7 +273,6 @@ void AchievementSettingsWidget::ToggleRichPresence()
     Achievements::ActivateRP();
   else
     Achievements::DeactivateRP();
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleHardcore()
@@ -329,7 +326,6 @@ void AchievementSettingsWidget::ToggleHardcore()
       m_common_hardcore_enabled_input->setChecked(true);
     }
   }
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleBadgeIcons()
@@ -340,17 +336,14 @@ void AchievementSettingsWidget::ToggleBadgeIcons()
   // reload all those badge icons, Dolphin will retain them in memory
   // as long as the game session is active, and will take no immediate
   // action if they are disabled.
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleUnofficial()
 {
   Achievements::ActivateAM();
-  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleEncore()
 {
   Achievements::ActivateAM();
-  SaveSettings();
 }
