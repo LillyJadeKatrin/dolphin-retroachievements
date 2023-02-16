@@ -50,4 +50,9 @@ private:
 
   QGroupBox* m_user_box;
   QGroupBox* m_game_box;
+
+  // TODO lillyjade: IHATEITIHATEITIHATEITIHATEIT
+  // Find a way to call updates on the cheevo window from cheevo manager
+  // via events instead of refreshing every period please
+  QTimer* m_update_timer;
 };

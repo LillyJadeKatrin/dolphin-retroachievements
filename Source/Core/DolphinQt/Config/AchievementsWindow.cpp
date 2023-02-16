@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QTabWidget>
+#include <QTimer>
 #include <QVBoxLayout>
 
 #include "Core/AchievementManager.h"
@@ -30,6 +31,15 @@ AchievementsWindow::AchievementsWindow(QWidget* parent) : QDialog(parent)
 
   CreateMainLayout();
   ConnectWidgets();
+
+  // TODO lillyjade: fuck everything
+  // Okay so I can't figure out yet how to properly get AchievementManager to send
+  // AchievementsWindow an event with the available tools so instead I'm forcing
+  // AchievementsWindow to auto refresh on a timer period, currently at 10Hz,
+  // yes I know you can hate me for this I hate me for this too
+  m_update_timer = new QTimer(this);
+  connect(m_update_timer, &QTimer::timeout, this, QOverload<>::of(&AchievementsWindow::UpdateData));
+  m_update_timer->start(1000);
 }
 
 void AchievementsWindow::showEvent(QShowEvent* event)

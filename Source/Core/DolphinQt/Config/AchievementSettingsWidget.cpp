@@ -107,27 +107,6 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::ToggleUnofficial);
   connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleEncore);
-  /*
-  connect(m_common_integration_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_login_button, &QPushButton::pressed, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_logout_button, &QPushButton::pressed, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_achievements_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_leaderboards_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_rich_presence_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
-//  connect(m_common_hardcore_enabled_input, &QCheckBox::toggled, this,
-//          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_badge_icons_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);
-  connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
-          &AchievementSettingsWidget::SaveSettings);*/
 }
 
 void AchievementSettingsWidget::OnControllerInterfaceConfigure()

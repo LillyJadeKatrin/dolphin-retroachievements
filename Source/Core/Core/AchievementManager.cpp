@@ -153,7 +153,7 @@ void TestRequest<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_respon
   rc_response->leaderboards[0].definition =
       "STA:0xh3ad81b=h1::CAN:0xh3ad81b=h15::SUB:s0xh3ad81b=8s0x3ad81b=hb::VAL:0xh1cc1d1";
   rc_response->rich_presence_script =
-      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [⭘:@Rings(0x1cc1d1)]";
+      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [⭘:@Rings(0x1cc1d0)]";
 //      "Format:Rings\nFormatType = VALUE\n\nDisplay:\nPlaying [â­˜:@Rings(0x1cc1d1)]";
   rc_response->response.succeeded = 1;
 }
