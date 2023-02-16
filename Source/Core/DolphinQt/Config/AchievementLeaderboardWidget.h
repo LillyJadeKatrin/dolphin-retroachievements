@@ -24,6 +24,7 @@ class AchievementLeaderboardWidget final : public QWidget
   Q_OBJECT
 public:
   explicit AchievementLeaderboardWidget(QWidget* parent);
+  void UpdateData();
 
 private:
   void OnControllerInterfaceConfigure();

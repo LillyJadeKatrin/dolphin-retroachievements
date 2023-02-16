@@ -19,6 +19,7 @@
 #include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
 
+#include "DolphinQt/Config/AchievementsWindow.h"
 #include "DolphinQt/Config/ControllerInterface/ControllerInterfaceWindow.h"
 #include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
 #include "DolphinQt/QtUtils/SignalBlocking.h"
@@ -26,7 +27,9 @@
 #include <Core/Config/AchievementSettings.h>
 #include <ModalMessageBox.h>
 
-AchievementSettingsWidget::AchievementSettingsWidget(QWidget* parent) : QWidget(parent)
+AchievementSettingsWidget::AchievementSettingsWidget(QWidget* parent,
+                                                     AchievementsWindow* parent_window)
+    : QWidget(parent), parent_window(parent_window)
 {
   CreateLayout();
   LoadSettings();
@@ -218,6 +221,7 @@ void AchievementSettingsWidget::SaveSettings()
                            m_common_unofficial_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_ENCORE_ENABLED, m_common_encore_enabled_input->isChecked());
   Config::Save();
+  parent_window->UpdateData();
 }
 
 void AchievementSettingsWidget::ToggleRAIntegration()

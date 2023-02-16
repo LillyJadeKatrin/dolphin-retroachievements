@@ -119,3 +119,19 @@ QGroupBox* AchievementProgressWidget::CreateAchievementBox(const rc_api_achievem
   a_group_box->setLayout(a_total);
   return a_group_box;
 }
+
+void AchievementProgressWidget::UpdateData()
+{
+  QLayoutItem* item;
+  while ((item = m_common_layout->layout()->takeAt(0)) != NULL)
+  {
+    delete item->widget();
+    delete item;
+  }
+
+  for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_achievements; ix++)
+  {
+    m_common_layout->addWidget(
+        CreateAchievementBox(Achievements::GetGameData()->achievements + ix));
+  }
+}

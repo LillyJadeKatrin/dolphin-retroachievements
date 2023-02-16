@@ -24,6 +24,7 @@ class AchievementProgressWidget final : public QWidget
   Q_OBJECT
 public:
   explicit AchievementProgressWidget(QWidget* parent);
+  void UpdateData();
 
 private:
   void OnControllerInterfaceConfigure();

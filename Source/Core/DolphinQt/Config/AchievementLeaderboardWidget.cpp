@@ -136,3 +136,19 @@ AchievementLeaderboardWidget::CreateLeaderboardBox(const rc_api_leaderboard_defi
   a_group_box->setLayout(a_total);
   return a_group_box;
 }
+
+void AchievementLeaderboardWidget::UpdateData()
+{
+  QLayoutItem* item;
+  while ((item = m_common_layout->layout()->takeAt(0)) != NULL)
+  {
+    delete item->widget();
+    delete item;
+  }
+
+  for (unsigned int ix = 0; ix < Achievements::GetGameData()->num_leaderboards; ix++)
+  {
+    m_common_layout->addWidget(
+        CreateLeaderboardBox(Achievements::GetGameData()->leaderboards + ix));
+  }
+}

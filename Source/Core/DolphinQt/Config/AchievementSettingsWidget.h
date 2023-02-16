@@ -16,12 +16,13 @@ class QLineEdit;
 class QGroupBox;
 class QVBoxLayout;
 class QPushButton;
+class AchievementsWindow;
 
 class AchievementSettingsWidget final : public QWidget
 {
   Q_OBJECT
 public:
-  explicit AchievementSettingsWidget(QWidget* parent);
+  explicit AchievementSettingsWidget(QWidget* parent, AchievementsWindow* parent_window);
 
 private:
   void OnControllerInterfaceConfigure();
@@ -42,6 +43,8 @@ private:
   void ToggleBadgeIcons();
   void ToggleUnofficial();
   void ToggleEncore();
+
+  AchievementsWindow* parent_window;
 
   QGroupBox* m_common_box;
   QVBoxLayout* m_common_layout;
