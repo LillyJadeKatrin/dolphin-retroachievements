@@ -3,7 +3,8 @@
 //
 // 13 JAN 2023 - Lilly Jade Katrin - lilly.kitty.1988@gmail.com
 // Thanks to Stenzek and the PCSX2 project for inspiration, assistance and examples,
-// and to TheFetishMachine and Infernum for encouragement and cheerleading
+// to TheFetishMachine and Infernum for encouragement and cheerleading,
+// and to Gollawiz, Sea, Fridge, jenette and Ryudo for testing
 
 #include "AchievementManager.h"
 #include "rcheevos/include/rc_runtime.h"
