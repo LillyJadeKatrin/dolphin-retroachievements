@@ -21,7 +21,7 @@
 #include <VideoBackends/Software/SWTexture.h>
 #include "Config/AchievementSettings.h"
 
-#define RA_TEST
+//#define RA_TEST
 
 namespace Achievements
 {

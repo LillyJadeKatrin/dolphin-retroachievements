@@ -19,7 +19,6 @@
 #include "Common/FileUtil.h"
 #include "Common/StringUtil.h"
 
-#include "Common/CDUtils.h"
 #include "Core/AchievementManager.h"
 #include "Core/Boot/Boot.h"
 #include "Core/CommonTitles.h"
