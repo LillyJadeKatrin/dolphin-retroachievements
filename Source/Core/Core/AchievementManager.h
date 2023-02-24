@@ -21,10 +21,12 @@ namespace Achievements
 const std::string GRAY = "transparent";
 const std::string GOLD = "#FFD700";
 const std::string BLUE = "#0B71C1";
+const int HASH_LENGTH = 33;
 
 void Init();
 void Login();
 std::string Login(std::string password);
+void GenerateHash(std::string iso_path);
 void StartSession(Memory::MemoryManager* memmgr);
 void FetchData();
 void ActivateAM();

@@ -10,6 +10,7 @@
 #include "rcheevos/include/rc_runtime.h"
 #include <rcheevos/include/rc_api_runtime.h>
 #include <rcheevos/include/rc_api_user.h>
+#include <rcheevos/include/rc_hash.h>
 
 #include "Common/ChunkFile.h"
 #include "Core/Core.h"
@@ -22,12 +23,14 @@
 #include "Config/AchievementSettings.h"
 
 //#define RA_TEST
+#define HASHPATH "..\\..\\..\\Binary\\x64\\hashes.txt"
 
 namespace Achievements
 {
 static rc_runtime_t runtime{};
 static bool is_runtime_initialized = false;
 static rc_api_login_response_t login_data{.response{.succeeded = 0}};
+static rc_api_resolve_hash_response_t hash_data{.response{.succeeded = 0}};
 static rc_api_start_session_response_t session_data{.response{.succeeded = 0}};
 static rc_api_fetch_game_data_response_t game_data{.response{.succeeded = 0}};
 static rc_api_fetch_user_unlocks_response_t hardcore_unlock_data{.response{.succeeded = 0}};
@@ -44,10 +47,7 @@ std::vector<u8> user_icon;
 
 int frames_until_rp = 0;
 
-// TODO lillyjade: Temporary hardcoded test data - CLEAN BEFORE PUSHING
-static unsigned int game_id = 3417;
-static const char* game_hash = "ada3c364c783021884b066a4ad7ee49c";
-//static unsigned int partial_list_limit = 3;
+static char game_hash[HASH_LENGTH];
 
 namespace  // Hide from use outside this file
 {
@@ -82,6 +82,16 @@ void TestRequest<rc_api_start_session_request_t, rc_api_start_session_response_t
                         const rc_api_start_session_request_t* api_params),
     int (*process_response)(rc_api_start_session_response_t* response, const char* server_response))
 {
+  rc_response->response.succeeded = 1;
+}
+
+template <>
+void TestRequest<rc_api_resolve_hash_request_t, rc_api_resolve_hash_response_t>(
+    rc_api_resolve_hash_request_t rc_request, rc_api_resolve_hash_response_t* rc_response,
+    int (*init_request)(rc_api_request_t* request, const rc_api_resolve_hash_request_t* api_params),
+    int (*process_response)(rc_api_resolve_hash_response_t* response, const char* server_response))
+{
+  rc_response->game_id = 3417;
   rc_response->response.succeeded = 1;
 }
 
@@ -576,33 +586,62 @@ std::string Login(std::string password)
   return std::string(login_data.api_token);
 }
 
+void GenerateHash(std::string iso_path)
+{
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded)
+    return;
+  // TODO lillyjade: NINTENDO here is a temp fix to just hash the first part of the
+  // Wii/GC disc; this needs to be replaced with Wii/GC functionality in rhash/hash.c eventually
+  rc_hash_generate_from_file(game_hash, RC_CONSOLE_NINTENDO, iso_path.c_str());
+#ifdef HASHPATH
+#include <fstream>
+  std::ofstream hashfile;
+  hashfile.open(HASHPATH, std::ios_base::app);
+  hashfile << iso_path << std::endl << game_hash << std::endl << std::endl;
+  hashfile.close();
+#endif
+}
+
 void StartSession(Memory::MemoryManager* memmgr)
 {
-  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized || !login_data.response.succeeded)
-    return;
-  rc_api_start_session_request_t start_session_request = {
-      .username = login_data.username, .api_token = login_data.api_token, .game_id = game_id};
-  Request<rc_api_start_session_request_t, rc_api_start_session_response_t>(
-      start_session_request, &session_data,
-      rc_api_init_start_session_request, rc_api_process_start_session_response);
   memory_manager = memmgr;
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
+      !login_data.response.succeeded)
+    return;
+  // TODO lillyjade: Ideally I'd check to see if the hash is set before getting into this,
+  // look for a good way to do that. That said, I'm pretty sure I want to resolve the hash
+  // at session start even if I already have a game ID.
+  rc_api_resolve_hash_request_t resolve_hash_request = {
+      .username = login_data.username, .api_token = login_data.api_token, .game_hash = game_hash};
+  Request<rc_api_resolve_hash_request_t, rc_api_resolve_hash_response_t>(
+      resolve_hash_request, &hash_data, rc_api_init_resolve_hash_request,
+      rc_api_process_resolve_hash_response);
+  if (!hash_data.response.succeeded || hash_data.game_id == 0)
+    return;
+  rc_api_start_session_request_t start_session_request = {.username = login_data.username,
+                                                          .api_token = login_data.api_token,
+                                                          .game_id = hash_data.game_id};
+  Request<rc_api_start_session_request_t, rc_api_start_session_response_t>(
+      start_session_request, &session_data, rc_api_init_start_session_request,
+      rc_api_process_start_session_response);
 }
 
 void FetchData()
 {
   if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
-      !login_data.response.succeeded || !session_data.response.succeeded)
+      !login_data.response.succeeded || !hash_data.response.succeeded || !session_data.response.succeeded)
     return;
   if (!game_data.response.succeeded)
   {
     rc_api_fetch_game_data_request_t fetch_data_request = {
-        .username = login_data.username, .api_token = login_data.api_token, .game_id = game_id};
+        .username = login_data.username, .api_token = login_data.api_token, .game_id = hash_data.game_id};
     Request<rc_api_fetch_game_data_request_t, rc_api_fetch_game_data_response_t>(
         fetch_data_request, &game_data, rc_api_init_fetch_game_data_request,
         rc_api_process_fetch_game_data_response);
     rc_api_fetch_user_unlocks_request_t fetch_unlocks_request = {.username = login_data.username,
                                                                  .api_token = login_data.api_token,
-                                                                 .game_id = game_id,
+                                                                 .game_id = hash_data.game_id,
                                                                  .hardcore = true};
     Request<rc_api_fetch_user_unlocks_request_t, rc_api_fetch_user_unlocks_response_t>(
         fetch_unlocks_request, &hardcore_unlock_data, rc_api_init_fetch_user_unlocks_request,
@@ -915,6 +954,9 @@ void ResetSession()
 {
   EndSession();
   StartSession(memory_manager);
+  ActivateAM();
+  ActivateLB();
+  ActivateRP();
 }
 
 void EndSession()

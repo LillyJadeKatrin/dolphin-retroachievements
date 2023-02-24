@@ -163,7 +163,12 @@ bool BootCore(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
       });
     }
   }
-
+  std::string path = "";
+  if (std::holds_alternative<BootParameters::Disc>(boot->parameters))
+  {
+    path = std::get<BootParameters::Disc>(boot->parameters).path;
+  }
+  Achievements::GenerateHash(path);
   Achievements::StartSession(&Core::System::GetInstance().GetMemory());
   Achievements::FetchData();
   Achievements::ActivateAM();
