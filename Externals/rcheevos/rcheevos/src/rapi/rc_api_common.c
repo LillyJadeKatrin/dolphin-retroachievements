@@ -10,7 +10,9 @@
 #include <string.h>
 
 #define RETROACHIEVEMENTS_HOST "https://retroachievements.org"
-#define RETROACHIEVEMENTS_IMAGE_HOST "http://i.retroachievements.org"
+#define RETROACHIEVEMENTS_IMAGE_HOST "https://media.retroachievements.org"
+#define RETROACHIEVEMENTS_HOST_NONSSL "http://retroachievements.org"
+#define RETROACHIEVEMENTS_IMAGE_HOST_NONSSL "http://media.retroachievements.org"
 static char* g_host = NULL;
 static char* g_imagehost = NULL;
 
@@ -297,6 +299,8 @@ int rc_json_get_required_object(rc_json_field_t* fields, size_t field_count, rc_
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (!json)
@@ -357,6 +361,8 @@ int rc_json_get_required_array(unsigned* num_entries, rc_json_field_t* iterator,
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (!field->value_start || *field->value_start != '[') {
@@ -451,6 +457,8 @@ int rc_json_get_string(const char** out, rc_api_buffer_t* buffer, const rc_json_
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (!src) {
@@ -562,6 +570,8 @@ int rc_json_get_num(int* out, const rc_json_field_t* field, const char* field_na
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (!src) {
@@ -613,6 +623,8 @@ int rc_json_get_unum(unsigned* out, const rc_json_field_t* field, const char* fi
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (!src) {
@@ -654,6 +666,8 @@ int rc_json_get_datetime(time_t* out, const rc_json_field_t* field, const char* 
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (*field->value_start == '\"') {
@@ -696,6 +710,8 @@ int rc_json_get_bool(int* out, const rc_json_field_t* field, const char* field_n
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#else
+  (void)field_name;
 #endif
 
   if (src) {
@@ -1054,6 +1070,16 @@ static void rc_api_update_host(char** host, const char* hostname) {
 
 void rc_api_set_host(const char* hostname) {
   rc_api_update_host(&g_host, hostname);
+
+  if (!hostname) {
+    /* also clear out the image hostname */
+    rc_api_set_image_host(NULL);
+  }
+  else if (strcmp(hostname, RETROACHIEVEMENTS_HOST_NONSSL) == 0) {
+    /* if just pointing at the non-HTTPS host, explicitly use the default image host
+     * so it doesn't try to use the web host directly */
+    rc_api_set_image_host(RETROACHIEVEMENTS_IMAGE_HOST_NONSSL);
+  }
 }
 
 void rc_api_set_image_host(const char* hostname) {

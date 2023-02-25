@@ -69,6 +69,9 @@ static unsigned rc_scale_value(unsigned value, char oper, const rc_operand_t* op
     case RC_OPERATOR_AND:
       return rc_max_value(operand);
 
+    case RC_OPERATOR_XOR:
+      return value | rc_max_value(operand);
+
     default:
       return value;
   }
@@ -293,8 +296,11 @@ int rc_validate_condset(const rc_condset_t* condset, char result[], const size_t
           break;
       }
 
-      if (!rc_validate_range(min_val, max_val, cond->oper, max, result + prefix_length, result_size - prefix_length))
+      if (rc_operand_is_float(&cond->operand2) && rc_operand_is_float(&cond->operand1)) {
+        /* both sides are floats, don't validate range*/
+      } else if (!rc_validate_range(min_val, max_val, cond->oper, max, result + prefix_length, result_size - prefix_length)) {
         return 0;
+      }
     }
 
     add_source_max = 0;
@@ -664,9 +670,16 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
           }
           else if (compare_condition->type == RC_CONDITION_MEASURED_IF || condition->type == RC_CONDITION_MEASURED_IF)
           {
-            /* MeasuredIf is a meta tag and allowed to be redundant */
-            if (compare_condition->type != condition->type)
+            /* ignore MeasuredIf redundancies between groups */
+            if (conditions != compare_conditions)
               continue;
+
+            if (compare_condition->type == RC_CONDITION_MEASURED_IF && condition->type != RC_CONDITION_MEASURED_IF)
+            {
+              /* only ever report the redundancy on the non-MeasuredIf condition. The MeasuredIf provides
+               * additional functionality. */
+              continue;
+            }
           }
           else if (compare_condition->type == RC_CONDITION_TRIGGER || condition->type == RC_CONDITION_TRIGGER)
           {

@@ -1247,6 +1247,61 @@ static void test_resetnextif_chain() {
   assert_hit_count(condset, 3, 1);
 }
 
+static void test_resetnextif_chain_andnext() {
+  unsigned char ram[] = {0x00, 0x00, 0x01};
+  memory_t memory;
+  rc_condset_t* condset;
+  rc_condset_memrefs_t memrefs;
+  char buffer[2048];
+
+  memory.ram = ram;
+  memory.size = sizeof(ram);
+
+  /* AndNext     byte(0x0000)=0
+   * ResetNextIf byte(0x0001)=1
+   * AndNext     byte(0x0000)=1
+   * ResetNextIf byte(0x0001)=1
+   *             byte(0x0002)=1 (5)
+   */
+  assert_parse_condset(&condset, &memrefs, buffer, "N:0xH0000=0_Z:0xH0001=1_N:0xH0000=1_Z:0xH0001=1_0xH0002=1.5.");
+
+  /* no ResetNextIf true. hit count incremented */
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 1); /* hit captured on byte(0) == 0 */
+  assert_hit_count(condset, 1, 0);
+  assert_hit_count(condset, 2, 0);
+  assert_hit_count(condset, 3, 0);
+  assert_hit_count(condset, 4, 1);
+
+  /* second ResetNextIf clause true */
+  ram[0] = ram[1] = 1;
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 1); /* ResetNextIf on condition 3 doesn't affect condition 1 */
+  assert_hit_count(condset, 1, 0);
+  assert_hit_count(condset, 2, 1);
+  assert_hit_count(condset, 3, 1);
+  assert_hit_count(condset, 4, 0);
+
+  /* no ResetNextIf true, hit count incremented */
+  ram[1] = 0;
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 1);
+  assert_hit_count(condset, 1, 0);
+  assert_hit_count(condset, 2, 2);
+  assert_hit_count(condset, 3, 1);
+  assert_hit_count(condset, 4, 1);
+
+  /* first ResetNextIf clause true */
+  ram[0] = 0;
+  ram[1] = 1;
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 2);
+  assert_hit_count(condset, 1, 1);
+  assert_hit_count(condset, 2, 0); /* first ResetNextIf affects second ResetNextIf */
+  assert_hit_count(condset, 3, 0);
+  assert_hit_count(condset, 4, 2); /* but not final clause */
+}
+
 static void test_resetnextif_chain_with_hits() {
   unsigned char ram[] = {0x00, 0x12, 0x34, 0xAB, 0x56};
   memory_t memory;
@@ -1897,6 +1952,43 @@ static void test_addsource_divide_address() {
   assert_hit_count(condset, 1, 2);
 }
 
+static void test_addsource_divide_self() {
+  unsigned char ram[] = {0x00, 0x06, 0x10, 0xAB, 0x56};
+  memory_t memory;
+  rc_condset_t* condset;
+  rc_condset_memrefs_t memrefs;
+  char buffer[2048];
+
+  memory.ram = ram;
+  memory.size = sizeof(ram);
+
+  /* byte(1) / byte(1) + byte(2) == 22 */
+  assert_parse_condset(&condset, &memrefs, buffer, "A:0xH0001/0xH00001_0xH0002=22");
+
+  /* sum is not correct (1 + 16 != 22) */
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 0);
+
+  /* sum is correct (1 + 21 == 22) */
+  ram[2] = 21;
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 1);
+
+  /* sum is not correct (0 + 21 == 22) */
+  ram[1] = 0;
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 1);
+
+  /* sum is correct (0 + 22 == 22) */
+  ram[2] = 22;
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 2);
+}
+
 static void test_addsource_mask() {
   unsigned char ram[] = {0x00, 0x06, 0x34, 0xAB, 0x56};
   memory_t memory;
@@ -1932,6 +2024,91 @@ static void test_addsource_mask() {
   assert_evaluate_condset(condset, memrefs, &memory, 1);
   assert_hit_count(condset, 0, 0);
   assert_hit_count(condset, 1, 2);
+}
+
+static void test_addsource_xor() {
+  unsigned char ram[] = {0x00, 0x06, 0x34, 0xAB, 0x56};
+  memory_t memory;
+  rc_condset_t* condset;
+  rc_condset_memrefs_t memrefs;
+  char buffer[2048];
+
+  memory.ram = ram;
+  memory.size = sizeof(ram);
+
+  /* byte(1) ^ 0x05 + byte(2) == 22 */
+  assert_parse_condset(&condset, &memrefs, buffer, "A:0xH0001^h5_0xH0002=22");
+
+  /* sum (6 ^ 5 + 52 == 22) is not correct */
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 0);
+
+  /* sum ((6 ^ 5 = 3) + 19 = 22) is correct */
+  ram[2] = 19;
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 1);
+
+  /* sum ((17 ^ 5 = 20) + 19 = 22) is not correct */
+  ram[1] = 0x11;
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 1);
+
+  /* sum ((17 ^ 5 = 20) + 2 = 22) is correct */
+  ram[2] = 2;
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+  assert_hit_count(condset, 0, 0);
+  assert_hit_count(condset, 1, 2);
+}
+
+static void test_addsource_float_first() {
+  unsigned char ram[] = {0x00, 0x06, 0x34, 0xAB, 0x00, 0x00, 0xC0, 0x3F}; /* fF0004 = 1.5 */
+  memory_t memory;
+  rc_condset_t* condset;
+  rc_condset_memrefs_t memrefs;
+  char buffer[2048];
+
+  memory.ram = ram;
+  memory.size = sizeof(ram);
+
+  /* float(4) + float(4) + float(4) + 1 == 5.5 */
+  assert_parse_condset(&condset, &memrefs, buffer, "A:fF0004_A:fF0004_A:fF0004_1=f5.5");
+
+  /* sum is correct */
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+}
+
+static void test_addsource_float_second() {
+  unsigned char ram[] = {0x00, 0x06, 0x34, 0xAB, 0x00, 0x00, 0xC0, 0x3F}; /* fF0004 = 1.5 */
+  memory_t memory;
+  rc_condset_t* condset;
+  rc_condset_memrefs_t memrefs;
+  char buffer[2048];
+
+  memory.ram = ram;
+  memory.size = sizeof(ram);
+
+  /* 1 + float(4) + float(4) + float(4) == 5.5 */
+  assert_parse_condset(&condset, &memrefs, buffer, "A:1_A:fF0004_A:fF0004_fF0004=f5.5");
+
+  /* the first value defines the type of the accumulator. since it's an integer, each float will be
+   * truncated when it is added to the accumulator, so 1 + (1.5) + (1.5) is 3. when the accumulator is
+   * added to the final value, the accumulator is converted to match the final value, so 3.0 + 1.5 = 4.5. */
+
+  /* sum is not correct */
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+
+  /* 1 + float(4) + float(4) + float(4) == 4.5 (note: two intermediary floats are converted to int, but not last) */
+  assert_parse_condset(&condset, &memrefs, buffer, "A:1_A:fF0004_A:fF0004_fF0004=f4.5");
+  /* sum is correct */
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+
+  /* 1 + float(4) + float(4) + float(4) + 0 == 4.0 (note: all intermediate floats are converted to int) */
+  assert_parse_condset(&condset, &memrefs, buffer, "A:1_A:fF0004_A:fF0004_A:fF0004_0=f4.0");
+  /* sum is correct */
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
 }
 
 static void test_subsource_mask() {
@@ -2212,6 +2389,27 @@ static void test_subsource_overflow_comparison_lesser_or_equal() {
 
   /* 255 <= 0 = false */
   ram[0] = 255; ram[1] = 0;
+  assert_evaluate_condset(condset, memrefs, &memory, 0);
+}
+
+static void test_subsource_float() {
+  unsigned char ram[] = {0x06, 0x00, 0x00, 0x00, 0x92, 0x44, 0x9A, 0x42}; /* fF0004 = 77.133926 */
+  memory_t memory;
+  rc_condset_t* condset;
+  rc_condset_memrefs_t memrefs;
+  char buffer[2048];
+
+  memory.ram = ram;
+  memory.size = sizeof(ram);
+
+  /* float(0x0004) - word(0) * 1.666667 > 65.8 */
+  assert_parse_condset(&condset, &memrefs, buffer, "B:0x 0000*f1.666667_fF0004>f65.8");
+
+  /* 77.133926 - (6 * 1.666667) = 77.133926 - 10 = 67.133926 */
+  assert_evaluate_condset(condset, memrefs, &memory, 1);
+
+  /* 77.133926 - (7 * 1.666667) = 77.133926 - 11.6667 = 65.4672 */
+  ram[0] = 7;
   assert_evaluate_condset(condset, memrefs, &memory, 0);
 }
 
@@ -3692,6 +3890,7 @@ void test_condset(void) {
   TEST(test_resetnextif_andnext_hitchain);
   TEST(test_resetnextif_addaddress);
   TEST(test_resetnextif_chain);
+  TEST(test_resetnextif_chain_andnext);
   TEST(test_resetnextif_chain_with_hits);
   TEST(test_resetnextif_pause_lock);
 
@@ -3708,15 +3907,20 @@ void test_condset(void) {
   TEST(test_addsource_multiply_address);
   TEST(test_addsource_divide);
   TEST(test_addsource_divide_address);
+  TEST(test_addsource_divide_self);
   TEST(test_subsource_divide);
   TEST(test_addsource_compare_percentage);
   TEST(test_addsource_mask);
+  TEST(test_addsource_xor);
+  TEST(test_addsource_float_first);
+  TEST(test_addsource_float_second);
   TEST(test_subsource_mask);
   TEST(test_subsource_overflow_comparison_equal);
   TEST(test_subsource_overflow_comparison_greater);
   TEST(test_subsource_overflow_comparison_greater_or_equal);
   TEST(test_subsource_overflow_comparison_lesser);
   TEST(test_subsource_overflow_comparison_lesser_or_equal);
+  TEST(test_subsource_float);
 
   /* addhits/subhits */
   TEST(test_addhits);

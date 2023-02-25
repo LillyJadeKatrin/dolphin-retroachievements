@@ -39,6 +39,9 @@ const char* rc_console_name(int console_id)
     case RC_CONSOLE_ATARI_JAGUAR:
       return "Atari Jaguar";
 
+    case RC_CONSOLE_ATARI_JAGUAR_CD:
+      return "Atari Jaguar CD";
+
     case RC_CONSOLE_ATARI_LYNX:
       return "Atari Lynx";
 
@@ -132,6 +135,9 @@ const char* rc_console_name(int console_id)
     case RC_CONSOLE_NINTENDO_DS:
       return "Nintendo DS";
 
+    case RC_CONSOLE_NINTENDO_DSI:
+      return "Nintendo DSi";
+
     case RC_CONSOLE_NINTENDO_3DS:
       return "Nintendo 3DS";
 
@@ -155,6 +161,9 @@ const char* rc_console_name(int console_id)
 
     case RC_CONSOLE_PC_ENGINE:
       return "PC Engine";
+
+    case RC_CONSOLE_PC_ENGINE_CD:
+      return "PC Engine CD";
 
     case RC_CONSOLE_PLAYSTATION:
       return "PlayStation";
@@ -518,6 +527,15 @@ static const rc_memory_region_t _rc_memory_regions_megadrive[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_megadrive = { _rc_memory_regions_megadrive, 2 };
 
+/* ===== MegaDrive 32X (Genesis 32X) ===== */
+/* https://en.wikibooks.org/wiki/Genesis_Programming/68K_Memory_map/ */
+static const rc_memory_region_t _rc_memory_regions_megadrive_32x[] = {
+    { 0x000000U, 0x00FFFFU, 0xFF0000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    { 0x010000U, 0x04FFFFU, 0x200000U, RC_MEMORY_TYPE_SYSTEM_RAM, "32X RAM"},
+    { 0x050000U, 0x05FFFFU, 0x000000U, RC_MEMORY_TYPE_SAVE_RAM, "Cartridge RAM" }
+};
+static const rc_memory_regions_t rc_memory_regions_megadrive_32x = { _rc_memory_regions_megadrive_32x, 3 };
+
 /* ===== MSX ===== */
 /* https://www.msx.org/wiki/The_Memory */
 /* MSX only has 64KB of addressable RAM, of which 32KB is reserved for the system/BIOS.
@@ -539,6 +557,35 @@ static const rc_memory_region_t _rc_memory_regions_neo_geo_pocket[] = {
     { 0x000000U, 0x003FFFU, 0x004000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
 };
 static const rc_memory_regions_t rc_memory_regions_neo_geo_pocket = { _rc_memory_regions_neo_geo_pocket, 1 };
+
+/* ===== Neo Geo CD ===== */
+/* https://wiki.neogeodev.org/index.php?title=68k_memory_map */
+/* NeoCD exposes $000000-$1FFFFF as System RAM, but it seems like only the WORKRAM section is used.
+ * This is consistent with http://www.hardmvs.fr/manuals/NeoGeoProgrammersGuide.pdf (page25), which says:
+ *
+ *   Furthermore, the NEO-GEO provides addresses 100000H-10FFFFH as a work area, out of  which the
+ *   addresses 10F300H-10FFFFH are reserved exclusively for use by the system program. Therefore,
+ *   every game is to use addresses 100000H-10F2FFH.
+ *
+ * Also note that PRG files (game ROM) can be loaded anywhere else in the $000000-$1FFFFF range.
+ * AoF3 illustrates this pretty clearly: https://wiki.neogeodev.org/index.php?title=IPL_file
+ *
+ *   PROG_CD.PRG,0,0
+ *   PROG_CDX.PRG,0,058000
+ *   CNV_NM.PRG,0,0C0000
+ *   FIX_DATA.PRG,0,0FD000
+ *   OBJACTLK.PRG,0,130000
+ *   SSEL_CNV.PRG,0,15A000
+ *   SSEL_BAK.PRG,0,16F000
+ *   HITMSG.PRG,0,170000
+ *   SSEL_SPR.PRG,0,19D000
+ */
+static const rc_memory_region_t _rc_memory_regions_neo_geo_cd[] = {
+    { 0x000000U, 0x00F2FFU, 0x00100000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    /* NOTE: some BIOS settings are exposed through the reserved RAM: https://wiki.neogeodev.org/index.php?title=68k_ASM_defines */
+    { 0x00F300U, 0x00FFFFU, 0x0010F300U, RC_MEMORY_TYPE_SYSTEM_RAM, "Reserved RAM" },
+};
+static const rc_memory_regions_t rc_memory_regions_neo_geo_cd = { _rc_memory_regions_neo_geo_cd, 2 };
 
 /* ===== Nintendo Entertainment System ===== */
 /* https://wiki.nesdev.com/w/index.php/CPU_memory_map */
@@ -587,6 +634,13 @@ static const rc_memory_region_t _rc_memory_regions_nintendo_ds[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_nintendo_ds = { _rc_memory_regions_nintendo_ds, 1 };
 
+/* ===== Nintendo DSi ===== */
+/* https://problemkaputt.de/gbatek.htm#dsiiomap */
+static const rc_memory_region_t _rc_memory_regions_nintendo_dsi[] = {
+    { 0x000000U, 0xFFFFFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+};
+static const rc_memory_regions_t rc_memory_regions_nintendo_dsi = { _rc_memory_regions_nintendo_dsi, 1 };
+
 /* ===== Oric ===== */
 static const rc_memory_region_t _rc_memory_regions_oric[] = {
     /* actual size depends on machine type - up to 64KB */
@@ -605,11 +659,18 @@ static const rc_memory_regions_t rc_memory_regions_pc8800 = { _rc_memory_regions
 /* http://www.archaicpixels.com/Memory_Map */
 static const rc_memory_region_t _rc_memory_regions_pc_engine[] = {
     { 0x000000U, 0x001FFFU, 0x1F0000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+};
+static const rc_memory_regions_t rc_memory_regions_pc_engine = { _rc_memory_regions_pc_engine, 1 };
+
+/* ===== PC Engine CD===== */
+/* http://www.archaicpixels.com/Memory_Map */
+static const rc_memory_region_t _rc_memory_regions_pc_engine_cd[] = {
+    { 0x000000U, 0x001FFFU, 0x1F0000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
     { 0x002000U, 0x011FFFU, 0x100000U, RC_MEMORY_TYPE_SYSTEM_RAM, "CD RAM" },
     { 0x012000U, 0x041FFFU, 0x0D0000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Super System Card RAM" },
     { 0x042000U, 0x0427FFU, 0x1EE000U, RC_MEMORY_TYPE_SAVE_RAM,   "CD Battery-backed RAM" }
 };
-static const rc_memory_regions_t rc_memory_regions_pc_engine = { _rc_memory_regions_pc_engine, 4 };
+static const rc_memory_regions_t rc_memory_regions_pc_engine_cd = { _rc_memory_regions_pc_engine_cd, 4 };
 
 /* ===== PC-FX ===== */
 /* http://daifukkat.su/pcfx/data/memmap.html */
@@ -810,6 +871,7 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
       return &rc_memory_regions_atari7800;
 
     case RC_CONSOLE_ATARI_JAGUAR:
+    case RC_CONSOLE_ATARI_JAGUAR_CD:
       return &rc_memory_regions_atari_jaguar;
 
     case RC_CONSOLE_ATARI_LYNX:
@@ -856,16 +918,19 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
       return &rc_memory_regions_master_system;
 
     case RC_CONSOLE_MEGA_DRIVE:
-    case RC_CONSOLE_SEGA_32X:
-      /* NOTE: 32x adds an extra 512KB of memory (256KB RAM + 256KB VRAM) to the 
-       *       Genesis, but we currently don't support it. */
       return &rc_memory_regions_megadrive;
+
+    case RC_CONSOLE_SEGA_32X:
+      return &rc_memory_regions_megadrive_32x;
 
     case RC_CONSOLE_MSX:
       return &rc_memory_regions_msx;
 
     case RC_CONSOLE_NEOGEO_POCKET:
       return &rc_memory_regions_neo_geo_pocket;
+
+    case RC_CONSOLE_NEO_GEO_CD:
+      return &rc_memory_regions_neo_geo_cd;
 
     case RC_CONSOLE_NINTENDO:
       return &rc_memory_regions_nes;
@@ -876,6 +941,9 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
     case RC_CONSOLE_NINTENDO_DS:
       return &rc_memory_regions_nintendo_ds;
 
+    case RC_CONSOLE_NINTENDO_DSI:
+      return &rc_memory_regions_nintendo_dsi;
+
     case RC_CONSOLE_ORIC:
       return &rc_memory_regions_oric;
 
@@ -884,6 +952,9 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
 
     case RC_CONSOLE_PC_ENGINE:
       return &rc_memory_regions_pc_engine;
+
+    case RC_CONSOLE_PC_ENGINE_CD:
+      return &rc_memory_regions_pc_engine_cd;
 
     case RC_CONSOLE_PCFX:
       return &rc_memory_regions_pcfx;

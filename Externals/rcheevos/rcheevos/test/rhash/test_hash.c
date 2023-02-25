@@ -445,6 +445,235 @@ static void test_hash_atari_7800_with_header()
 
 /* ========================================================================= */
 
+static void test_hash_atari_jaguar_cd()
+{
+  const char* cue_file =
+      "REM SESSION 01\n"
+      "FILE \"track01.bin\" BINARY\n"
+      "  TRACK 01 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "REM SESSION 02\n"
+      "FILE \"track02.bin\" BINARY\n"
+      "  TRACK 02 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "FILE \"track03.bin\" BINARY\n"
+      "  TRACK 03 AUDIO\n"
+      "    INDEX 01 00:00:00\n";
+  size_t image_size;
+  uint8_t* image = generate_jaguarcd_bin(2, 60024, 0, &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "c324d95dc5831c2d5c470eefb18c346b";
+
+  mock_file(0, "game.cue", (uint8_t*)cue_file, strlen(cue_file));
+  mock_file(1, "track02.bin", image, image_size);
+
+  rc_hash_init_default_cdreader(); /* want to test actual FIRST_OF_SECOND_SESSION calculation */
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_ATARI_JAGUAR_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  init_mock_cdreader();
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+static void test_hash_atari_jaguar_cd_byteswapped()
+{
+  const char* cue_file =
+      "REM SESSION 01\n"
+      "FILE \"track01.bin\" BINARY\n"
+      "  TRACK 01 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "REM SESSION 02\n"
+      "FILE \"track02.bin\" BINARY\n"
+      "  TRACK 02 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "FILE \"track03.bin\" BINARY\n"
+      "  TRACK 03 AUDIO\n"
+      "    INDEX 01 00:00:00\n";
+  size_t image_size;
+  uint8_t* image = generate_jaguarcd_bin(2, 60024, 1, &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "c324d95dc5831c2d5c470eefb18c346b";
+
+  mock_file(0, "game.cue", (uint8_t*)cue_file, strlen(cue_file));
+  mock_file(1, "track02.bin", image, image_size);
+
+  rc_hash_init_default_cdreader(); /* want to test actual FIRST_OF_SECOND_SESSION calculation */
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_ATARI_JAGUAR_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  init_mock_cdreader();
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+static void test_hash_atari_jaguar_cd_track3()
+{
+  const char* cue_file =
+      "REM SESSION 01\n"
+      "FILE \"track01.bin\" BINARY\n"
+      "  TRACK 01 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "FILE \"track02.bin\" BINARY\n"
+      "  TRACK 02 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "REM SESSION 02\n"
+      "FILE \"track03.bin\" BINARY\n"
+      "  TRACK 03 AUDIO\n"
+      "    INDEX 01 00:00:00\n";
+  size_t image_size;
+  uint8_t* image = generate_jaguarcd_bin(1470, 99200, 1, &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "060e9d223c584b581cf7d7ce17c0e5dc";
+
+  mock_file(0, "game.cue", (uint8_t*)cue_file, strlen(cue_file));
+  mock_file(1, "track03.bin", image, image_size);
+
+  rc_hash_init_default_cdreader(); /* want to test actual FIRST_OF_SECOND_SESSION calculation */
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_ATARI_JAGUAR_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  init_mock_cdreader();
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+static void test_hash_atari_jaguar_cd_no_header()
+{
+  const char* cue_file =
+      "REM SESSION 01\n"
+      "FILE \"track01.bin\" BINARY\n"
+      "  TRACK 01 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "REM SESSION 02\n"
+      "FILE \"track02.bin\" BINARY\n"
+      "  TRACK 02 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "FILE \"track03.bin\" BINARY\n"
+      "  TRACK 03 AUDIO\n"
+      "    INDEX 01 00:00:00\n";
+  size_t image_size;
+  uint8_t* image = generate_jaguarcd_bin(2, 32768, 1, &image_size);
+  char hash_file[33], hash_iterator[33];
+
+  image[2 + 64 + 12] = 'B'; /* corrupt the header */
+
+  mock_file(0, "game.cue", (uint8_t*)cue_file, strlen(cue_file));
+  mock_file(1, "track02.bin", image, image_size);
+
+  rc_hash_init_default_cdreader(); /* want to test actual FIRST_OF_SECOND_SESSION calculation */
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_ATARI_JAGUAR_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  init_mock_cdreader();
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 0);
+  ASSERT_NUM_EQUALS(result_iterator, 0);
+}
+
+static void test_hash_atari_jaguar_cd_no_sessions()
+{
+  const char* cue_file =
+      "FILE \"track01.bin\" BINARY\n"
+      "  TRACK 01 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "FILE \"track02.bin\" BINARY\n"
+      "  TRACK 02 AUDIO\n"
+      "    INDEX 01 00:00:00\n"
+      "FILE \"track03.bin\" BINARY\n"
+      "  TRACK 03 AUDIO\n"
+      "    INDEX 01 00:00:00\n";
+  size_t image_size;
+  uint8_t* image = generate_jaguarcd_bin(2, 99200, 1, &image_size);
+  char hash_file[33], hash_iterator[33];
+
+  mock_file(0, "game.cue", (uint8_t*)cue_file, strlen(cue_file));
+  mock_file(1, "track03.bin", image, image_size);
+
+  rc_hash_init_default_cdreader(); /* want to test actual FIRST_OF_SECOND_SESSION calculation */
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_ATARI_JAGUAR_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  init_mock_cdreader();
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 0);
+  ASSERT_NUM_EQUALS(result_iterator, 0);
+}
+
+/* ========================================================================= */
+
 static void test_hash_dreamcast_single_bin()
 {
   size_t image_size;
@@ -843,6 +1072,191 @@ static void test_hash_nds_buffered()
 
 /* ========================================================================= */
 
+static void test_hash_dsi()
+{
+  size_t image_size;
+  uint8_t* image = generate_nds_file(2, 1234567, 654321, &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_hash = "56b30c276cba4affa886bd38e8e34d7e";
+
+  mock_file(0, "game.nds", image, image_size);
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_NINTENDO_DSI, "game.nds");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.nds", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_hash);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_hash);
+}
+
+static void test_hash_dsi_buffered()
+{
+  size_t image_size;
+  uint8_t* image = generate_nds_file(2, 1234567, 654321, &image_size);
+  char hash_buffer[33], hash_iterator[33];
+  const char* expected_hash = "56b30c276cba4affa886bd38e8e34d7e";
+
+  /* test file hash */
+  int result_buffer = rc_hash_generate_from_buffer(hash_buffer, RC_CONSOLE_NINTENDO_DSI, image, image_size);
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.nds", image, image_size);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_buffer, 1);
+  ASSERT_STR_EQUALS(hash_buffer, expected_hash);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_hash);
+}
+
+/* ========================================================================= */
+
+static void test_hash_neogeocd()
+{
+  const char* ipl_txt = "FIXA.FIX,0,0\r\nPROG.PRG,0,0\r\nSOUND.PCM,0,0\r\n\x1a";
+  const size_t prog_prg_size = 273470;
+  uint8_t* prog_prg = generate_generic_file(prog_prg_size);
+  size_t image_size;
+  uint8_t* image = generate_iso9660_bin(160, "TEST", &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "96f35b20c6cf902286da45e81a50b2a3";
+
+  generate_iso9660_file(image, "IPL.TXT", (uint8_t*)ipl_txt, strlen(ipl_txt));
+  generate_iso9660_file(image, "PROG.PRG", prog_prg, prog_prg_size);
+
+  mock_file(0, "game.bin", image, image_size);
+  mock_file(1, "game.cue", (uint8_t*)"game.bin", 8);
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_NEO_GEO_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  free(prog_prg);
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+static void test_hash_neogeocd_multiple_prg()
+{
+  const char* ipl_txt = "FIXA.FIX,0,0\r\nPROG1.PRG,0,0\r\nSOUND.PCM,0,0\r\nPROG2.PRG,0,44000\r\n\x1a";
+  const size_t prog1_prg_size = 273470;
+  uint8_t* prog1_prg = generate_generic_file(prog1_prg_size);
+  const size_t prog2_prg_size = 13768;
+  uint8_t* prog2_prg = generate_generic_file(prog2_prg_size);
+  size_t image_size;
+  uint8_t* image = generate_iso9660_bin(160, "TEST", &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "d62df483c4786d3c63f27b6c5f17eeca";
+
+  generate_iso9660_file(image, "IPL.TXT", (uint8_t*)ipl_txt, strlen(ipl_txt));
+  generate_iso9660_file(image, "PROG1.PRG", prog1_prg, prog1_prg_size);
+  generate_iso9660_file(image, "PROG2.PRG", prog2_prg, prog2_prg_size);
+
+  mock_file(0, "game.bin", image, image_size);
+  mock_file(1, "game.cue", (uint8_t*)"game.bin", 8);
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_NEO_GEO_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  free(prog1_prg);
+  free(prog2_prg);
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+static void test_hash_neogeocd_lowercase_ipl_contents()
+{
+  const char* ipl_txt = "fixa.fix,0,0\r\nprog.prg,0,0\r\nsound.pcm,0,0\r\n\x1a";
+  const size_t prog_prg_size = 273470;
+  uint8_t* prog_prg = generate_generic_file(prog_prg_size);
+  size_t image_size;
+  uint8_t* image = generate_iso9660_bin(160, "TEST", &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "96f35b20c6cf902286da45e81a50b2a3";
+
+  generate_iso9660_file(image, "IPL.TXT", (uint8_t*)ipl_txt, strlen(ipl_txt));
+  generate_iso9660_file(image, "PROG.PRG", prog_prg, prog_prg_size);
+
+  mock_file(0, "game.bin", image, image_size);
+  mock_file(1, "game.cue", (uint8_t*)"game.bin", 8);
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_NEO_GEO_CD, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+  free(prog_prg);
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+/* ========================================================================= */
+
 static void test_hash_pce_cd()
 {
   size_t image_size;
@@ -854,7 +1268,7 @@ static void test_hash_pce_cd()
   mock_file(1, "game.cue", (uint8_t*)"game.bin", 8);
 
   /* test file hash */
-  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_PC_ENGINE, "game.cue");
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_PC_ENGINE_CD, "game.cue");
 
   /* test file identification from iterator */
   int result_iterator;
@@ -886,7 +1300,7 @@ static void test_hash_pce_cd_invalid_header()
   /* make the header not match */
   image[2048 + 0x24] = 0x34;
 
-  test_hash_unknown_format(RC_CONSOLE_PC_ENGINE, "game.cue");
+  test_hash_unknown_format(RC_CONSOLE_PC_ENGINE_CD, "game.cue");
 
   free(image);
 }
@@ -936,7 +1350,7 @@ static void test_hash_pcfx_invalid_header()
   /* make the header not match */
   image[12] = 0x34;
 
-  test_hash_unknown_format(RC_CONSOLE_PC_ENGINE, "game.cue");
+  test_hash_unknown_format(RC_CONSOLE_PCFX, "game.cue");
 
   free(image);
 }
@@ -977,6 +1391,7 @@ static void test_hash_pcfx_pce_cd()
 
 static void test_hash_psx_cd()
 {
+  /* BOOT=cdrom:\SLUS_007.45 */
   size_t image_size;
   uint8_t* image = generate_psx_bin("SLUS_007.45", 0x07D800, &image_size);
   char hash_file[33], hash_iterator[33];
@@ -1053,10 +1468,44 @@ static void test_hash_psx_cd_no_system_cnf()
 
 static void test_hash_psx_cd_exe_in_subfolder()
 {
+  /* BOOT=cdrom:\bin\SLUS_012.37 */
   size_t image_size;
   uint8_t* image = generate_psx_bin("bin\\SCES_012.37", 0x07D800, &image_size);
   char hash_file[33], hash_iterator[33];
   const char* expected_md5 = "674018e23a4052113665dfb264e9c2fc";
+
+  mock_file(0, "game.bin", image, image_size);
+  mock_file(1, "game.cue", (uint8_t*)"game.bin", 8);
+
+  /* test file hash */
+  int result_file = rc_hash_generate_from_file(hash_file, RC_CONSOLE_PLAYSTATION, "game.cue");
+
+  /* test file identification from iterator */
+  int result_iterator;
+  struct rc_hash_iterator iterator;
+
+  rc_hash_initialize_iterator(&iterator, "game.cue", NULL, 0);
+  result_iterator = rc_hash_iterate(hash_iterator, &iterator);
+  rc_hash_destroy_iterator(&iterator);
+
+  /* cleanup */
+  free(image);
+
+  /* validation */
+  ASSERT_NUM_EQUALS(result_file, 1);
+  ASSERT_STR_EQUALS(hash_file, expected_md5);
+
+  ASSERT_NUM_EQUALS(result_iterator, 1);
+  ASSERT_STR_EQUALS(hash_iterator, expected_md5);
+}
+
+static void test_hash_psx_cd_extra_slash()
+{
+  /* BOOT=cdrom:\\SLUS_007.45 */
+  size_t image_size;
+  uint8_t* image = generate_psx_bin("\\SLUS_007.45", 0x07D800, &image_size);
+  char hash_file[33], hash_iterator[33];
+  const char* expected_md5 = "db433fb038cde4fb15c144e8c7dea6e3";
 
   mock_file(0, "game.bin", image, image_size);
   mock_file(1, "game.cue", (uint8_t*)"game.bin", 8);
@@ -1555,6 +2004,13 @@ void test_hash(void) {
   /* Atari Jaguar */
   TEST_PARAMS4(test_hash_full_file, RC_CONSOLE_ATARI_JAGUAR, "test.jag", 0x400000, "a247ec8a8c42e18fcb80702dfadac14b");
 
+  /* Atari Jaguar CD */
+  TEST(test_hash_atari_jaguar_cd);
+  TEST(test_hash_atari_jaguar_cd_byteswapped);
+  TEST(test_hash_atari_jaguar_cd_track3);
+  TEST(test_hash_atari_jaguar_cd_no_header);
+  TEST(test_hash_atari_jaguar_cd_no_sessions);
+
   /* Colecovision */
   TEST_PARAMS4(test_hash_full_file, RC_CONSOLE_COLECOVISION, "test.col", 16384, "455f07d8500f3fabc54906737866167f");
 
@@ -1611,6 +2067,11 @@ void test_hash(void) {
   TEST_PARAMS4(test_hash_full_file, RC_CONSOLE_MSX, "test.dsk", 737280, "0e73fe94e5f2e2d8216926eae512b7a6");
   TEST_PARAMS4(test_hash_m3u, RC_CONSOLE_MSX, "test.dsk", 737280, "0e73fe94e5f2e2d8216926eae512b7a6");
 
+  /* Neo Geo CD */
+  TEST(test_hash_neogeocd);
+  TEST(test_hash_neogeocd_multiple_prg);
+  TEST(test_hash_neogeocd_lowercase_ipl_contents);
+
   /* Neo Geo Pocket */
   TEST_PARAMS4(test_hash_full_file, RC_CONSOLE_NEOGEO_POCKET, "test.ngc", 2097152, "cf86acf519625a25a17b1246975e90ae");
 
@@ -1634,11 +2095,16 @@ void test_hash(void) {
   TEST_PARAMS4(test_hash_n64_file, "game.n64", test_rom_n64, sizeof(test_rom_n64), "06096d7ce21cb6bcde38391534c4eb91");
   TEST_PARAMS4(test_hash_n64_file, "game.n64", test_rom_z64, sizeof(test_rom_z64), "06096d7ce21cb6bcde38391534c4eb91"); /* misnamed */
   TEST_PARAMS4(test_hash_n64_file, "game.z64", test_rom_n64, sizeof(test_rom_n64), "06096d7ce21cb6bcde38391534c4eb91"); /* misnamed */
+  TEST_PARAMS3(test_hash_n64, test_rom_ndd, sizeof(test_rom_ndd), "a698b32a52970d8a52a5a52c83acc2a9");
 
   /* Nintendo DS */
   TEST(test_hash_nds);
   TEST(test_hash_nds_supercard);
   TEST(test_hash_nds_buffered);
+
+  /* Nintendo DSi */
+  TEST(test_hash_dsi);
+  TEST(test_hash_dsi_buffered);
 
   /* Oric (no fixed file size) */
   TEST_PARAMS4(test_hash_full_file, RC_CONSOLE_ORIC, "test.tap", 18119, "953a2baa3232c63286aeae36b2172cef");
@@ -1664,6 +2130,7 @@ void test_hash(void) {
   TEST(test_hash_psx_cd);
   TEST(test_hash_psx_cd_no_system_cnf);
   TEST(test_hash_psx_cd_exe_in_subfolder);
+  TEST(test_hash_psx_cd_extra_slash);
 
   /* Playstation 2 */
   TEST(test_hash_ps2_iso);

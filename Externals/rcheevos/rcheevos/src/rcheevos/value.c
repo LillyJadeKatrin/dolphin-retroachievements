@@ -111,6 +111,7 @@ void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_parse_stat
       case RC_OPERATOR_MULT:
       case RC_OPERATOR_DIV:
       case RC_OPERATOR_AND:
+      case RC_OPERATOR_XOR:
       case RC_OPERATOR_NONE:
         break;
 
@@ -425,6 +426,26 @@ static rc_typed_value_t* rc_typed_value_convert_into(rc_typed_value_t* dest, con
   memcpy(dest, source, sizeof(rc_typed_value_t));
   rc_typed_value_convert(dest, new_type);
   return dest;
+}
+
+void rc_typed_value_negate(rc_typed_value_t* value) {
+  switch (value->type)
+  {
+    case RC_VALUE_TYPE_UNSIGNED:
+      rc_typed_value_convert(value, RC_VALUE_TYPE_SIGNED);
+      /* fallthrough to RC_VALUE_TYPE_SIGNED */
+
+    case RC_VALUE_TYPE_SIGNED:
+      value->value.i32 = -(value->value.i32);
+      break;
+
+    case RC_VALUE_TYPE_FLOAT:
+      value->value.f32 = -(value->value.f32);
+      break;
+
+    default:
+      break;
+  }
 }
 
 void rc_typed_value_add(rc_typed_value_t* value, const rc_typed_value_t* amount) {

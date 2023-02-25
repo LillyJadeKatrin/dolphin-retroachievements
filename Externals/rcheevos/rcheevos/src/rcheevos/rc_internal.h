@@ -83,6 +83,8 @@ typedef struct {
 }
 rc_typed_value_t;
 
+#define RC_MEASURED_UNKNOWN 0xFFFFFFFF
+
 typedef struct {
   rc_typed_value_t add_value;/* AddSource/SubSource */
   int add_hits;             /* AddHits */
@@ -146,6 +148,22 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
 int rc_test_condset(rc_condset_t* self, rc_eval_state_t* eval_state);
 void rc_reset_condset(rc_condset_t* self);
 
+enum {
+  RC_PROCESSING_COMPARE_DEFAULT = 0,
+  RC_PROCESSING_COMPARE_MEMREF_TO_CONST,
+  RC_PROCESSING_COMPARE_MEMREF_TO_DELTA,
+  RC_PROCESSING_COMPARE_MEMREF_TO_MEMREF,
+  RC_PROCESSING_COMPARE_DELTA_TO_MEMREF,
+  RC_PROCESSING_COMPARE_DELTA_TO_CONST,
+  RC_PROCESSING_COMPARE_MEMREF_TO_CONST_TRANSFORMED,
+  RC_PROCESSING_COMPARE_MEMREF_TO_DELTA_TRANSFORMED,
+  RC_PROCESSING_COMPARE_MEMREF_TO_MEMREF_TRANSFORMED,
+  RC_PROCESSING_COMPARE_DELTA_TO_MEMREF_TRANSFORMED,
+  RC_PROCESSING_COMPARE_DELTA_TO_CONST_TRANSFORMED,
+  RC_PROCESSING_COMPARE_ALWAYS_TRUE,
+  RC_PROCESSING_COMPARE_ALWAYS_FALSE
+};
+
 rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse, int is_indirect);
 int rc_test_condition(rc_condition_t* self, rc_eval_state_t* eval_state);
 void rc_evaluate_condition_value(rc_typed_value_t* value, rc_condition_t* self, rc_eval_state_t* eval_state);
@@ -154,6 +172,7 @@ int rc_condition_is_combining(const rc_condition_t* self);
 int rc_parse_operand(rc_operand_t* self, const char** memaddr, int is_indirect, rc_parse_state_t* parse);
 void rc_evaluate_operand(rc_typed_value_t* value, rc_operand_t* self, rc_eval_state_t* eval_state);
 int rc_operand_is_float_memref(const rc_operand_t* self);
+int rc_operand_is_float(const rc_operand_t* self);
 
 void rc_parse_value_internal(rc_value_t* self, const char** memaddr, rc_parse_state_t* parse);
 int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t peek, void* ud, lua_State* L);
@@ -165,6 +184,7 @@ void rc_typed_value_convert(rc_typed_value_t* value, char new_type);
 void rc_typed_value_add(rc_typed_value_t* value, const rc_typed_value_t* amount);
 void rc_typed_value_multiply(rc_typed_value_t* value, const rc_typed_value_t* amount);
 void rc_typed_value_divide(rc_typed_value_t* value, const rc_typed_value_t* amount);
+void rc_typed_value_negate(rc_typed_value_t* value);
 int rc_typed_value_compare(const rc_typed_value_t* value1, const rc_typed_value_t* value2, char oper);
 void rc_typed_value_from_memref_value(rc_typed_value_t* value, const rc_memref_value_t* memref);
 
