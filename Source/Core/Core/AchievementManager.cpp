@@ -313,6 +313,15 @@ void IconRequest(rc_api_fetch_image_request_t rc_request, std::vector<u8> &icon_
 
 unsigned MemoryPeeker(unsigned address, unsigned num_bytes, void* ud)
 {
+  const rc_memory_regions_t* regions = rc_console_memory_regions(game_data.console_id);
+  for (unsigned int ix = 0; ix < regions->num_regions; ix++)
+  {
+    if (address >= regions->region[ix].start_address && address <= regions->region[ix].end_address)
+    {
+      address += (regions->region[ix].real_address - regions->region[ix].start_address);
+      break;
+    }
+  }
   switch (num_bytes)
   {
   case 1:
