@@ -239,27 +239,33 @@ void MenuBar::AddToolsMenu()
 
   tools_menu->addSeparator();
 
-  tools_menu->addAction(tr("Achievements"), this, [this] { emit ShowAchievementsWindow(); });
-
-  QMenu* ra_dev_ipl = tools_menu->addMenu(tr("Achievement Development"));
-
-  const auto items = Achievements::RAIntegration::GetMenuItems();
-  for (const auto& [id, title, checked] : items)
+  if (!Achievements::IsDLLEnabled())
   {
-    if (id == 0)
-    {
-      ra_dev_ipl->addSeparator();
-      continue;
-    }
+    tools_menu->addAction(tr("Achievements"), this, [this] { emit ShowAchievementsWindow(); });
+  }
+  else
+  {
+    QMenu* ra_dev_ipl = tools_menu->addMenu(tr("Achievement Development"));
 
-    QAction* raAction = ra_dev_ipl->addAction(QString::fromUtf8(title));
-    if (checked)
+    const auto items = Achievements::RAIntegration::GetMenuItems();
+    for (const auto& [id, title, checked] : items)
     {
-      raAction->setCheckable(true);
-      raAction->setChecked(checked);
-    }
+      if (id == 0)
+      {
+        ra_dev_ipl->addSeparator();
+        continue;
+      }
 
-    connect(raAction, &QAction::triggered, this, [this, id = id]() { emit ActivateRAMenuItem(id); });
+      QAction* raAction = ra_dev_ipl->addAction(QString::fromUtf8(title));
+      if (checked)
+      {
+        raAction->setCheckable(true);
+        raAction->setChecked(checked);
+      }
+
+      connect(raAction, &QAction::triggered, this,
+              [this, id = id]() { emit ActivateRAMenuItem(id); });
+    }
   }
 
   tools_menu->addSeparator();

@@ -23,6 +23,7 @@
 #include "Config/AchievementSettings.h"
 
 //#define RA_TEST
+#define ENABLE_RAINTEGRATION
 #define HASHPATH "..\\..\\..\\Binary\\x64\\hashes.txt"
 
 namespace Achievements
@@ -48,6 +49,8 @@ std::vector<u8> user_icon;
 int frames_until_rp = 0;
 
 static char game_hash[HASH_LENGTH];
+
+bool dll_enabled = false;
 
 namespace  // Hide from use outside this file
 {
@@ -548,7 +551,7 @@ void AchievementEventHandler(const rc_runtime_event_t* runtime_event)
 
 void Init()
 {
-  if (!is_runtime_initialized && Config::Get(Config::RA_INTEGRATION_ENABLED))
+  if (!dll_enabled && !is_runtime_initialized && Config::Get(Config::RA_INTEGRATION_ENABLED))
   {
     rc_runtime_init(&runtime);
     is_runtime_initialized = true;
@@ -774,14 +777,15 @@ void ResetGame()
 
 void DoFrame()
 {
+#ifdef ENABLE_RAINTEGRATION
+  if (dll_enabled)
+    return Achievements::RAIntegration::RAIDoFrame();
+#endif
   if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
       !login_data.response.succeeded ||
       !session_data.response.succeeded || !game_data.response.succeeded)
     return;
   rc_runtime_do_frame(&runtime, &AchievementEventHandler, &MemoryPeeker, nullptr, nullptr);
-//#ifdef ENABLE_RAINTEGRATION
-  Achievements::RAIntegration::RAIDoFrame();
-//#endif
   if (--frames_until_rp <= 0)
   {
     Ping();
@@ -858,6 +862,16 @@ void Ping()
       ping_request, &ping_response, rc_api_init_ping_request, rc_api_process_ping_response);
   rc_api_destroy_ping_response(&ping_response);
   delete rp_buffer;
+}
+
+void EnableDLL(bool enable)
+{
+  dll_enabled = enable;
+}
+
+bool IsDLLEnabled()
+{
+  return dll_enabled;
 }
 
 rc_api_login_response_t* GetUserStatus()
@@ -1026,10 +1040,8 @@ void Shutdown()
 
 }; // namespace Achievements
 
-//#ifdef ENABLE_RAINTEGRATION
-// RA_Interface ends up including windows.h, with its silly macros.
+#ifdef ENABLE_RAINTEGRATION
 #include <Windows.h>
-//#include "common/RedtapeWindows.h"
 #include "RA_Interface.h"
 #include "RA_Consoles.h"
 #include "Core.h"
@@ -1057,17 +1069,10 @@ static void RACallbackWriteMemory(unsigned int address, unsigned char value);
 static bool s_raintegration_initialized = false;
 }  // namespace Achievements::RAIntegration
 
-/* void Achievements::SwitchToRAIntegration()
-{
-  s_using_raintegration = true;
-  s_active = true;
-
-  // Not strictly the case, but just in case we gate anything by IsLoggedIn().
-  s_logged_in = true;
-}*/
-
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
+  if (!dll_enabled)
+    return;
   RA_InitClient((HWND)main_window_handle, "Dolphin", SCM_DESC_STR);
   RA_SetUserAgentDetail(std::format("Dolphin {} {}", SCM_DESC_STR, SCM_BRANCH_STR).c_str());
 
@@ -1079,9 +1084,6 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
   // implementation).
   ReinstallMemoryBanks();
 
-  // Fire off a login anyway. Saves going into the menu and doing it.
-  RA_AttemptLogin(0);
-
   s_raintegration_initialized = true;
 
   // this is pretty lame, but we may as well persist until we exit anyway
@@ -1090,6 +1092,8 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
 void Achievements::RAIntegration::ReinstallMemoryBanks()
 {
+  if (!dll_enabled)
+    return;
   RA_ClearMemoryBanks();
   int memory_bank_size = 0;
   if (Core::GetState() != Core::State::Uninitialized)
@@ -1103,6 +1107,8 @@ void Achievements::RAIntegration::ReinstallMemoryBanks()
 
 void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
 {
+  if (!dll_enabled)
+    return;
   if (s_raintegration_initialized)
   {
     RA_UpdateHWnd((HWND)new_handle);
@@ -1114,6 +1120,8 @@ void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
 
 void Achievements::RAIntegration::GameChanged(bool isWii)
 {
+  if (!dll_enabled)
+    return;
   ReinstallMemoryBanks();
   if (game_data.response.succeeded)
   {
@@ -1125,6 +1133,8 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
 
 void Achievements::RAIntegration::RAIDoFrame()
 {
+  if (!dll_enabled)
+    return;
   RA_DoAchievementsFrame();
 }
 
@@ -1155,7 +1165,9 @@ std::string WideStringToUTF8String(const std::wstring_view& str)
 }
 
 std::vector<std::tuple<int, std::string, bool>> Achievements::RAIntegration::GetMenuItems()
-{ 
+{
+  if (!dll_enabled)
+    return std::vector<std::tuple<int, std::string, bool>>();
   std::array<RA_MenuItem, 64> items;
   const int num_items = RA_GetPopupMenuItems(items.data());
 
@@ -1182,6 +1194,8 @@ std::vector<std::tuple<int, std::string, bool>> Achievements::RAIntegration::Get
 
 void Achievements::RAIntegration::ActivateMenuItem(int item)
 {
+  if (!dll_enabled)
+    return;
   RA_InvokeDialog(item);
 }
 
@@ -1241,4 +1255,4 @@ void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, un
   memory_manager->Write_U8(value, address);
 }
 
-//#endif
+#endif // ENABLE_RAINTEGRATION

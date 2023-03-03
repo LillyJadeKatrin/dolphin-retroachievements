@@ -1142,6 +1142,8 @@ void MainWindow::ShowRenderWidget()
     m_stack->repaint();
 
     Host::GetInstance()->SetRenderFocus(isActiveWindow());
+
+    Achievements::RAIntegration::MainWindowChanged((HANDLE)winId());
   }
   else
   {
@@ -1150,6 +1152,8 @@ void MainWindow::ShowRenderWidget()
 
     m_render_widget->showNormal();
     m_render_widget->restoreGeometry(m_render_widget_geometry);
+
+    Achievements::RAIntegration::MainWindowChanged((HANDLE)m_render_widget->winId());
   }
 }
 
@@ -1193,6 +1197,8 @@ void MainWindow::HideRenderWidget(bool reinit, bool is_exit)
     g_controller_interface.ChangeWindow(GetWindowSystemInfo(windowHandle()).render_window,
                                         is_exit ? ControllerInterface::WindowChangeReason::Exit :
                                                   ControllerInterface::WindowChangeReason::Other);
+
+    Achievements::RAIntegration::MainWindowChanged((HANDLE)winId());
   }
 }
 

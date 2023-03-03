@@ -40,6 +40,8 @@ void Award(unsigned int achievement_id);
 void Submit(unsigned int leaderboard_id, int value);
 void Ping();
 
+void EnableDLL(bool enable);
+bool IsDLLEnabled();
 rc_api_login_response_t* GetUserStatus();
 const std::vector<u8>* GetUserIcon();
 rc_api_fetch_user_unlocks_response_t* GetHardcoreGameProgress();
