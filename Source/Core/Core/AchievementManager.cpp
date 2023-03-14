@@ -48,6 +48,7 @@ std::vector<u8> user_icon;
 
 int frames_until_rp = 0;
 
+std::string filename = "";
 static char game_hash[HASH_LENGTH];
 
 bool dll_enabled = false;
@@ -603,6 +604,7 @@ void GenerateHash(std::string iso_path)
   if (!Config::Get(Config::RA_INTEGRATION_ENABLED))
     return;
   rc_hash_generate_from_file(game_hash, RC_CONSOLE_GAMECUBE, iso_path.c_str());
+  filename = iso_path.substr(iso_path.find_last_of('/') + 1);
 #ifdef HASHPATH
 #include <fstream>
   std::ofstream hashfile;
@@ -1084,6 +1086,8 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
   s_raintegration_initialized = true;
 
+  RA_AttemptLogin(0);
+
   // this is pretty lame, but we may as well persist until we exit anyway
   std::atexit(RA_Shutdown);
 }
@@ -1226,7 +1230,7 @@ void Achievements::RAIntegration::RACallbackRebuildMenu()
 
 void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 {
-  strcpy(buf, "test");
+  strcpy(buf, filename.c_str());
 }
 
 void Achievements::RAIntegration::RACallbackResetEmulator()
