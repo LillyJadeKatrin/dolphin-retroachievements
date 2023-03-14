@@ -1130,10 +1130,12 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
     return;
   }
 
+  //  Must call this before calling RA_IdentifyHash
+  RA_SetConsoleID(isWii ? WII : GameCube);
+
   s_game_id = RA_IdentifyHash(game_hash);
   if (s_game_id != 0)
   {
-    RA_SetConsoleID(isWii ? WII : GameCube);
     RA_ActivateGame(s_game_id);
   }
 }
