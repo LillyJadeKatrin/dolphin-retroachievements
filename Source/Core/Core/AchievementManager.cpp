@@ -1064,6 +1064,7 @@ static unsigned int RACallbackReadBlock(unsigned int address, unsigned char* buf
 static void RACallbackWriteMemory(unsigned int address, unsigned char value);
 
 static bool s_raintegration_initialized = false;
+static int s_game_id = 0;
 }  // namespace Achievements::RAIntegration
 
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
@@ -1099,7 +1100,6 @@ void Achievements::RAIntegration::ReinstallMemoryBanks()
   }
   RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, memory_bank_size);
   RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
-
 }
 
 void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
@@ -1120,10 +1120,17 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
   if (!dll_enabled)
     return;
   ReinstallMemoryBanks();
-  if (game_data.response.succeeded)
+  if (Core::GetState() == Core::State::Uninitialized)
+  {
+    s_game_id = 0;
+    return;
+  }
+
+  s_game_id = RA_IdentifyHash(game_hash);
+  if (s_game_id != 0)
   {
     RA_SetConsoleID(isWii ? WII : GameCube);
-    RA_ActivateGame(RA_IdentifyHash(game_hash));
+    RA_ActivateGame(s_game_id);
   }
 }
 
@@ -1197,7 +1204,7 @@ void Achievements::RAIntegration::ActivateMenuItem(int item)
 
 int Achievements::RAIntegration::RACallbackIsActive()
 {
-  return (game_data.response.succeeded)?(game_data.id):0;
+  return s_game_id;
 }
 
 void Achievements::RAIntegration::RACallbackCauseUnpause()
@@ -1219,7 +1226,7 @@ void Achievements::RAIntegration::RACallbackRebuildMenu()
 
 void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 {
-  strcpy(buf, game_data.title);
+  strcpy(buf, "test");
 }
 
 void Achievements::RAIntegration::RACallbackResetEmulator()
