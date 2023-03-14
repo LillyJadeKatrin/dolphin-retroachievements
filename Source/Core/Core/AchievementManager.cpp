@@ -600,12 +600,9 @@ std::string Login(std::string password)
 
 void GenerateHash(std::string iso_path)
 {
-  if (!Config::Get(Config::RA_INTEGRATION_ENABLED) || !is_runtime_initialized ||
-      !login_data.response.succeeded)
+  if (!Config::Get(Config::RA_INTEGRATION_ENABLED))
     return;
-  // TODO lillyjade: NINTENDO here is a temp fix to just hash the first part of the
-  // Wii/GC disc; this needs to be replaced with Wii/GC functionality in rhash/hash.c eventually
-  rc_hash_generate_from_file(game_hash, RC_CONSOLE_NINTENDO, iso_path.c_str());
+  rc_hash_generate_from_file(game_hash, RC_CONSOLE_GAMECUBE, iso_path.c_str());
 #ifdef HASHPATH
 #include <fstream>
   std::ofstream hashfile;
@@ -1125,9 +1122,8 @@ void Achievements::RAIntegration::GameChanged(bool isWii)
   ReinstallMemoryBanks();
   if (game_data.response.succeeded)
   {
-//    RA_SetConsoleID(isWii ? WII : GameCube);
-    RA_SetConsoleID(Dreamcast);
-    RA_ActivateGame(game_data.id);
+    RA_SetConsoleID(isWii ? WII : GameCube);
+    RA_ActivateGame(RA_IdentifyHash(game_hash));
   }
 }
 
