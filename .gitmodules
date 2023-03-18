@@ -66,3 +66,6 @@
 [submodule "Externals/lz4/lz4"]
 	path = Externals/lz4/lz4
 	url = https://github.com/lz4/lz4
+[submodule "Externals/RAInterface/RAInterface"]
+	path = Externals/RAInterface/RAInterface
+	url = https://github.com/RetroAchievements/RAInterface.git
