@@ -60,3 +60,6 @@
 [submodule "Externals/curl/curl"]
 	path = Externals/curl/curl
 	url = https://github.com/curl/curl.git
+  [submodule "Externals/RAInterface/RAInterface"]
+	path = Externals/RAInterface/RAInterface
+	url = https://github.com/RetroAchievements/RAInterface.git
