@@ -1004,7 +1004,10 @@ add_subdirectory(Externals/rangeset)
 add_subdirectory(Externals/FatFs)
 
 if (USE_RETRO_ACHIEVEMENTS)
-	add_subdirectory(Externals/rcheevos)
+  add_subdirectory(Externals/rcheevos)
+  if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    add_subdirectory(Externals/RAInterface)
+  endif()
 endif()
 
 ########################################
