@@ -21,6 +21,7 @@
 
 #include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 
 #include "DolphinQt/Host.h"
@@ -470,6 +471,8 @@ bool RenderWidget::event(QEvent* event)
       m_last_window_height = height;
       m_last_window_scale = dpr;
       emit SizeChanged(width, height);
+      RADevToolManager::GetInstance()->MainWindowChanged(
+          reinterpret_cast<void*>(winId()));
     }
     break;
   }
