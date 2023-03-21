@@ -9,11 +9,6 @@
       "buildRoot": "${workspaceRoot}\\Build\\${name}",
       "cmakeCommandArgs": "",
       "variables": [
-        {
-          "name": "ENABLE_RAINTEGRATION",
-          "value": "True",
-          "type": "BOOL"
-        }
       ]
     },
     {
