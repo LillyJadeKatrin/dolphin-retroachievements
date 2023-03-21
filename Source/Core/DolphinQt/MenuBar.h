@@ -92,6 +92,7 @@ signals:
   void ShowSkylanderPortal();
   void ShowInfinityBase();
   void ConnectWiiRemote(int id);
+  void ActivateRAMenuItem(int id);
 
   // Options
   void Configure();

@@ -108,6 +108,7 @@ private:
   void IncrementSelectedStateSlot();
   void DecrementSelectedStateSlot();
   void BootWiiSystemMenu();
+  void MainWindowChanged(void* new_handle);
 
   void PerformOnlineUpdate(const std::string& region);
 
@@ -167,6 +168,7 @@ private:
   void ShowResourcePackManager();
   void ShowCheatsManager();
   void ShowRiivolutionBootWidget(const UICommon::GameFile& game);
+  void ActivateRAMenuItem(int id);
 
   void NetPlayInit();
   bool NetPlayJoin();

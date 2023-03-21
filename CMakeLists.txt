@@ -1005,10 +1005,9 @@ add_subdirectory(Externals/FatFs)
 
 if (USE_RETRO_ACHIEVEMENTS)
   add_subdirectory(Externals/rcheevos)
-  if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    add_subdirectory(Externals/RAInterface)
-  endif()
 endif()
+
+add_subdirectory(Externals/RAInterface)
 
 ########################################
 # Pre-build events: Define configuration variables and write SCM info header
