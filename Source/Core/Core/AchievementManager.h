@@ -18,7 +18,7 @@
 #include "Common/Event.h"
 #include "Common/HookableEvent.h"
 #include "Common/WorkQueueThread.h"
-#include "Core/Core.h"
+#include "Core/HW/Memmap.h"
 
 using AchievementId = u32;
 constexpr int RP_SIZE = 65536;
@@ -57,6 +57,18 @@ public:
   void Logout();
   void Shutdown();
 
+  void EnableDLL(bool enable);
+  bool IsDLLEnabled();
+
+#ifdef _WIN32
+  void ReinstallMemoryBanks();
+  void MainWindowChanged(void* new_handle);
+  void GameChanged(bool isWii);
+  void RAIDoFrame();
+  std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
+  void ActivateMenuItem(int item);
+#endif  // _WIN32
+
 private:
   AchievementManager() = default;
 
@@ -83,6 +95,21 @@ private:
                        const std::function<int(rc_api_request_t*, const RcRequest*)>& init_request,
                        const std::function<int(RcResponse*, const char*)>& process_response);
 
+#ifdef _WIN32
+  void InitializeRAIntegration(void* main_window_handle);
+  int RACallbackIsActive();
+  void RACallbackCauseUnpause();
+  void RACallbackCausePause();
+  void RACallbackRebuildMenu();
+  void RACallbackEstimateTitle(char* buf);
+  void RACallbackResetEmulator();
+  void RACallbackLoadROM(const char* unused);
+  unsigned char RACallbackReadMemory(unsigned int address);
+  unsigned int RACallbackReadBlock(unsigned int address, unsigned char* buffer,
+                                          unsigned int bytes);
+  void RACallbackWriteMemory(unsigned int address, unsigned char value);
+#endif  // _WIN32
+
   rc_runtime_t m_runtime{};
   bool m_is_runtime_initialized = false;
   std::array<char, HASH_LENGTH> m_game_hash{};
@@ -108,6 +135,10 @@ private:
   Common::WorkQueueThread<std::function<void()>> m_queue;
   std::recursive_mutex m_lock;
   Core::CPUThreadGuard* m_threadguard;
+
+  bool m_dll_enabled = false;
+  std::string m_filename;
+  bool m_raintegration_initialized = false;
 };  // class AchievementManager
 
 #endif  // USE_RETRO_ACHIEVEMENTS

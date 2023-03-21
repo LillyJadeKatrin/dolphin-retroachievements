@@ -539,6 +539,8 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
   HW::Init(system,
            NetPlay::IsNetPlayRunning() ? &(boot_session_data.GetNetplaySettings()->sram) : nullptr);
 
+  AchievementManager::GetInstance()->GameChanged(core_parameter.bWii);
+
   Common::ScopeGuard hw_guard{[&system] {
     // We must set up this flag before executing HW::Shutdown()
     s_hardware_initialized = false;
