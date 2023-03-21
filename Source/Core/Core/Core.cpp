@@ -70,6 +70,7 @@
 #include "Core/PowerPC/GDBStub.h"
 #include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 #include "Core/System.h"
 #include "Core/WiiRoot.h"
@@ -294,6 +295,7 @@ void Stop()  // - Hammertime!
 #ifdef USE_RETRO_ACHIEVEMENTS
   AchievementManager::GetInstance()->CloseGame();
 #endif  // USE_RETRO_ACHIEVEMENTS
+  RADevToolManager::GetInstance()->GameChanged(false);
 
   s_is_stopping = true;
 
@@ -558,6 +560,8 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
 
   HW::Init(system,
            NetPlay::IsNetPlayRunning() ? &(boot_session_data.GetNetplaySettings()->sram) : nullptr);
+
+  RADevToolManager::GetInstance()->GameChanged(core_parameter.bWii);
 
   Common::ScopeGuard hw_guard{[&system] {
     // We must set up this flag before executing HW::Shutdown()
@@ -925,10 +929,7 @@ void Callback_NewField(Core::System& system)
       CallOnStateChangedCallbacks(Core::GetState());
     }
   }
-
-#ifdef USE_RETRO_ACHIEVEMENTS
-  AchievementManager::GetInstance()->DoFrame();
-#endif  // USE_RETRO_ACHIEVEMENTS
+  RADevToolManager::GetInstance()->RAIDoFrame();
 }
 
 void UpdateTitle()
