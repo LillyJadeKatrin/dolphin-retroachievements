@@ -40,7 +40,7 @@ bool IsSettingSaveable(const Config::Location& config_location)
       &Config::WIIMOTE_BB_SOURCE.GetLocation(),
 
       // Achievements
-
+#ifdef USE_RETRO_ACHIEVEMENTS
       &Config::RA_ENABLED.GetLocation(),
       &Config::RA_USERNAME.GetLocation(),
       &Config::RA_API_TOKEN.GetLocation(),
@@ -51,6 +51,7 @@ bool IsSettingSaveable(const Config::Location& config_location)
       &Config::RA_BADGES_ENABLED.GetLocation(),
       &Config::RA_UNOFFICIAL_ENABLED.GetLocation(),
       &Config::RA_ENCORE_ENABLED.GetLocation(),
+#endif  // USE_RETRO_ACHIEVEMENTS
   };
 
   return std::any_of(begin(s_setting_saveable), end(s_setting_saveable),

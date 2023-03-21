@@ -45,6 +45,7 @@
 #include "Core/Movie.h"
 #include "Core/NetPlayProto.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 #include "Core/WiiRoot.h"
 
@@ -164,15 +165,12 @@ bool BootCore(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
     }
   }
 
-#ifdef USE_RETRO_ACHIEVEMENTS
   std::string path = "";
   if (std::holds_alternative<BootParameters::Disc>(boot->parameters))
   {
     path = std::get<BootParameters::Disc>(boot->parameters).path;
   }
-  AchievementManager::GetInstance()->LoadGameByFilenameAsync(
-      path, [](AchievementManager::ResponseType r_type) {});
-#endif  // USE_RETRO_ACHIEVEMENTS
+  RADevToolManager::GetInstance()->LoadGame(path);
 
   const bool load_ipl = !StartUp.bWii && !Config::Get(Config::MAIN_SKIP_IPL) &&
                         std::holds_alternative<BootParameters::Disc>(boot->parameters);

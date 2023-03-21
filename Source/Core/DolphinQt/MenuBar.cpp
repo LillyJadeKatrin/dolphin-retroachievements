@@ -20,6 +20,7 @@
 #include "Common/FileUtil.h"
 #include "Common/StringUtil.h"
 
+#include "Core/AchievementManager.h"
 #include "Core/Boot/Boot.h"
 #include "Core/CommonTitles.h"
 #include "Core/Config/AchievementSettings.h"
@@ -44,6 +45,7 @@
 #include "Core/PowerPC/PPCSymbolDB.h"
 #include "Core/PowerPC/PowerPC.h"
 #include "Core/PowerPC/SignatureDB/SignatureDB.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 #include "Core/System.h"
 #include "Core/TitleDatabase.h"
@@ -238,6 +240,29 @@ void MenuBar::AddToolsMenu()
     tools_menu->addSeparator();
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
+
+  QMenu* ra_dev_ipl = tools_menu->addMenu(tr("Achievement Development"));
+  const auto items = RADevToolManager::GetInstance()->GetMenuItems();
+  for (const auto& [id, title, checked] : items)
+  {
+    if (id == 0)
+    {
+      ra_dev_ipl->addSeparator();
+      continue;
+    }
+
+    QAction* raAction = ra_dev_ipl->addAction(QString::fromUtf8(title));
+    if (checked)
+    {
+      raAction->setCheckable(true);
+      raAction->setChecked(checked);
+    }
+
+    connect(raAction, &QAction::triggered, this,
+            [this, id = id]() { emit ActivateRAMenuItem(id); });
+  }
+
+  tools_menu->addSeparator();
 
   QMenu* gc_ipl = tools_menu->addMenu(tr("Load GameCube Main Menu"));
 

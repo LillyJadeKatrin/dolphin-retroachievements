@@ -64,6 +64,7 @@
 #include "Core/NetPlayClient.h"
 #include "Core/NetPlayProto.h"
 #include "Core/NetPlayServer.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 #include "Core/System.h"
 #include "Core/WiiUtils.h"
@@ -227,6 +228,9 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   setAttribute(Qt::WA_NativeWindow);
 
   InitControllers();
+
+  // This has to be done before CreateComponents() so it's initialized.
+  MainWindowChanged((HANDLE)winId());
 
   CreateComponents();
 
@@ -553,6 +557,7 @@ void MainWindow::ConnectMenuBar()
   connect(m_menu_bar, &MenuBar::ShowSkylanderPortal, this, &MainWindow::ShowSkylanderPortal);
   connect(m_menu_bar, &MenuBar::ShowInfinityBase, this, &MainWindow::ShowInfinityBase);
   connect(m_menu_bar, &MenuBar::ConnectWiiRemote, this, &MainWindow::OnConnectWiiRemote);
+  connect(m_menu_bar, &MenuBar::ActivateRAMenuItem, this, &MainWindow::ActivateRAMenuItem);
 
 #ifdef USE_RETRO_ACHIEVEMENTS
   connect(m_menu_bar, &MenuBar::ShowAchievementsWindow, this, &MainWindow::ShowAchievementsWindow);
@@ -1167,6 +1172,8 @@ void MainWindow::ShowRenderWidget()
     m_stack->repaint();
 
     Host::GetInstance()->SetRenderFocus(isActiveWindow());
+
+    MainWindowChanged((HANDLE)winId());
   }
   else
   {
@@ -1175,6 +1182,8 @@ void MainWindow::ShowRenderWidget()
 
     m_render_widget->showNormal();
     m_render_widget->restoreGeometry(m_render_widget_geometry);
+
+    MainWindowChanged((HANDLE)m_render_widget->winId());
   }
 }
 
@@ -1218,6 +1227,8 @@ void MainWindow::HideRenderWidget(bool reinit, bool is_exit)
     g_controller_interface.ChangeWindow(::GetWindowSystemInfo(windowHandle()).render_window,
                                         is_exit ? ControllerInterface::WindowChangeReason::Exit :
                                                   ControllerInterface::WindowChangeReason::Other);
+
+    MainWindowChanged((HANDLE)winId());
   }
 }
 
@@ -1471,6 +1482,11 @@ void MainWindow::PerformOnlineUpdate(const std::string& region)
 void MainWindow::BootWiiSystemMenu()
 {
   StartGame(std::make_unique<BootParameters>(BootParameters::NANDTitle{Titles::SYSTEM_MENU}));
+}
+
+void MainWindow::MainWindowChanged(void* new_handle)
+{
+  RADevToolManager::GetInstance()->MainWindowChanged(new_handle);
 }
 
 void MainWindow::NetPlayInit()
@@ -1972,6 +1988,11 @@ void MainWindow::ShowAchievementsWindow()
   m_achievements_window->activateWindow();
 }
 #endif  // USE_RETRO_ACHIEVEMENTS
+
+void MainWindow::ActivateRAMenuItem(int id)
+{
+  RADevToolManager::GetInstance()->ActivateMenuItem(id);
+}
 
 void MainWindow::ShowMemcardManager()
 {
