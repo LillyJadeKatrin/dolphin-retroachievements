@@ -14,6 +14,7 @@
 #include "Core/PowerPC/MMU.h"
 #include "Core/System.h"
 #include "DiscIO/Volume.h"
+#include "VideoCommon/VideoEvents.h"
 
 static constexpr bool hardcore_mode_enabled = false;
 
@@ -145,6 +146,7 @@ void AchievementManager::LoadGameByFilenameAsync(const std::string& iso_path,
     }
     ActivateDeactivateLeaderboards();
     ActivateDeactivateRichPresence();
+    m_do_frame_event = AfterFrameEvent::Register([this] { DoFrame(); }, "AchievementManager");
 
     callback(fetch_game_data_response);
   });
@@ -202,6 +204,26 @@ void AchievementManager::ActivateDeactivateRichPresence()
           m_game_data.rich_presence_script :
           "",
       nullptr, 0);
+}
+
+void AchievementManager::DoFrame()
+{
+  if (!m_is_game_loaded)
+    return;
+  m_threadguard = new Core::CPUThreadGuard(Core::System::GetInstance());
+  rc_runtime_do_frame(
+      &m_runtime,
+      [](const rc_runtime_event_t* runtime_event) {
+        AchievementManager::GetInstance()->AchievementEventHandler(runtime_event);
+      },
+      [](unsigned address, unsigned num_bytes, void* ud) {
+        return AchievementManager::GetInstance()->MemoryPeeker(address, num_bytes, ud);
+      },
+      nullptr, nullptr);
+  delete m_threadguard;
+  u64 current_time = Core::System::GetInstance().GetCoreTiming().GetTicks();
+  if (current_time - m_last_ping_time > SystemTimers::GetTicksPerSecond() * 120)
+    m_queue.EmplaceItem([this] { PingRichPresence(GenerateRichPresence()); });
 }
 
 u32 AchievementManager::MemoryPeeker(u32 address, u32 num_bytes, void* ud)
@@ -262,6 +284,7 @@ void AchievementManager::AchievementEventHandler(const rc_runtime_event_t* runti
 
 void AchievementManager::CloseGame()
 {
+  m_do_frame_event.reset();
   m_is_game_loaded = false;
   m_game_id = 0;
   m_queue.Cancel();

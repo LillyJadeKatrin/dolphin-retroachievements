@@ -16,6 +16,7 @@
 #include <rcheevos/include/rc_runtime.h>
 
 #include "Common/Event.h"
+#include "Common/HookableEvent.h"
 #include "Common/WorkQueueThread.h"
 #include "Core/Core.h"
 
@@ -48,6 +49,7 @@ public:
   void ActivateDeactivateLeaderboards();
   void ActivateDeactivateRichPresence();
 
+  void DoFrame();
   u32 MemoryPeeker(u32 address, u32 num_bytes, void* ud);
   void AchievementEventHandler(const rc_runtime_event_t* runtime_event);
 
@@ -87,6 +89,8 @@ private:
   u32 m_game_id = 0;
   rc_api_fetch_game_data_response_t m_game_data{};
   bool m_is_game_loaded = false;
+  u64 m_last_ping_time = 0;
+  Common::EventHook m_do_frame_event;
 
   struct UnlockStatus
   {
