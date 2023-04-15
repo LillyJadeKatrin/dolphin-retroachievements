@@ -69,6 +69,7 @@ private:
   ResponseType PingRichPresence(RichPresence rich_presence);
 
   void HandleAchievementTriggeredEvent(const rc_runtime_event_t* runtime_event);
+  void HandleLeaderboardTriggeredEvent(const rc_runtime_event_t* runtime_event);
 
   template <typename RcRequest, typename RcResponse>
   ResponseType Request(RcRequest rc_request, RcResponse* rc_response,
