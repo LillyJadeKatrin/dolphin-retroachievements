@@ -19,6 +19,8 @@
 #include "Common/WorkQueueThread.h"
 
 using AchievementId = u32;
+constexpr int RP_SIZE = 65536;
+using RichPresence = std::array<char, RP_SIZE>;
 
 class AchievementManager
 {
@@ -64,6 +66,8 @@ private:
 
   ResponseType AwardAchievement(AchievementId achievement_id);
   ResponseType SubmitLeaderboard(AchievementId leaderboard_id, int value);
+  ResponseType PingRichPresence(RichPresence rich_presence);
+
   template <typename RcRequest, typename RcResponse>
   ResponseType Request(RcRequest rc_request, RcResponse* rc_response,
                        const std::function<int(rc_api_request_t*, const RcRequest*)>& init_request,
