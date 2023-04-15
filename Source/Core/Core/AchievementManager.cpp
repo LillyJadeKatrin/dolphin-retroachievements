@@ -10,6 +10,7 @@
 #include "Common/HttpRequest.h"
 #include "Common/WorkQueueThread.h"
 #include "Core/Config/AchievementSettings.h"
+#include "Core/Core.h"
 #include "Core/PowerPC/MMU.h"
 #include "Core/System.h"
 #include "DiscIO/Volume.h"
@@ -201,6 +202,49 @@ void AchievementManager::ActivateDeactivateRichPresence()
           m_game_data.rich_presence_script :
           "",
       nullptr, 0);
+}
+
+u32 AchievementManager::MemoryPeeker(u32 address, u32 num_bytes, void* ud)
+{
+  const rc_memory_regions_t* regions = rc_console_memory_regions(m_game_data.console_id);
+  for (u32 ix = 0; ix < regions->num_regions; ix++)
+  {
+    if (address >= regions->region[ix].start_address && address <= regions->region[ix].end_address)
+    {
+      address += (regions->region[ix].real_address - regions->region[ix].start_address);
+      break;
+    }
+  }
+  switch (num_bytes)
+  {
+  case 1:
+    return Core::System::GetInstance()
+        .GetMMU()
+        .HostTryReadU8(*m_threadguard, address)
+        .value_or(PowerPC::ReadResult<u8>(false, 0u))
+        .value;
+  case 2:
+    return Core::System::GetInstance()
+        .GetMMU()
+        .HostTryReadU16(*m_threadguard, address)
+        .value_or(PowerPC::ReadResult<u16>(false, 0u))
+        .value;
+  case 4:
+    return Core::System::GetInstance()
+        .GetMMU()
+        .HostTryReadU32(*m_threadguard, address)
+        .value_or(PowerPC::ReadResult<u32>(false, 0u))
+        .value;
+  case 8:
+    return Core::System::GetInstance()
+        .GetMMU()
+        .HostTryReadU64(*m_threadguard, address)
+        .value_or(PowerPC::ReadResult<u64>(false, 0u))
+        .value;
+  default:
+    ASSERT(false);
+    return 0u;
+  }
 }
 
 void AchievementManager::AchievementEventHandler(const rc_runtime_event_t* runtime_event)
