@@ -17,6 +17,7 @@
 
 #include "Common/Event.h"
 #include "Common/WorkQueueThread.h"
+#include "Core/Core.h"
 
 using AchievementId = u32;
 constexpr int RP_SIZE = 65536;
@@ -63,6 +64,7 @@ private:
   ResponseType FetchUnlockData(bool hardcore);
 
   void ActivateDeactivateAchievement(AchievementId id, bool enabled, bool unofficial, bool encore);
+  RichPresence GenerateRichPresence();
 
   ResponseType AwardAchievement(AchievementId achievement_id);
   ResponseType SubmitLeaderboard(AchievementId leaderboard_id, int value);
@@ -98,6 +100,7 @@ private:
 
   Common::WorkQueueThread<std::function<void()>> m_queue;
   std::recursive_mutex m_lock;
+  Core::CPUThreadGuard* m_threadguard;
 };  // class AchievementManager
 
 #endif  // USE_RETRO_ACHIEVEMENTS

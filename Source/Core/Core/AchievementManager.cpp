@@ -9,8 +9,9 @@
 
 #include "Common/HttpRequest.h"
 #include "Common/WorkQueueThread.h"
-#include "Config/AchievementSettings.h"
-#include "Core/Core.h"
+#include "Core/Config/AchievementSettings.h"
+#include "Core/PowerPC/MMU.h"
+#include "Core/System.h"
 #include "DiscIO/Volume.h"
 
 static constexpr bool hardcore_mode_enabled = false;
@@ -362,6 +363,20 @@ void AchievementManager::ActivateDeactivateAchievement(AchievementId id, bool en
   }
   if (active && !activate)
     rc_runtime_deactivate_achievement(&m_runtime, id);
+}
+
+RichPresence AchievementManager::GenerateRichPresence()
+{
+  RichPresence rp_buffer;
+  m_threadguard = new Core::CPUThreadGuard(Core::System::GetInstance());
+  rc_runtime_get_richpresence(
+      &m_runtime, rp_buffer.data(), RP_SIZE,
+      [](unsigned address, unsigned num_bytes, void* ud) {
+        return AchievementManager::GetInstance()->MemoryPeeker(address, num_bytes, ud);
+      },
+      nullptr, nullptr);
+  delete m_threadguard;
+  return rp_buffer;
 }
 
 AchievementManager::ResponseType AchievementManager::AwardAchievement(AchievementId achievement_id)
