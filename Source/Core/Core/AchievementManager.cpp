@@ -669,11 +669,15 @@ void AchievementManager::GameChanged(bool isWii)
   m_do_frame_event.reset();
   ReinstallMemoryBanks();
 
+  if (m_threadguard)
+    delete m_threadguard;
+
   if (Core::GetState() == Core::State::Uninitialized)
   {
     m_game_id = 0;
     return;
   }
+  m_threadguard = new Core::CPUThreadGuard(Core::System::GetInstance());
 
   //  Must call this before calling RA_IdentifyHash
   RA_SetConsoleID(isWii ? WII : GameCube);
@@ -788,19 +792,31 @@ void AchievementManager::RACallbackLoadROM(const char* unused)
 
 unsigned char AchievementManager::RACallbackReadMemory(unsigned int address)
 {
-  return Core::System::GetInstance().GetMemory().Read_U8(address);
+  return Core::System::GetInstance()
+      .GetMMU()
+      .HostTryReadU8(*m_threadguard, address)
+      .value_or(PowerPC::ReadResult<u8>(false, 0u))
+      .value;
 }
 
 unsigned int AchievementManager::RACallbackReadBlock(unsigned int address, unsigned char* buffer,
                                                      unsigned int bytes)
 {
-  Core::System::GetInstance().GetMemory().CopyFromEmu(buffer, address, bytes);
-  return bytes;
+  unsigned int bytes_read = 0;
+  for (bytes_read = 0; bytes_read < bytes; bytes_read++)
+  {
+    buffer[bytes_read] = Core::System::GetInstance()
+                             .GetMMU()
+                             .HostTryReadU8(*m_threadguard, address + bytes_read)
+                             .value_or(PowerPC::ReadResult<u8>(false, 0u))
+                             .value;
+  }
+  return bytes_read;
 }
 
 void AchievementManager::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-  Core::System::GetInstance().GetMemory().Write_U8(value, address);
+  Core::System::GetInstance().GetMMU().HostTryWriteU8(*m_threadguard, value, address);
 }
 #endif  // _WIN32
 #endif  // USE_RETRO_ACHIEVEMENTS
