@@ -902,6 +902,7 @@ void Callback_NewField(Core::System& system)
       CallOnStateChangedCallbacks(Core::GetState());
     }
   }
+  AchievementManager::GetInstance()->RAIDoFrame();
 }
 
 void UpdateTitle()
