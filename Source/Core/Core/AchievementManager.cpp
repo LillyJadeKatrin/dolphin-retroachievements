@@ -557,7 +557,8 @@ AchievementManager::ResponseType AchievementManager::Request(
     const std::function<int(rc_api_request_t*, const RcRequest*)>& init_request,
     const std::function<int(RcResponse*, const char*)>& process_response)
 {
-  rc_api_request_t api_request;
+  return ResponseType::INVALID_CREDENTIALS;
+  /* rc_api_request_t api_request;
   Common::HttpRequest http_request;
   init_request(&api_request, &rc_request);
   if (!api_request.post_data)
@@ -581,7 +582,7 @@ AchievementManager::ResponseType AchievementManager::Request(
   else
   {
     return ResponseType::CONNECTION_FAILED;
-  }
+  }*/
 }
 
 void AchievementManager::EnableDLL(bool enable)
@@ -669,11 +670,15 @@ void AchievementManager::GameChanged(bool isWii)
   m_do_frame_event.reset();
   ReinstallMemoryBanks();
 
+  if (m_threadguard)
+    delete m_threadguard;
+
   if (Core::GetState() == Core::State::Uninitialized)
   {
     m_game_id = 0;
     return;
   }
+  m_threadguard = new Core::CPUThreadGuard(Core::System::GetInstance());
 
   //  Must call this before calling RA_IdentifyHash
   RA_SetConsoleID(isWii ? WII : GameCube);
@@ -682,9 +687,14 @@ void AchievementManager::GameChanged(bool isWii)
   if (m_game_id != 0)
   {
     RA_ActivateGame(m_game_id);
-    m_do_frame_event =
-        AfterFrameEvent::Register([this] { RA_DoAchievementsFrame(); }, "AchievementManager");
+    //    m_do_frame_event =
+    //      AfterFrameEvent::Register([this] { RA_DoAchievementsFrame(); }, "AchievementManager");
   }
+}
+
+void AchievementManager::RAIDoFrame()
+{
+  RA_DoAchievementsFrame();
 }
 
 bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
@@ -788,19 +798,58 @@ void AchievementManager::RACallbackLoadROM(const char* unused)
 
 unsigned char AchievementManager::RACallbackReadMemory(unsigned int address)
 {
-  return Core::System::GetInstance().GetMemory().Read_U8(address);
+  const rc_memory_regions_t* regions = rc_console_memory_regions(ConsoleID::GameCube);
+  for (u32 ix = 0; ix < regions->num_regions; ix++)
+  {
+    if (address >= regions->region[ix].start_address && address <= regions->region[ix].end_address)
+    {
+      address += (regions->region[ix].real_address - regions->region[ix].start_address);
+      break;
+    }
+  }
+  return Core::System::GetInstance()
+      .GetMMU()
+      .HostTryReadU8(*m_threadguard, address)
+      .value_or(PowerPC::ReadResult<u8>(false, 0u))
+      .value;
 }
 
 unsigned int AchievementManager::RACallbackReadBlock(unsigned int address, unsigned char* buffer,
                                                      unsigned int bytes)
 {
-  Core::System::GetInstance().GetMemory().CopyFromEmu(buffer, address, bytes);
-  return bytes;
+  const rc_memory_regions_t* regions = rc_console_memory_regions(ConsoleID::GameCube);
+  for (u32 ix = 0; ix < regions->num_regions; ix++)
+  {
+    if (address >= regions->region[ix].start_address && address <= regions->region[ix].end_address)
+    {
+      address += (regions->region[ix].real_address - regions->region[ix].start_address);
+      break;
+    }
+  }
+  unsigned int bytes_read = 0;
+  for (bytes_read = 0; bytes_read < bytes; bytes_read++)
+  {
+    buffer[bytes_read] = Core::System::GetInstance()
+                             .GetMMU()
+                             .HostTryReadU8(*m_threadguard, address + bytes_read)
+                             .value_or(PowerPC::ReadResult<u8>(false, 0u))
+                             .value;
+  }
+  return bytes_read;
 }
 
 void AchievementManager::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-  Core::System::GetInstance().GetMemory().Write_U8(value, address);
+  const rc_memory_regions_t* regions = rc_console_memory_regions(ConsoleID::GameCube);
+  for (u32 ix = 0; ix < regions->num_regions; ix++)
+  {
+    if (address >= regions->region[ix].start_address && address <= regions->region[ix].end_address)
+    {
+      address += (regions->region[ix].real_address - regions->region[ix].start_address);
+      break;
+    }
+  }
+  Core::System::GetInstance().GetMMU().HostTryWriteU8(*m_threadguard, value, address);
 }
 #endif  // _WIN32
 #endif  // USE_RETRO_ACHIEVEMENTS
