@@ -202,7 +202,7 @@ HookFlag GetHookFlagsByIndex(u32 index)
 
 bool IsEnabled(HookFlag flag)
 {
-  return flag != HLE::HookFlag::Debug || Config::Get(Config::MAIN_ENABLE_DEBUGGING) ||
+  return flag != HLE::HookFlag::Debug || Config::IsDebuggingEnabled() ||
          Core::System::GetInstance().GetPowerPC().GetMode() == PowerPC::CoreMode::Interpreter;
 }
 

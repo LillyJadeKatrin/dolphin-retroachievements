@@ -275,7 +275,7 @@ void PowerPCManager::Init(CPUCore cpu_core)
 
   m_ppc_state.m_enable_dcache = Config::Get(Config::MAIN_ACCURATE_CPU_CACHE);
 
-  if (Config::Get(Config::MAIN_ENABLE_DEBUGGING))
+  if (Config::IsDebuggingEnabled())
     m_breakpoints.ClearAllTemporary();
 }
 

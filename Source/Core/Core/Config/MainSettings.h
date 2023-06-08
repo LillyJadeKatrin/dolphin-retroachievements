@@ -378,4 +378,5 @@ std::string GetGCIFolderPath(std::string configured_folder, ExpansionInterface::
                              std::optional<DiscIO::Region> region);
 bool IsDefaultGCIFolderPathConfigured(ExpansionInterface::Slot slot);
 bool IsCheatsEnabled();
+bool IsDebuggingEnabled();
 }  // namespace Config
