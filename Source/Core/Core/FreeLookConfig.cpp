@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/FreeLookConfig.h"
+#include "Core/Config/AchievementSettings.h"
 #include "Core/Config/FreeLookSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
@@ -42,6 +43,10 @@ void Config::Refresh()
   }
 
   camera_config.control_type = ::Config::Get(::Config::FL1_CONTROL_TYPE);
+#ifdef USE_RETRO_ACHIEVEMENTS
+  if (::Config::Get(::Config::RA_HARDCORE_ENABLED))
+    ::Config::SetBaseOrCurrent(::Config::FREE_LOOK_ENABLED, false);
+#endif  // USE_RETRO_ACHIEVEMENTS
   enabled = ::Config::Get(::Config::FREE_LOOK_ENABLED);
 }
 }  // namespace FreeLook
