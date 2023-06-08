@@ -16,6 +16,7 @@
 #include "Common/Logging/Log.h"
 #include "Common/SPSCQueue.h"
 
+#include "Core/Config/AchievementSettings.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
 #include "Core/PowerPC/PowerPC.h"
@@ -354,6 +355,11 @@ void CoreTimingManager::Throttle(const s64 target_cycle)
     return;
 
   m_throttle_last_cycle = target_cycle;
+
+#ifdef USE_RETRO_ACHIEVEMENTS
+  if (Config::Get(Config::RA_HARDCORE_ENABLED) && Config::Get(Config::MAIN_EMULATION_SPEED) < 1.0f)
+    Config::SetBaseOrCurrent(Config::MAIN_EMULATION_SPEED, 1.0f);
+#endif  // USE_RETRO_ACHIEVEMENTS
 
   const double speed =
       Core::GetIsThrottlerTempDisabled() ? 0.0 : Config::Get(Config::MAIN_EMULATION_SPEED);
