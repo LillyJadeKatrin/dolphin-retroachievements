@@ -746,4 +746,14 @@ bool IsCheatsEnabled()
 #endif  // USE_RETRO_ACHIEVEMENTS
   return Config::Get(Config::MAIN_ENABLE_CHEATS);
 }
+
+bool IsDebuggingEnabled()
+{
+#ifdef USE_RETRO_ACHIEVEMENTS
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+    Config::SetBaseOrCurrent(Config::MAIN_ENABLE_DEBUGGING, false);
+#endif  // USE_RETRO_ACHIEVEMENTS
+  return Config::Get(Config::MAIN_ENABLE_CHEATS);
+}
+
 }  // namespace Config

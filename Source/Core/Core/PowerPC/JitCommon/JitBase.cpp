@@ -89,7 +89,7 @@ void JitBase::RefreshConfig()
   bJITSystemRegistersOff = Config::Get(Config::MAIN_DEBUG_JIT_SYSTEM_REGISTERS_OFF);
   bJITBranchOff = Config::Get(Config::MAIN_DEBUG_JIT_BRANCH_OFF);
   bJITRegisterCacheOff = Config::Get(Config::MAIN_DEBUG_JIT_REGISTER_CACHE_OFF);
-  m_enable_debugging = Config::Get(Config::MAIN_ENABLE_DEBUGGING);
+  m_enable_debugging = Config::IsDebuggingEnabled();
   m_enable_float_exceptions = Config::Get(Config::MAIN_FLOAT_EXCEPTIONS);
   m_enable_div_by_zero_exceptions = Config::Get(Config::MAIN_DIVIDE_BY_ZERO_EXCEPTIONS);
   m_low_dcbz_hack = Config::Get(Config::MAIN_LOW_DCBZ_HACK);
