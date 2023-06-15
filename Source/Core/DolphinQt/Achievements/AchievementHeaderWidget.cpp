@@ -84,7 +84,7 @@ void AchievementHeaderWidget::UpdateData()
     return;
   }
 
-  AchievementManager::BadgeStatus player_badge =
+  const AchievementManager::BadgeStatus& player_badge =
       AchievementManager::GetInstance()->GetPlayerBadge();
   if (Config::Get(Config::RA_BADGES_ENABLED) && player_badge.loaded)
   {
@@ -115,7 +115,7 @@ void AchievementHeaderWidget::UpdateData()
     return;
   }
 
-  AchievementManager::BadgeStatus game_badge =
+  const AchievementManager::BadgeStatus& game_badge =
       AchievementManager::GetInstance()->GetGameBadge();
   if (Config::Get(Config::RA_BADGES_ENABLED) && game_badge.loaded)
   {
