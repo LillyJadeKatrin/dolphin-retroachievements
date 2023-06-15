@@ -22,6 +22,7 @@
 using AchievementId = u32;
 constexpr size_t RP_SIZE = 256;
 using RichPresence = std::array<char, RP_SIZE>;
+using Badge = std::vector<u8>;
 
 namespace Core
 {
@@ -51,6 +52,12 @@ public:
     u32 hard_points;
     u32 soft_unlocks;
     u32 soft_points;
+  };
+
+  struct BadgeStatus
+  {
+    bool loaded = false;
+    Badge badge{};
   };
 
   struct UnlockStatus
@@ -124,6 +131,7 @@ private:
   ResponseType Request(RcRequest rc_request, RcResponse* rc_response,
                        const std::function<int(rc_api_request_t*, const RcRequest*)>& init_request,
                        const std::function<int(RcResponse*, const char*)>& process_response);
+  ResponseType RequestImage(rc_api_fetch_image_request_t rc_request, BadgeStatus* rc_response);
 
   rc_runtime_t m_runtime{};
   Core::System* m_system{};
