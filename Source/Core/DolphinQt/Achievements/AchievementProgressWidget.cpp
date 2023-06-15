@@ -49,9 +49,37 @@ AchievementProgressWidget::AchievementProgressWidget(QWidget* parent) : QWidget(
 QGroupBox*
 AchievementProgressWidget::CreateAchievementBox(const rc_api_achievement_definition_t* achievement)
 {
+  QLabel* a_badge{};
+  const auto unlock_status = AchievementManager::GetInstance()->GetUnlockStatus(achievement->id);
+  bool is_unlocked = (unlock_status.session_unlock_count > 0) ||
+                     (unlock_status.remote_unlock_status ==
+                      AchievementManager::UnlockStatus::UnlockType::HARDCORE) ||
+                     (!Config::Get(Config::RA_HARDCORE_ENABLED) &&
+                      unlock_status.remote_unlock_status ==
+                          AchievementManager::UnlockStatus::UnlockType::SOFTCORE);
+  const AchievementManager::BadgeStatus& badge =
+      is_unlocked ?
+      unlock_status.unlocked_badge : unlock_status.locked_badge;
+  if (Config::Get(Config::RA_BADGES_ENABLED) && badge.loaded)
+  {
+    QImage i_badge{};
+    i_badge.loadFromData(badge.badge.begin()._Ptr, (int)badge.badge.size());
+    a_badge->setPixmap(
+        QPixmap::fromImage(i_badge).scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    a_badge->adjustSize();
+    a_badge->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+    a_badge->setVisible(true);
+  }
+  else
+  {
+    a_badge->setVisible(false);
+    a_badge->clear();
+    a_badge->setText({});
+  }
+
   QLabel* a_title = new QLabel(QString::fromUtf8(achievement->title, strlen(achievement->title)));
   QLabel* a_description =
-      new QLabel(QString::fromUtf8(achievement->description, strlen(achievement->description)));
+    new QLabel(QString::fromUtf8(achievement->description, strlen(achievement->description)));
   QLabel* a_points = new QLabel(tr("%1 points").arg(achievement->points));
   QLabel* a_status = new QLabel(GetStatusString(achievement->id));
   QProgressBar* a_progress_bar = new QProgressBar();
@@ -75,7 +103,7 @@ AchievementProgressWidget::CreateAchievementBox(const rc_api_achievement_definit
   a_col_right->addWidget(a_status);
   a_col_right->addWidget(a_progress_bar);
   QHBoxLayout* a_total = new QHBoxLayout();
-  // TODO: achievement badge goes here
+  a_total->addWidget(a_badge);
   a_total->addLayout(a_col_right);
   QGroupBox* a_group_box = new QGroupBox();
   a_group_box->setLayout(a_total);
