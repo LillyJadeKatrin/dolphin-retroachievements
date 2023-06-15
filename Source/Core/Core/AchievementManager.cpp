@@ -34,6 +34,8 @@ void AchievementManager::Init()
     rc_runtime_init(&m_runtime);
     m_is_runtime_initialized = true;
     m_queue.Reset("AchievementManagerQueue", [](const std::function<void()>& func) { func(); });
+    m_queue.Reset("AchievementManagerImageQueue",
+                  [](const std::function<void()>& func) { func(); });
     LoginAsync("", [](ResponseType r_type) {});
   }
 }
@@ -270,6 +272,77 @@ void AchievementManager::ActivateDeactivateRichPresence()
       nullptr, 0);
 }
 
+
+void AchievementManager::FetchBadges()
+{
+  if (!m_is_runtime_initialized || !IsLoggedIn() || !Config::Get(Config::RA_BADGES_ENABLED))
+    return;
+  if (!m_player_badge.loaded)
+  {
+    m_image_queue.EmplaceItem([this] {
+      {
+        std::lock_guard lg{m_lock};
+        std::string username = Config::Get(Config::RA_USERNAME);
+        rc_api_fetch_image_request_t icon_request = {.image_name = username.c_str(),
+                                                     .image_type = RC_IMAGE_TYPE_USER};
+        RequestImage(icon_request, &m_player_badge);
+      }
+      if (m_update_callback)
+        m_update_callback();
+    });
+  }
+
+  if (!IsGameLoaded())
+    return;
+
+  if (!m_game_badge.loaded)
+  {
+    m_image_queue.EmplaceItem([this] {
+      {
+        std::lock_guard lg{m_lock};
+        rc_api_fetch_image_request_t icon_request = {.image_name = m_game_data.image_name,
+                                                     .image_type = RC_IMAGE_TYPE_GAME};
+        RequestImage(icon_request, &m_game_badge);
+      }
+      if (m_update_callback)
+        m_update_callback();
+    });
+  }
+
+  for (auto entry : m_unlock_map)
+  {
+    UnlockStatus unlock_status = entry.second;
+    const char* badge_name = m_game_data.achievements[unlock_status.game_data_index].badge_name;
+    if (!unlock_status.unlocked_badge.loaded)
+    {
+      m_image_queue.EmplaceItem([this, &unlock_status, badge_name] {
+        {
+          std::lock_guard lg{m_lock};
+          rc_api_fetch_image_request_t icon_request = {.image_name = badge_name,
+                                                       .image_type = RC_IMAGE_TYPE_ACHIEVEMENT};
+          RequestImage(icon_request, &unlock_status.unlocked_badge);
+        }
+        if (m_update_callback)
+          m_update_callback();
+      });
+    }
+    if (!unlock_status.locked_badge.loaded)
+    {
+      m_image_queue.EmplaceItem([this, &unlock_status, badge_name] {
+        {
+          std::lock_guard lg{m_lock};
+          rc_api_fetch_image_request_t icon_request = {
+              .image_name = badge_name, .image_type = RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED};
+          RequestImage(icon_request, &unlock_status.locked_badge);
+        }
+        if (m_update_callback)
+          m_update_callback();
+      });
+    }
+  }
+}
+
+
 void AchievementManager::DoFrame()
 {
   if (!m_is_game_loaded)
@@ -363,6 +436,11 @@ u32 AchievementManager::GetPlayerScore() const
   return IsLoggedIn() ? m_player_score : 0;
 }
 
+const AchievementManager::BadgeStatus& AchievementManager::GetPlayerBadge() const
+{
+  return m_player_badge;
+}
+
 std::string AchievementManager::GetGameDisplayName() const
 {
   return IsGameLoaded() ? m_game_data.title : "";
@@ -399,7 +477,12 @@ rc_api_fetch_game_data_response_t* AchievementManager::GetGameData()
   return &m_game_data;
 }
 
-AchievementManager::UnlockStatus
+const AchievementManager::BadgeStatus& AchievementManager::GetGameBadge() const
+{
+  return m_game_badge;
+}
+
+const AchievementManager::UnlockStatus&
 AchievementManager::GetUnlockStatus(AchievementId achievement_id) const
 {
   return m_unlock_map.at(achievement_id);
@@ -417,6 +500,7 @@ void AchievementManager::CloseGame()
     std::lock_guard lg{m_lock};
     m_is_game_loaded = false;
     m_game_id = 0;
+    m_game_badge.loaded = false;
     m_queue.Cancel();
     m_unlock_map.clear();
     m_system = nullptr;
@@ -431,6 +515,7 @@ void AchievementManager::CloseGame()
 void AchievementManager::Logout()
 {
   CloseGame();
+  m_player_badge.loaded = false;
   Config::SetBaseOrCurrent(Config::RA_API_TOKEN, "");
   if (m_update_callback)
     m_update_callback();
@@ -766,8 +851,7 @@ AchievementManager::ResponseType AchievementManager::Request(
 }
 
 AchievementManager::ResponseType
-AchievementManager::RequestImage(rc_api_fetch_image_request_t rc_request,
-                                 BadgeStatus* rc_response)
+AchievementManager::RequestImage(rc_api_fetch_image_request_t rc_request, BadgeStatus* rc_response)
 {
   rc_response->loaded = false;
   rc_response->badge.clear();
