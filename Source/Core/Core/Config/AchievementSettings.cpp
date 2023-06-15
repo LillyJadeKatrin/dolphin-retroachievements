@@ -22,6 +22,7 @@ const Info<bool> RA_RICH_PRESENCE_ENABLED{
     {System::Achievements, "Achievements", "RichPresenceEnabled"}, false};
 const Info<bool> RA_HARDCORE_ENABLED{{System::Achievements, "Achievements", "HardcoreEnabled"},
                                      false};
+const Info<bool> RA_BADGES_ENABLED{{System::Achievements, "Achievements", "BadgesEnabled"}, false};
 const Info<bool> RA_UNOFFICIAL_ENABLED{{System::Achievements, "Achievements", "UnofficialEnabled"},
                                        false};
 const Info<bool> RA_ENCORE_ENABLED{{System::Achievements, "Achievements", "EncoreEnabled"}, false};
