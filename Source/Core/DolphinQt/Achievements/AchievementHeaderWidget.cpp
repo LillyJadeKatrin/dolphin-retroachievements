@@ -20,6 +20,7 @@
 #include <rcheevos/include/rc_runtime.h>
 
 #include "Core/AchievementManager.h"
+#include "Core/Config/AchievementSettings.h"
 #include "Core/Core.h"
 
 #include "DolphinQt/QtUtils/ModalMessageBox.h"
@@ -29,8 +30,10 @@
 
 AchievementHeaderWidget::AchievementHeaderWidget(QWidget* parent) : QWidget(parent)
 {
+  m_user_icon = new QLabel();
   m_user_name = new QLabel();
   m_user_points = new QLabel();
+  m_game_icon = new QLabel();
   m_game_name = new QLabel();
   m_game_points = new QLabel();
   m_game_progress_hard = new QProgressBar();
@@ -41,7 +44,7 @@ AchievementHeaderWidget::AchievementHeaderWidget(QWidget* parent) : QWidget(pare
   m_user_right_col->addWidget(m_user_name);
   m_user_right_col->addWidget(m_user_points);
   QHBoxLayout* m_user_layout = new QHBoxLayout();
-  // TODO lillyjade 02 Jun 2023 - player badge goes here
+  m_user_layout->addWidget(m_user_icon);
   m_user_layout->addLayout(m_user_right_col);
   m_user_box = new QGroupBox();
   m_user_box->setLayout(m_user_layout);
@@ -52,7 +55,8 @@ AchievementHeaderWidget::AchievementHeaderWidget(QWidget* parent) : QWidget(pare
   m_game_right_col->addWidget(m_game_progress_hard);
   m_game_right_col->addWidget(m_game_progress_soft);
   QHBoxLayout* m_game_upper_row = new QHBoxLayout();
-  // TODO lillyjade 02 Jun 2023 - player badge and game badge go here
+  m_game_upper_row->addWidget(m_user_icon);
+  m_game_upper_row->addWidget(m_game_icon);
   m_game_upper_row->addLayout(m_game_right_col);
   QVBoxLayout* m_game_layout = new QVBoxLayout();
   m_game_layout->addLayout(m_game_upper_row);
@@ -80,6 +84,25 @@ void AchievementHeaderWidget::UpdateData()
     return;
   }
 
+  AchievementManager::BadgeStatus player_badge =
+      AchievementManager::GetInstance()->GetPlayerBadge();
+  if (Config::Get(Config::RA_BADGES_ENABLED) && player_badge.loaded)
+  {
+    QImage i_user_icon{};
+    i_user_icon.loadFromData(player_badge.badge.begin()._Ptr, (int)player_badge.badge.size());
+    m_user_icon->setPixmap(QPixmap::fromImage(i_user_icon)
+                               .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    m_user_icon->adjustSize();
+    m_user_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+    m_user_icon->setVisible(true);
+  }
+  else
+  {
+    m_user_icon->setVisible(false);
+    m_user_icon->clear();
+    m_user_icon->setText({});
+  }
+
   QString user_name =
       QString::fromStdString(AchievementManager::GetInstance()->GetPlayerDisplayName());
   m_user_name->setText(user_name);
@@ -92,6 +115,24 @@ void AchievementHeaderWidget::UpdateData()
     return;
   }
 
+  AchievementManager::BadgeStatus game_badge =
+      AchievementManager::GetInstance()->GetGameBadge();
+  if (Config::Get(Config::RA_BADGES_ENABLED) && game_badge.loaded)
+  {
+    QImage i_game_icon{};
+    i_game_icon.loadFromData(game_badge.badge.begin()._Ptr, (int)game_badge.badge.size());
+    m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon)
+                               .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    m_game_icon->adjustSize();
+    m_game_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+    m_game_icon->setVisible(true);
+  }
+  else
+  {
+    m_game_icon->setVisible(false);
+    m_game_icon->clear();
+    m_game_icon->setText({});
+  }
   AchievementManager::PointSpread point_spread = AchievementManager::GetInstance()->TallyScore();
   m_game_name->setText(
       QString::fromStdString(AchievementManager::GetInstance()->GetGameDisplayName()));

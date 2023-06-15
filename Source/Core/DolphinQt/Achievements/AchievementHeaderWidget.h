@@ -27,8 +27,10 @@ private:
   QGroupBox* m_common_box;
   QVBoxLayout* m_common_layout;
 
+  QLabel* m_user_icon;
   QLabel* m_user_name;
   QLabel* m_user_points;
+  QLabel* m_game_icon;
   QLabel* m_game_name;
   QLabel* m_game_points;
   QProgressBar* m_game_progress_hard;
