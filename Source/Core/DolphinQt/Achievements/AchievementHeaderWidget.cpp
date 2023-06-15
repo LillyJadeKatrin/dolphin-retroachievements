@@ -115,6 +115,7 @@ void AchievementHeaderWidget::UpdateData()
     return;
   }
 
+  AchievementManager::PointSpread point_spread = AchievementManager::GetInstance()->TallyScore();
   const AchievementManager::BadgeStatus& game_badge =
       AchievementManager::GetInstance()->GetGameBadge();
   if (Config::Get(Config::RA_BADGES_ENABLED) && game_badge.loaded)
@@ -124,7 +125,12 @@ void AchievementHeaderWidget::UpdateData()
     m_game_icon->setPixmap(QPixmap::fromImage(i_game_icon)
                                .scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     m_game_icon->adjustSize();
-    m_game_icon->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+    std::string color = AchievementManager::GRAY;
+    if (point_spread.hard_unlocks == point_spread.total_count)
+      color = AchievementManager::GOLD;
+    else if (point_spread.hard_unlocks + point_spread.soft_unlocks == point_spread.total_count)
+      color = AchievementManager::BLUE;
+    m_game_icon->setStyleSheet(QString::fromStdString(fmt::format("border: 4px solid {}", color)));
     m_game_icon->setVisible(true);
   }
   else
@@ -133,7 +139,6 @@ void AchievementHeaderWidget::UpdateData()
     m_game_icon->clear();
     m_game_icon->setText({});
   }
-  AchievementManager::PointSpread point_spread = AchievementManager::GetInstance()->TallyScore();
   m_game_name->setText(
       QString::fromStdString(AchievementManager::GetInstance()->GetGameDisplayName()));
   m_game_points->setText(GetPointsString(user_name, point_spread));

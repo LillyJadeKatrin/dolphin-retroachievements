@@ -67,7 +67,18 @@ AchievementProgressWidget::CreateAchievementBox(const rc_api_achievement_definit
     a_badge->setPixmap(
         QPixmap::fromImage(i_badge).scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     a_badge->adjustSize();
-    a_badge->setStyleSheet(QString::fromStdString("border: 4px solid transparent"));
+    std::string color = AchievementManager::GRAY;
+    if (unlock_status.remote_unlock_status ==
+        AchievementManager::UnlockStatus::UnlockType::HARDCORE)
+      color = AchievementManager::GOLD;
+    else if (Config::Get(Config::RA_HARDCORE_ENABLED) || unlock_status.session_unlock_count > 1)
+      color = AchievementManager::GOLD;
+    else if (unlock_status.remote_unlock_status ==
+             AchievementManager::UnlockStatus::UnlockType::SOFTCORE)
+      color = AchievementManager::BLUE;
+    else if (unlock_status.session_unlock_count > 1)
+      color = AchievementManager::BLUE;
+    a_badge->setStyleSheet(QString::fromStdString(fmt::format("border: 4px solid {}", color)));
     a_badge->setVisible(true);
   }
   else
