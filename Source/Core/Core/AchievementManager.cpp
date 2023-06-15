@@ -765,4 +765,28 @@ AchievementManager::ResponseType AchievementManager::Request(
   }
 }
 
+AchievementManager::ResponseType
+AchievementManager::RequestImage(rc_api_fetch_image_request_t rc_request,
+                                 BadgeStatus* rc_response)
+{
+  rc_response->loaded = false;
+  rc_response->badge.clear();
+  rc_api_request_t api_request;
+  Common::HttpRequest http_request;
+  if (rc_api_init_fetch_image_request(&api_request, &rc_request) != RC_OK || !api_request.post_data)
+    return ResponseType::INVALID_REQUEST;
+  auto http_response = http_request.Get(api_request.url);
+  rc_api_destroy_request(&api_request);
+  if (http_response.has_value() && http_response->size() > 0)
+  {
+    rc_response->badge = http_response.value();
+    rc_response->loaded = true;
+    return ResponseType::SUCCESS;
+  }
+  else
+  {
+    return ResponseType::CONNECTION_FAILED;
+  }
+}
+
 #endif  // USE_RETRO_ACHIEVEMENTS
