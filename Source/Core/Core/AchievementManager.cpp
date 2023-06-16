@@ -407,6 +407,12 @@ void AchievementManager::AchievementEventHandler(const rc_runtime_event_t* runti
     case RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED:
       HandleAchievementTriggeredEvent(runtime_event);
       break;
+    case RC_RUNTIME_EVENT_ACHIEVEMENT_PRIMED:
+      HandleAchievementPrimedEvent(runtime_event);
+      break;
+    case RC_RUNTIME_EVENT_ACHIEVEMENT_UNPRIMED:
+      HandleAchievementUnprimedEvent(runtime_event);
+      break;
     case RC_RUNTIME_EVENT_LBOARD_STARTED:
       HandleLeaderboardStartedEvent(runtime_event);
       break;
@@ -499,6 +505,7 @@ void AchievementManager::CloseGame()
 {
   {
     std::lock_guard lg{m_lock};
+    OSD::ClearIcons();
     m_is_game_loaded = false;
     m_game_id = 0;
     m_game_badge.loaded = false;
@@ -769,6 +776,26 @@ void AchievementManager::HandleAchievementTriggeredEvent(const rc_runtime_event_
   ActivateDeactivateAchievement(runtime_event->id, Config::Get(Config::RA_ACHIEVEMENTS_ENABLED),
                                 Config::Get(Config::RA_UNOFFICIAL_ENABLED),
                                 Config::Get(Config::RA_ENCORE_ENABLED));
+}
+
+void AchievementManager::HandleAchievementPrimedEvent(const rc_runtime_event_t* runtime_event)
+{
+  if (!Config::Get(Config::RA_BADGES_ENABLED))
+    return;
+  auto it = m_unlock_map.find(runtime_event->id);
+  if (it == m_unlock_map.end())
+    return;
+  OSD::AddIcon(it->second.unlocked_badge.cache_ptr);
+}
+
+void AchievementManager::HandleAchievementUnprimedEvent(const rc_runtime_event_t* runtime_event)
+{
+  if (!Config::Get(Config::RA_BADGES_ENABLED))
+    return;
+  auto it = m_unlock_map.find(runtime_event->id);
+  if (it == m_unlock_map.end())
+    return;
+  OSD::RemoveIcon(it->second.unlocked_badge.cache_ptr);
 }
 
 void AchievementManager::HandleLeaderboardStartedEvent(const rc_runtime_event_t* runtime_event)
