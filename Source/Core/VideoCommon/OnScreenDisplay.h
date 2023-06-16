@@ -46,6 +46,11 @@ void AddTypedMessage(MessageType type, std::string message, u32 ms = Duration::S
 void DrawMessages();
 void ClearMessages();
 
+void DrawIcons();
+void AddIcon(ImTextureID icon);
+void RemoveIcon(ImTextureID icon);
+void ClearIcons();
+
 void SetObscuredPixelsLeft(int width);
 void SetObscuredPixelsTop(int height);
 }  // namespace OSD
