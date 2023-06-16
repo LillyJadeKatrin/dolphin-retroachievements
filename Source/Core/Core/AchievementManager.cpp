@@ -865,6 +865,9 @@ AchievementManager::RequestImage(rc_api_fetch_image_request_t rc_request, BadgeS
   {
     rc_response->badge = http_response.value();
     rc_response->loaded = true;
+    rc_response->cache_ptr = nullptr;
+    // TODO lillyjadekatrin 15 Jun 2023
+    // Sync with iwubcode on how to cache images
     return ResponseType::SUCCESS;
   }
   else
