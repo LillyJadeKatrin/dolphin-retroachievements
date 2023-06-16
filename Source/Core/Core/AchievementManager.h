@@ -12,6 +12,8 @@
 #include <thread>
 #include <unordered_map>
 
+#include <imgui.h>
+
 #include <rcheevos/include/rc_api_runtime.h>
 #include <rcheevos/include/rc_api_user.h>
 #include <rcheevos/include/rc_runtime.h>
@@ -58,6 +60,7 @@ public:
   {
     bool loaded = false;
     Badge badge{};
+    ImTextureID cache_ptr;
   };
 
   struct UnlockStatus
