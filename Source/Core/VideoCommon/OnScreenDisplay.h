@@ -6,6 +6,7 @@
 #include <functional>
 #include <string>
 
+#include <imgui.h>
 #include "Common/CommonTypes.h"
 
 namespace OSD
@@ -36,7 +37,8 @@ constexpr u32 VERY_LONG = 10000;
 };  // namespace Duration
 
 // On-screen message display (colored yellow by default)
-void AddMessage(std::string message, u32 ms = Duration::SHORT, u32 argb = Color::YELLOW);
+void AddMessage(std::string message, u32 ms = Duration::SHORT, u32 argb = Color::YELLOW,
+                ImTextureID icon = nullptr);
 void AddTypedMessage(MessageType type, std::string message, u32 ms = Duration::SHORT,
                      u32 argb = Color::YELLOW);
 
