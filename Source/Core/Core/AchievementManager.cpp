@@ -182,10 +182,11 @@ void AchievementManager::LoadGameByFilenameAsync(const std::string& iso_path,
       PointSpread spread = TallyScore();
       if (hardcore_mode_enabled)
       {
-        OSD::AddMessage(fmt::format("You have {}/{} achievements worth {}/{} points",
-                                    spread.hard_unlocks, spread.total_count, spread.hard_points,
-                                    spread.total_points),
-                        OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
+        OSD::AddMessage(
+            fmt::format("You have {}/{} achievements worth {}/{} points", spread.hard_unlocks,
+                        spread.total_count, spread.hard_points, spread.total_points),
+            OSD::Duration::VERY_LONG, OSD::Color::YELLOW,
+            (Config::Get(Config::RA_BADGES_ENABLED)) ? m_game_badge.cache_ptr : nullptr);
         OSD::AddMessage("Hardcore mode is ON", OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
       }
       else
@@ -193,7 +194,9 @@ void AchievementManager::LoadGameByFilenameAsync(const std::string& iso_path,
         OSD::AddMessage(fmt::format("You have {}/{} achievements worth {}/{} points",
                                     spread.hard_unlocks + spread.soft_unlocks, spread.total_count,
                                     spread.hard_points + spread.soft_points, spread.total_points),
-                        OSD::Duration::VERY_LONG, OSD::Color::CYAN);
+                        OSD::Duration::VERY_LONG, OSD::Color::CYAN,
+                        (Config::Get(Config::RA_BADGES_ENABLED)) ? m_game_badge.cache_ptr :
+                                                                   nullptr);
         OSD::AddMessage("Hardcore mode is OFF", OSD::Duration::VERY_LONG, OSD::Color::CYAN);
       }
     }
@@ -272,7 +275,6 @@ void AchievementManager::ActivateDeactivateRichPresence()
       nullptr, 0);
 }
 
-
 void AchievementManager::FetchBadges()
 {
   if (!m_is_runtime_initialized || !IsLoggedIn() || !Config::Get(Config::RA_BADGES_ENABLED))
@@ -341,7 +343,6 @@ void AchievementManager::FetchBadges()
     }
   }
 }
-
 
 void AchievementManager::DoFrame()
 {
@@ -745,22 +746,25 @@ void AchievementManager::HandleAchievementTriggeredEvent(const rc_runtime_event_
   it->second.session_unlock_count++;
   m_queue.EmplaceItem([this, runtime_event] { AwardAchievement(runtime_event->id); });
   AchievementId game_data_index = it->second.game_data_index;
-  OSD::AddMessage(fmt::format("Unlocked: {} ({})", m_game_data.achievements[game_data_index].title,
-                              m_game_data.achievements[game_data_index].points),
-                  OSD::Duration::VERY_LONG,
-                  (hardcore_mode_enabled) ? OSD::Color::YELLOW : OSD::Color::CYAN);
+  OSD::AddMessage(
+      fmt::format("Unlocked: {} ({})", m_game_data.achievements[game_data_index].title,
+                  m_game_data.achievements[game_data_index].points),
+      OSD::Duration::VERY_LONG, (hardcore_mode_enabled) ? OSD::Color::YELLOW : OSD::Color::CYAN,
+      (Config::Get(Config::RA_BADGES_ENABLED)) ? it->second.unlocked_badge.cache_ptr : nullptr);
   PointSpread spread = TallyScore();
   if (spread.hard_points == spread.total_points)
   {
     OSD::AddMessage(
         fmt::format("Congratulations! {} has mastered {}", m_display_name, m_game_data.title),
-        OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
+        OSD::Duration::VERY_LONG, OSD::Color::YELLOW,
+        (Config::Get(Config::RA_BADGES_ENABLED)) ? m_game_badge.cache_ptr : nullptr);
   }
   else if (spread.hard_points + spread.soft_points == spread.total_points)
   {
     OSD::AddMessage(
         fmt::format("Congratulations! {} has completed {}", m_display_name, m_game_data.title),
-        OSD::Duration::VERY_LONG, OSD::Color::CYAN);
+        OSD::Duration::VERY_LONG, OSD::Color::CYAN,
+        (Config::Get(Config::RA_BADGES_ENABLED)) ? m_game_badge.cache_ptr : nullptr);
   }
   ActivateDeactivateAchievement(runtime_event->id, Config::Get(Config::RA_ACHIEVEMENTS_ENABLED),
                                 Config::Get(Config::RA_UNOFFICIAL_ENABLED),
