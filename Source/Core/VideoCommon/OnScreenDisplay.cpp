@@ -20,11 +20,15 @@
 
 namespace OSD
 {
-constexpr float LEFT_MARGIN = 10.0f;         // Pixels to the left of OSD messages.
-constexpr float TOP_MARGIN = 10.0f;          // Pixels above the first OSD message.
+constexpr float LEFT_MARGIN = 10.0f;  // Pixels to the left of OSD messages.
+constexpr float TOP_MARGIN = 10.0f;   // Pixels above the first OSD message.
+constexpr float RIGHT_MARGIN = 10.0f;
+constexpr float BOTTOM_MARGIN = 10.0f;
 constexpr float WINDOW_PADDING = 4.0f;       // Pixels between subsequent OSD messages.
 constexpr float MESSAGE_FADE_TIME = 1000.f;  // Ms to fade OSD messages at the end of their life.
 constexpr float MESSAGE_DROP_TIME = 5000.f;  // Ms to drop OSD messages that has yet to ever render.
+constexpr float BIG_ICON_SIZE = 64.0f;
+constexpr float SMALL_ICON_SIZE = 32.0f;
 
 static std::atomic<int> s_obscured_pixels_left = 0;
 static std::atomic<int> s_obscured_pixels_top = 0;
@@ -52,6 +56,7 @@ struct Message
 };
 static std::multimap<MessageType, Message> s_messages;
 static std::mutex s_messages_mutex;
+static std::set<ImTextureID> s_icons;
 
 static ImVec4 ARGBToImVec4(const u32 argb)
 {
@@ -85,7 +90,7 @@ static float DrawMessage(int index, Message& msg, const ImVec2& position, int ti
   {
     if (msg.icon != nullptr)
     {
-      ImVec2 size(64, 64);
+      ImVec2 size(BIG_ICON_SIZE, BIG_ICON_SIZE);
       ImGui::Image(msg.icon, size);
     }
     // Use %s in case message contains %.
@@ -145,6 +150,65 @@ void DrawMessages()
     if (draw_messages)
       current_y += DrawMessage(index++, msg, ImVec2(current_x, current_y), time_left);
   }
+
+  DrawIcons();
+}
+
+void DrawIcons()
+{
+  if (!Config::Get(Config::MAIN_OSD_MESSAGES))
+    return;
+  const float current_x =
+      ImGui::GetIO().DisplaySize.x - BOTTOM_MARGIN * ImGui::GetIO().DisplayFramebufferScale.x;
+  float current_y =
+      ImGui::GetIO().DisplaySize.y - TOP_MARGIN * ImGui::GetIO().DisplayFramebufferScale.y;
+  int index = 0;
+
+  for (auto it = s_icons.begin(); it != s_icons.end();)
+  {
+    // We have to provide a window name, and these shouldn't be duplicated.
+    // So instead, we generate a name based on the number of messages drawn.
+    const std::string window_name = fmt::format("osd_i{}", index);
+
+    ImGui::SetNextWindowSize(ImVec2(0.0f, 0.0f));
+
+    if (ImGui::Begin(window_name.c_str(), nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
+                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                         ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing))
+    {
+      if (*it != nullptr)
+      {
+        ImVec2 size(SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+        ImGui::Image(*it, size);
+      }
+      float window_width =
+          ImGui::GetWindowSize().x + (WINDOW_PADDING * ImGui::GetIO().DisplayFramebufferScale.x);
+      float window_height =
+          ImGui::GetWindowSize().y + (WINDOW_PADDING * ImGui::GetIO().DisplayFramebufferScale.y);
+      current_y -= window_height;
+      ImGui::SetWindowPos(window_name.c_str(), ImVec2(current_x - window_width, current_y));
+    }
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+  }
+}
+
+void AddIcon(ImTextureID icon)
+{
+  s_icons.insert(icon);
+}
+
+void RemoveIcon(ImTextureID icon)
+{
+  s_icons.erase(icon);
+}
+
+void ClearIcons()
+{
+  s_icons.clear();
 }
 
 void ClearMessages()
