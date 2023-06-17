@@ -413,6 +413,9 @@ void AchievementManager::AchievementEventHandler(const rc_runtime_event_t* runti
     case RC_RUNTIME_EVENT_ACHIEVEMENT_UNPRIMED:
       HandleAchievementUnprimedEvent(runtime_event);
       break;
+    case RC_RUNTIME_EVENT_ACHIEVEMENT_PROGRESS_UPDATED:
+      HandleAchievementProgressUpdatedEvent(runtime_event);
+      break;
     case RC_RUNTIME_EVENT_LBOARD_STARTED:
       HandleLeaderboardStartedEvent(runtime_event);
       break;
@@ -796,6 +799,25 @@ void AchievementManager::HandleAchievementUnprimedEvent(const rc_runtime_event_t
   if (it == m_unlock_map.end())
     return;
   OSD::RemoveIcon(it->second.unlocked_badge.cache_ptr);
+}
+
+void AchievementManager::HandleAchievementProgressUpdatedEvent(
+    const rc_runtime_event_t* runtime_event)
+{
+  if (!Config::Get(Config::RA_PROGRESS_ENABLED))
+    return;
+  auto it = m_unlock_map.find(runtime_event->id);
+  if (it == m_unlock_map.end())
+    return;
+  AchievementId game_data_index = it->second.game_data_index;
+  FormattedValue value{};
+  if (rc_runtime_format_achievement_measured(&m_runtime, runtime_event->id, value.data(),
+                                             FORMAT_SIZE) == 0)
+    return;
+  OSD::AddMessage(
+      fmt::format("{} {}", m_game_data.achievements[game_data_index].title, value.data()),
+      OSD::Duration::VERY_LONG, OSD::Color::GREEN,
+      (Config::Get(Config::RA_BADGES_ENABLED)) ? it->second.unlocked_badge.cache_ptr : nullptr);
 }
 
 void AchievementManager::HandleLeaderboardStartedEvent(const rc_runtime_event_t* runtime_event)
