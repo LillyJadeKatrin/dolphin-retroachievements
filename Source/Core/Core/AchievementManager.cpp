@@ -7,6 +7,7 @@
 
 #include <fmt/format.h>
 
+#include <rcheevos/include/rc_api_info.h>
 #include <rcheevos/include/rc_hash.h>
 
 #include "Common/HttpRequest.h"
@@ -257,6 +258,11 @@ void AchievementManager::ActivateDeactivateLeaderboards()
     if (m_is_game_loaded && leaderboards_enabled && hardcore_mode_enabled)
     {
       rc_runtime_activate_lboard(&m_runtime, leaderboard.id, leaderboard.definition, nullptr, 0);
+      m_queue.EmplaceItem([this, leaderboard] {
+        FetchBoardInfo(leaderboard.id);
+        if (m_update_callback)
+          m_update_callback();
+      });
     }
     else
     {
@@ -520,6 +526,7 @@ void AchievementManager::CloseGame()
     m_game_badge.loaded = false;
     m_queue.Cancel();
     m_unlock_map.clear();
+    m_lboard_map.clear();
     m_system = nullptr;
     ActivateDeactivateAchievements();
     ActivateDeactivateLeaderboards();
@@ -638,6 +645,65 @@ AchievementManager::ResponseType AchievementManager::FetchUnlockData(bool hardco
     }
   }
   rc_api_destroy_fetch_user_unlocks_response(&unlock_data);
+  return r_type;
+}
+
+AchievementManager::ResponseType AchievementManager::FetchBoardInfo(AchievementId leaderboard_id)
+{
+  rc_api_fetch_leaderboard_info_response_t board_info{};
+  std::string username = Config::Get(Config::RA_USERNAME);
+  rc_api_fetch_leaderboard_info_request_t fetch_board_request = {
+      .leaderboard_id = leaderboard_id, .count = 4, .first_entry = 1};
+  ResponseType r_type =
+      Request<rc_api_fetch_leaderboard_info_request_t, rc_api_fetch_leaderboard_info_response_t>(
+          fetch_board_request, &board_info, rc_api_init_fetch_leaderboard_info_request,
+          rc_api_process_fetch_leaderboard_info_response);
+  if (r_type != ResponseType::SUCCESS)
+  {
+    rc_api_destroy_fetch_leaderboard_info_response(&board_info);
+    return r_type;
+  }
+  // This is deliberate: I want to create the entry here if it doesn't already exist.
+  LeaderboardStatus& lboard = m_lboard_map[leaderboard_id];
+  lboard.name = board_info.title;
+  lboard.description = board_info.description;
+  lboard.entries.clear();
+  for (u32 ix = 0; ix < board_info.num_entries; ix++)
+  {
+    auto& org_entry = board_info.entries[ix];
+    LeaderboardEntry dest_entry = LeaderboardEntry{.username = org_entry.username};
+    rc_runtime_format_lboard_value(dest_entry.score.data(), FORMAT_SIZE, org_entry.score,
+                                   board_info.format);
+    lboard.entries[org_entry.rank] = dest_entry;
+  }
+
+  rc_api_destroy_fetch_leaderboard_info_response(&board_info);
+
+  // Retrieve, if exists, the player's entry, the two entries above the player, and the two
+  // entries below the player, for a total of five entries. Technically I only need one entry
+  // below, but the API is ambiguous what happens if an even number and a username are provided.
+  fetch_board_request.count = 5;
+  fetch_board_request.username = username.c_str();
+  r_type =
+      Request<rc_api_fetch_leaderboard_info_request_t, rc_api_fetch_leaderboard_info_response_t>(
+          fetch_board_request, &board_info, rc_api_init_fetch_leaderboard_info_request,
+          rc_api_process_fetch_leaderboard_info_response);
+  if (r_type != ResponseType::SUCCESS)
+  {
+    rc_api_destroy_fetch_leaderboard_info_response(&board_info);
+    return r_type;
+  }
+  for (u32 ix = 0; ix < board_info.num_entries; ix++)
+  {
+    auto& org_entry = board_info.entries[ix];
+    LeaderboardEntry dest_entry = LeaderboardEntry{.username = org_entry.username};
+    rc_runtime_format_lboard_value(dest_entry.score.data(), FORMAT_SIZE, org_entry.score,
+                                   board_info.format);
+    lboard.entries[org_entry.rank] = dest_entry;
+    if (org_entry.username == username)
+      lboard.player_rank = org_entry.rank;
+  }
+  rc_api_destroy_fetch_leaderboard_info_response(&board_info);
   return r_type;
 }
 
@@ -863,6 +929,11 @@ void AchievementManager::HandleLeaderboardTriggeredEvent(const rc_runtime_event_
       OSD::AddMessage(fmt::format("Scored {} on leaderboard: {}", runtime_event->value,
                                   m_game_data.leaderboards[ix].title),
                       OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
+      m_queue.EmplaceItem([this, runtime_event] {
+        FetchBoardInfo(runtime_event->id);
+        if (m_update_callback)
+          m_update_callback();
+      });
       break;
     }
   }
