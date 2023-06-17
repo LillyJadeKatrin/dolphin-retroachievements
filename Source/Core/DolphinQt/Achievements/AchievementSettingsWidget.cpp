@@ -18,10 +18,7 @@
 #include "Core/Core.h"
 
 #include "DolphinQt/Achievements/AchievementsWindow.h"
-#include "DolphinQt/Config/ControllerInterface/ControllerInterfaceWindow.h"
 #include "DolphinQt/Config/ToolTipControls/ToolTipCheckBox.h"
-#include "DolphinQt/QtUtils/ModalMessageBox.h"
-#include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
 #include "DolphinQt/QtUtils/SignalBlocking.h"
 #include "DolphinQt/Settings.h"
 
@@ -68,12 +65,6 @@ void AchievementSettingsWidget::CreateLayout()
          "detailed description of what the player is doing in game to the website. If this is "
          "disabled, the website will only report what game is being played.<br><br>This has no "
          "bearing on Discord rich presence."));
-  m_common_unofficial_enabled_input = new ToolTipCheckBox(tr("Enable Unofficial Achievements"));
-  m_common_unofficial_enabled_input->SetDescription(
-      tr("Enable unlocking unofficial achievements as well as official "
-         "achievements.<br><br>Unofficial achievements may be optional or unfinished achievements "
-         "that have not been deemed official by RetroAchievements and may be useful for testing or "
-         "simply for fun."));
   m_common_hardcore_enabled_input = new ToolTipCheckBox(tr("Enable Hardcore Mode"));
   m_common_hardcore_enabled_input->SetDescription(
       tr("Enable Hardcore Mode on RetroAchievements.<br><br>Hardcore Mode is intended to provide "
@@ -97,6 +88,12 @@ void AchievementSettingsWidget::CreateLayout()
       tr("Enable progress notifications on achievements.<br><br>Displays a brief popup message "
          "whenever the player makes progress on an achievement that tracks an accumulated value, "
          "such as 60 out of 120 stars."));
+  m_common_unofficial_enabled_input = new ToolTipCheckBox(tr("Enable Unofficial Achievements"));
+  m_common_unofficial_enabled_input->SetDescription(
+      tr("Enable unlocking unofficial achievements as well as official "
+         "achievements.<br><br>Unofficial achievements may be optional or unfinished achievements "
+         "that have not been deemed official by RetroAchievements and may be useful for testing or "
+         "simply for fun."));
   m_common_encore_enabled_input = new ToolTipCheckBox(tr("Enable Encore Achievements"));
   m_common_encore_enabled_input->SetDescription(tr(
       "Enable unlocking achievements in Encore Mode.<br><br>Encore Mode re-enables achievements "
@@ -146,14 +143,6 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::ToggleUnofficial);
   connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleEncore);
-}
-
-void AchievementSettingsWidget::OnControllerInterfaceConfigure()
-{
-  ControllerInterfaceWindow* window = new ControllerInterfaceWindow(this);
-  window->setAttribute(Qt::WA_DeleteOnClose, true);
-  window->setWindowModality(Qt::WindowModality::WindowModal);
-  window->show();
 }
 
 void AchievementSettingsWidget::LoadSettings()
