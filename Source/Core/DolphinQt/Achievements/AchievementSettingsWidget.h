@@ -37,6 +37,7 @@ private:
   void ToggleRichPresence();
   void ToggleHardcore();
   void ToggleBadges();
+  void ToggleProgress();
   void ToggleUnofficial();
   void ToggleEncore();
 
@@ -57,6 +58,7 @@ private:
   ToolTipCheckBox* m_common_rich_presence_enabled_input;
   ToolTipCheckBox* m_common_hardcore_enabled_input;
   ToolTipCheckBox* m_common_badges_enabled_input;
+  ToolTipCheckBox* m_common_progress_enabled_input;
   ToolTipCheckBox* m_common_unofficial_enabled_input;
   ToolTipCheckBox* m_common_encore_enabled_input;
 };
