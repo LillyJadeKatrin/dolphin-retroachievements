@@ -931,7 +931,10 @@ void AchievementManager::HandleLeaderboardTriggeredEvent(const rc_runtime_event_
   {
     if (m_game_data.leaderboards[ix].id == runtime_event->id)
     {
-      OSD::AddMessage(fmt::format("Scored {} on leaderboard: {}", runtime_event->value,
+      FormattedValue value;
+      rc_runtime_format_lboard_value(value.data(), FORMAT_SIZE, runtime_event->value,
+                                     m_game_data.leaderboards[ix].format);
+      OSD::AddMessage(fmt::format("Scored {} on leaderboard: {}", value.data(),
                                   m_game_data.leaderboards[ix].title),
                       OSD::Duration::VERY_LONG, OSD::Color::YELLOW);
       m_queue.EmplaceItem([this, runtime_event] {
