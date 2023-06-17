@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 
 #include "DolphinQt/Achievements/AchievementHeaderWidget.h"
+#include "DolphinQt/Achievements/AchievementLeaderboardWidget.h"
 #include "DolphinQt/Achievements/AchievementProgressWidget.h"
 #include "DolphinQt/Achievements/AchievementSettingsWidget.h"
 #include "DolphinQt/QtUtils/QueueOnObject.h"
@@ -40,6 +41,7 @@ void AchievementsWindow::CreateMainLayout()
   m_header_widget = new AchievementHeaderWidget(this);
   m_tab_widget = new QTabWidget();
   m_progress_widget = new AchievementProgressWidget(m_tab_widget);
+  m_leaderboard_widget = new AchievementLeaderboardWidget(m_tab_widget);
   m_tab_widget->addTab(
       GetWrappedWidget(new AchievementSettingsWidget(m_tab_widget, this), this, 125, 100),
       tr("Settings"));
