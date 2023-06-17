@@ -4,31 +4,31 @@
 #ifdef USE_RETRO_ACHIEVEMENTS
 #include "DolphinQt/Achievements/AchievementProgressWidget.h"
 
-#include <QCheckBox>
+//#include <QCheckBox>
 #include <QGroupBox>
 #include <QLabel>
-#include <QLineEdit>
+//#include <QLineEdit>
 #include <QProgressBar>
-#include <QPushButton>
+//#include <QPushButton>
 #include <QString>
 #include <QVBoxLayout>
 
 #include <fmt/format.h>
 
-#include <rcheevos/include/rc_api_runtime.h>
-#include <rcheevos/include/rc_api_user.h>
-#include <rcheevos/include/rc_runtime.h>
+//#include <rcheevos/include/rc_api_runtime.h>
+//#include <rcheevos/include/rc_api_user.h>
+//#include <rcheevos/include/rc_runtime.h>
 
 #include "Core/AchievementManager.h"
 #include "Core/Config/AchievementSettings.h"
-#include "Core/Config/MainSettings.h"
+//#include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
 
-#include "DolphinQt/Config/ControllerInterface/ControllerInterfaceWindow.h"
-#include "DolphinQt/QtUtils/ModalMessageBox.h"
-#include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
-#include "DolphinQt/QtUtils/SignalBlocking.h"
-#include "DolphinQt/Settings.h"
+//#include "DolphinQt/Config/ControllerInterface/ControllerInterfaceWindow.h"
+//#include "DolphinQt/QtUtils/ModalMessageBox.h"
+//#include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
+//#include "DolphinQt/QtUtils/SignalBlocking.h"
+//#include "DolphinQt/Settings.h"
 
 AchievementProgressWidget::AchievementProgressWidget(QWidget* parent) : QWidget(parent)
 {
@@ -138,7 +138,7 @@ void AchievementProgressWidget::UpdateData()
   }
 }
 
-QString AchievementProgressWidget::GetStatusString(u32 achievement_id) const
+QString AchievementProgressWidget::GetStatusString(AchievementManager::AchievementId achievement_id) const
 {
   const auto unlock_status = AchievementManager::GetInstance()->GetUnlockStatus(achievement_id);
   if (unlock_status.session_unlock_count > 0)

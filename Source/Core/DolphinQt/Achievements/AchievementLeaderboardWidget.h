@@ -6,8 +6,6 @@
 #ifdef USE_RETRO_ACHIEVEMENTS
 #include <QWidget>
 
-#include "Common/CommonTypes.h"
-
 class QGroupBox;
 class QGridLayout;
 

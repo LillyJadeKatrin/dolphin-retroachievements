@@ -6,15 +6,11 @@
 #ifdef USE_RETRO_ACHIEVEMENTS
 #include <QDialog>
 
-#include "Core/AchievementManager.h"
-#include "DolphinQt/QtUtils/QueueOnObject.h"
-
 class AchievementHeaderWidget;
 class AchievementLeaderboardWidget;
 class AchievementProgressWidget;
 class QDialogButtonBox;
 class QTabWidget;
-class UpdateCallback;
 
 class AchievementsWindow : public QDialog
 {

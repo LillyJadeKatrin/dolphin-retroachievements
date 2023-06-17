@@ -21,14 +21,6 @@
 #include "Common/Event.h"
 #include "Common/WorkQueueThread.h"
 
-using AchievementId = u32;
-constexpr size_t FORMAT_SIZE = 24;
-using FormattedValue = std::array<char, FORMAT_SIZE>;
-using Rank = u32;
-constexpr size_t RP_SIZE = 256;
-using RichPresence = std::array<char, RP_SIZE>;
-using Badge = std::vector<u8>;
-
 namespace Core
 {
 class System;
@@ -37,6 +29,14 @@ class System;
 class AchievementManager
 {
 public:
+  using AchievementId = u32;
+  static inline constexpr size_t FORMAT_SIZE = 24;
+  using FormattedValue = std::array<char, FORMAT_SIZE>;
+  using Rank = u32;
+  static inline constexpr size_t RP_SIZE = 256;
+  using RichPresence = std::array<char, RP_SIZE>;
+  using Badge = std::vector<u8>;
+
   enum class ResponseType
   {
     SUCCESS,
