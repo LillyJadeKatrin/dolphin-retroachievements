@@ -92,6 +92,11 @@ void AchievementSettingsWidget::CreateLayout()
       tr("Enable achievement badges.<br><br>Displays icons for the player, game, and achievements. "
          "Simple visual option, but will require a small amount of extra memory and time to "
          "download the images."));
+  m_common_progress_enabled_input = new ToolTipCheckBox(tr("Enable Progress Notifications"));
+  m_common_progress_enabled_input->SetDescription(
+      tr("Enable progress notifications on achievements.<br><br>Displays a brief popup message "
+         "whenever the player makes progress on an achievement that tracks an accumulated value, "
+         "such as 60 out of 120 stars."));
   m_common_encore_enabled_input = new ToolTipCheckBox(tr("Enable Encore Achievements"));
   m_common_encore_enabled_input->SetDescription(tr(
       "Enable unlocking achievements in Encore Mode.<br><br>Encore Mode re-enables achievements "
@@ -111,6 +116,7 @@ void AchievementSettingsWidget::CreateLayout()
   m_common_layout->addWidget(m_common_rich_presence_enabled_input);
   m_common_layout->addWidget(m_common_hardcore_enabled_input);
   m_common_layout->addWidget(m_common_badges_enabled_input);
+  m_common_layout->addWidget(m_common_progress_enabled_input);
   m_common_layout->addWidget(m_common_unofficial_enabled_input);
   m_common_layout->addWidget(m_common_encore_enabled_input);
 
@@ -134,6 +140,8 @@ void AchievementSettingsWidget::ConnectWidgets()
           &AchievementSettingsWidget::ToggleHardcore);
   connect(m_common_badges_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleBadges);
+  connect(m_common_progress_enabled_input, &QCheckBox::toggled, this,
+          &AchievementSettingsWidget::ToggleProgress);
   connect(m_common_unofficial_enabled_input, &QCheckBox::toggled, this,
           &AchievementSettingsWidget::ToggleUnofficial);
   connect(m_common_encore_enabled_input, &QCheckBox::toggled, this,
@@ -189,6 +197,10 @@ void AchievementSettingsWidget::LoadSettings()
   SignalBlocking(m_common_badges_enabled_input)->setChecked(Config::Get(Config::RA_BADGES_ENABLED));
   SignalBlocking(m_common_badges_enabled_input)->setEnabled(enabled);
 
+  SignalBlocking(m_common_progress_enabled_input)
+      ->setChecked(Config::Get(Config::RA_PROGRESS_ENABLED));
+  SignalBlocking(m_common_progress_enabled_input)->setEnabled(enabled && achievements_enabled);
+
   SignalBlocking(m_common_unofficial_enabled_input)
       ->setChecked(Config::Get(Config::RA_UNOFFICIAL_ENABLED));
   SignalBlocking(m_common_unofficial_enabled_input)->setEnabled(enabled && achievements_enabled);
@@ -211,6 +223,8 @@ void AchievementSettingsWidget::SaveSettings()
   Config::SetBaseOrCurrent(Config::RA_HARDCORE_ENABLED,
                            m_common_hardcore_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_BADGES_ENABLED, m_common_badges_enabled_input->isChecked());
+  Config::SetBaseOrCurrent(Config::RA_PROGRESS_ENABLED,
+                           m_common_unofficial_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_UNOFFICIAL_ENABLED,
                            m_common_unofficial_enabled_input->isChecked());
   Config::SetBaseOrCurrent(Config::RA_ENCORE_ENABLED, m_common_encore_enabled_input->isChecked());
@@ -278,6 +292,11 @@ void AchievementSettingsWidget::ToggleBadges()
 {
   SaveSettings();
   AchievementManager::GetInstance()->FetchBadges();
+}
+
+void AchievementSettingsWidget::ToggleProgress()
+{
+  SaveSettings();
 }
 
 void AchievementSettingsWidget::ToggleUnofficial()
