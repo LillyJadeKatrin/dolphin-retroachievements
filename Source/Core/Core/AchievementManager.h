@@ -129,6 +129,7 @@ public:
   const UnlockStatus& GetUnlockStatus(AchievementId achievement_id) const;
   void GetAchievementProgress(AchievementId achievement_id, u32* value, u32* target);
   const std::unordered_map<AchievementId, LeaderboardStatus>& GetLeaderboardsInfo() const;
+  const RichPresence GetRichPresence() const;
 
   void CloseGame();
   void Logout();
@@ -147,7 +148,7 @@ private:
   ResponseType FetchBoardInfo(AchievementId leaderboard_id);
 
   void ActivateDeactivateAchievement(AchievementId id, bool enabled, bool unofficial, bool encore);
-  RichPresence GenerateRichPresence();
+  void GenerateRichPresence();
 
   ResponseType AwardAchievement(AchievementId achievement_id);
   ResponseType SubmitLeaderboard(AchievementId leaderboard_id, int value);
@@ -179,6 +180,7 @@ private:
   rc_api_fetch_game_data_response_t m_game_data{};
   bool m_is_game_loaded = false;
   BadgeStatus m_game_badge;
+  RichPresence m_rich_presence;
   time_t m_last_ping_time = 0;
 
   std::unordered_map<AchievementId, UnlockStatus> m_unlock_map;

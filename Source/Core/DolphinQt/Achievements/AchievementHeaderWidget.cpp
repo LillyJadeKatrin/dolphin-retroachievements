@@ -147,9 +147,8 @@ void AchievementHeaderWidget::UpdateData()
   m_game_progress_soft->setValue(point_spread.hard_unlocks);
   m_game_progress_soft->setRange(0, point_spread.total_count);
   m_game_progress_soft->setValue(point_spread.hard_unlocks + point_spread.soft_unlocks);
-  // TODO lillyjade 02 Jun 2023 - once RP is working again, add it here
-  // m_rich_presence->setText(QString::fromStdString(AchievementManager::GetInstance()->GenerateRichPresence()));
-  // m_rich_presence->setVisible(Config::Get(Config::RA_RICH_PRESENCE_ENABLED));
+  m_rich_presence->setText(QString::fromLocal8Bit(AchievementManager::GetInstance()->GetRichPresence().data()));
+  m_rich_presence->setVisible(Config::Get(Config::RA_RICH_PRESENCE_ENABLED));
   m_rich_presence->setText(QString{});
   m_rich_presence->setVisible(false);
 
