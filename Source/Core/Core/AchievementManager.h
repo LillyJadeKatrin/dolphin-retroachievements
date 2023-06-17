@@ -22,6 +22,8 @@
 #include "Common/WorkQueueThread.h"
 
 using AchievementId = u32;
+constexpr size_t FORMAT_SIZE = 24;
+using FormattedValue = std::array<char, FORMAT_SIZE>;
 constexpr size_t RP_SIZE = 256;
 using RichPresence = std::array<char, RP_SIZE>;
 using Badge = std::vector<u8>;
@@ -137,6 +139,7 @@ private:
   void HandleAchievementTriggeredEvent(const rc_runtime_event_t* runtime_event);
   void HandleAchievementPrimedEvent(const rc_runtime_event_t* runtime_event);
   void HandleAchievementUnprimedEvent(const rc_runtime_event_t* runtime_event);
+  void HandleAchievementProgressUpdatedEvent(const rc_runtime_event_t* runtime_event);
   void HandleLeaderboardStartedEvent(const rc_runtime_event_t* runtime_event);
   void HandleLeaderboardCanceledEvent(const rc_runtime_event_t* runtime_event);
   void HandleLeaderboardTriggeredEvent(const rc_runtime_event_t* runtime_event);
