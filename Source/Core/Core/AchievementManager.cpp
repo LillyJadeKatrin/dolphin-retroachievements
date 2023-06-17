@@ -370,9 +370,11 @@ void AchievementManager::DoFrame()
   time_t current_time = std::time(nullptr);
   if (difftime(current_time, m_last_ping_time) > 120)
   {
-    RichPresence rp = GenerateRichPresence();
-    m_queue.EmplaceItem([this, rp] { PingRichPresence(rp); });
+    GenerateRichPresence();
+    m_queue.EmplaceItem([this] { PingRichPresence(m_rich_presence); });
     m_last_ping_time = current_time;
+    if (m_update_callback)
+      m_update_callback();
   }
 }
 
@@ -514,6 +516,11 @@ const std::unordered_map<AchievementId, AchievementManager::LeaderboardStatus>&
 AchievementManager::GetLeaderboardsInfo() const
 {
   return m_lboard_map;
+}
+
+const RichPresence AchievementManager::GetRichPresence() const
+{
+  return m_rich_presence;
 }
 
 void AchievementManager::CloseGame()
@@ -753,18 +760,16 @@ void AchievementManager::ActivateDeactivateAchievement(AchievementId id, bool en
     rc_runtime_deactivate_achievement(&m_runtime, id);
 }
 
-RichPresence AchievementManager::GenerateRichPresence()
+void AchievementManager::GenerateRichPresence()
 {
-  RichPresence rp_buffer;
   Core::RunAsCPUThread([&] {
     rc_runtime_get_richpresence(
-        &m_runtime, rp_buffer.data(), RP_SIZE,
+        &m_runtime, m_rich_presence.data(), RP_SIZE,
         [](unsigned address, unsigned num_bytes, void* ud) {
           return static_cast<AchievementManager*>(ud)->MemoryPeeker(address, num_bytes, ud);
         },
         this, nullptr);
   });
-  return rp_buffer;
 }
 
 AchievementManager::ResponseType AchievementManager::AwardAchievement(AchievementId achievement_id)
