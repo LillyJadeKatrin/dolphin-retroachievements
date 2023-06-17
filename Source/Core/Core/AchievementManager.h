@@ -24,6 +24,7 @@
 using AchievementId = u32;
 constexpr size_t FORMAT_SIZE = 24;
 using FormattedValue = std::array<char, FORMAT_SIZE>;
+using Rank = u32;
 constexpr size_t RP_SIZE = 256;
 using RichPresence = std::array<char, RP_SIZE>;
 using Badge = std::vector<u8>;
@@ -80,6 +81,20 @@ public:
     BadgeStatus unlocked_badge;
   };
 
+  struct LeaderboardEntry
+  {
+    std::string username;
+    FormattedValue score;
+  };
+
+  struct LeaderboardStatus
+  {
+    std::string name;
+    std::string description;
+    Rank player_rank = 0;
+    std::unordered_map<Rank, LeaderboardEntry> entries;
+  };
+
   inline static const std::string GRAY = "transparent";
   inline static const std::string GOLD = "#FFD700";
   inline static const std::string BLUE = "#0B71C1";
@@ -113,6 +128,7 @@ public:
   const BadgeStatus& GetGameBadge() const;
   const UnlockStatus& GetUnlockStatus(AchievementId achievement_id) const;
   void GetAchievementProgress(AchievementId achievement_id, u32* value, u32* target);
+  const std::unordered_map<AchievementId, LeaderboardStatus>& GetLeaderboardsInfo() const;
 
   void CloseGame();
   void Logout();
@@ -165,6 +181,7 @@ private:
   time_t m_last_ping_time = 0;
 
   std::unordered_map<AchievementId, UnlockStatus> m_unlock_map;
+  std::unordered_map<AchievementId, LeaderboardStatus> m_lboard_map;
 
   Common::WorkQueueThread<std::function<void()>> m_queue;
   Common::WorkQueueThread<std::function<void()>> m_image_queue;
