@@ -21,8 +21,6 @@ public:
   explicit AchievementSettingsWidget(QWidget* parent, AchievementsWindow* parent_window);
 
 private:
-  void OnControllerInterfaceConfigure();
-
   void CreateLayout();
   void ConnectWidgets();
 

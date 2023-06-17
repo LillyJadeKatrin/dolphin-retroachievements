@@ -6,12 +6,10 @@
 #ifdef USE_RETRO_ACHIEVEMENTS
 #include <QWidget>
 
-#include "Common/CommonTypes.h"
+#include "Core/AchievementManager.h"
 
 class QCheckBox;
 class QGroupBox;
-class QLineEdit;
-class QPushButton;
 class QVBoxLayout;
 
 struct rc_api_achievement_definition_t;
@@ -25,7 +23,7 @@ public:
 
 private:
   QGroupBox* CreateAchievementBox(const rc_api_achievement_definition_t* achievement);
-  QString GetStatusString(u32 achievement_id) const;
+  QString GetStatusString(AchievementManager::AchievementId achievement_id) const;
 
   QGroupBox* m_common_box;
   QVBoxLayout* m_common_layout;
