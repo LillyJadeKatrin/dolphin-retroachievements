@@ -504,6 +504,12 @@ void AchievementManager::GetAchievementProgress(AchievementId achievement_id, u3
   rc_runtime_get_achievement_measured(&m_runtime, achievement_id, value, target);
 }
 
+const std::unordered_map<AchievementId, AchievementManager::LeaderboardStatus>&
+AchievementManager::GetLeaderboardsInfo() const
+{
+  return m_lboard_map;
+}
+
 void AchievementManager::CloseGame()
 {
   {
