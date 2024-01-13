@@ -24,6 +24,7 @@
 #include "Core/Host.h"
 #include "Core/NetPlayProto.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 #include "Core/System.h"
 
@@ -236,6 +237,11 @@ void Host_YieldToUI()
 void Host_UpdateDisasmDialog()
 {
   QueueOnObject(QApplication::instance(), [] { emit Host::GetInstance()->UpdateDisasmDialog(); });
+}
+
+void Host_RAIDoFrame()
+{
+  QueueOnObject(QApplication::instance(), [] { RADevToolManager::GetInstance()->RAIDoFrame(); });
 }
 
 void Host::RequestNotifyMapLoaded()

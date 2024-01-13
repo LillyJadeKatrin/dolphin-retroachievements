@@ -61,6 +61,10 @@ void Host_UpdateDisasmDialog()
 {
 }
 
+void Host_RAIDoFrame()
+{
+}
+
 void Host_UpdateMainFrame()
 {
 }
