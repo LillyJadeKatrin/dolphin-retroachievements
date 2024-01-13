@@ -934,7 +934,8 @@ void Callback_NewField(Core::System& system)
       CallOnStateChangedCallbacks(Core::GetState());
     }
   }
-  RADevToolManager::GetInstance()->RAIDoFrame();
+
+  Host_RAIDoFrame();  // Disable any menus or buttons at boot
 
 #ifdef USE_RETRO_ACHIEVEMENTS
   AchievementManager::GetInstance().DoFrame();

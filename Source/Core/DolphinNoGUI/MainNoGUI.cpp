@@ -85,6 +85,10 @@ void Host_UpdateDisasmDialog()
 {
 }
 
+void Host_RAIDoFrame()
+{
+}
+
 void Host_UpdateMainFrame()
 {
   s_update_main_frame_event.Set();

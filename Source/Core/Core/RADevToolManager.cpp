@@ -3,9 +3,12 @@
 
 #include "Core/RADevToolManager.h"
 
+#include <fmt/format.h>
+
 #include <rcheevos/include/rc_hash.h>
 
 #include "Common/HttpRequest.h"
+#include "Common/Logging/Log.h"
 #include "Common/WorkQueueThread.h"
 #include "Core/Config/AchievementSettings.h"
 #include "Core/Core.h"
