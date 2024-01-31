@@ -251,6 +251,12 @@ void RADevToolManager::ActivateMenuItem(int item)
   RA_InvokeDialog(item);
 }
 
+void RADevToolManager::SetRefreshMenuCallback(std::function<void(void*)> callback, void* callback_object)
+{
+  m_rebuild_callback = std::move(callback);
+  m_rebuild_callback_object = std::move(callback_object);
+}
+
 int RADevToolManager::RACallbackIsActive()
 {
   return m_game_id;
@@ -268,7 +274,8 @@ void RADevToolManager::RACallbackCausePause()
 
 void RADevToolManager::RACallbackRebuildMenu()
 {
-  // unused
+  if (m_rebuild_callback_object)
+    m_rebuild_callback(m_rebuild_callback_object);
 }
 
 void RADevToolManager::RACallbackEstimateTitle(char* buf)

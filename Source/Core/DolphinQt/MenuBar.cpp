@@ -198,6 +198,34 @@ void MenuBar::OnDebugModeToggled(bool enabled)
   }
 }
 
+void MenuBar::RefreshRAMenu()
+{
+  if (!m_ra_dev_ipl)
+    return;
+  m_ra_dev_ipl->clear();
+  const auto items = RADevToolManager::GetInstance()->GetMenuItems();
+  for (const auto& [id, title, checked] : items)
+  {
+    if (id == 0)
+    {
+      m_ra_dev_ipl->addSeparator();
+      continue;
+    }
+
+    QAction* raAction = m_ra_dev_ipl->addAction(QString::fromUtf8(title));
+    if (checked)
+    {
+      raAction->setCheckable(true);
+      raAction->setChecked(checked);
+    }
+
+    connect(raAction, &QAction::triggered, this,
+            [this, id = id]() { emit ActivateRAMenuItem(id); });
+  }
+}
+
+void (*RefreshRAMenuLambda)(void*) = [](void* menu_bar) { return static_cast<MenuBar*>(menu_bar)->RefreshRAMenu(); };
+
 void MenuBar::AddFileMenu()
 {
   QMenu* file_menu = addMenu(tr("&File"));
@@ -254,29 +282,6 @@ void MenuBar::AddToolsMenu()
     tools_menu->addSeparator();
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
-
-  QMenu* ra_dev_ipl = tools_menu->addMenu(tr("Achievement Development"));
-  const auto items = RADevToolManager::GetInstance()->GetMenuItems();
-  for (const auto& [id, title, checked] : items)
-  {
-    if (id == 0)
-    {
-      ra_dev_ipl->addSeparator();
-      continue;
-    }
-
-    QAction* raAction = ra_dev_ipl->addAction(QString::fromUtf8(title));
-    if (checked)
-    {
-      raAction->setCheckable(true);
-      raAction->setChecked(checked);
-    }
-
-    connect(raAction, &QAction::triggered, this,
-            [this, id = id]() { emit ActivateRAMenuItem(id); });
-  }
-
-  tools_menu->addSeparator();
 
   QMenu* gc_ipl = tools_menu->addMenu(tr("Load GameCube Main Menu"));
 
@@ -342,6 +347,12 @@ void MenuBar::AddToolsMenu()
   m_wii_remotes[4] =
       menu->addAction(tr("Connect Balance Board"), this, [this] { emit ConnectWiiRemote(4); });
   m_wii_remotes[4]->setCheckable(true);
+
+  tools_menu->addSeparator();
+
+  m_ra_dev_ipl = tools_menu->addMenu(tr("Achievement Development"));
+  RADevToolManager::GetInstance()->SetRefreshMenuCallback(RefreshRAMenuLambda, this);
+  RefreshRAMenu();
 }
 
 void MenuBar::AddEmulationMenu()
@@ -1094,6 +1105,8 @@ void MenuBar::UpdateToolsMenu(bool emulation_started)
     if (enable_wiimotes)
       wii_remote->setChecked(bt->AccessWiimoteByIndex(i)->IsConnected());
   }
+
+  RefreshRAMenu();
 }
 
 void MenuBar::InstallWAD()
