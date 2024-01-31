@@ -32,6 +32,7 @@ public:
   void RAIDoFrame();
   std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
   void ActivateMenuItem(int item);
+  void SetRefreshMenuCallback(std::function<void(void*)> callback, void* callback_object);
 
 private:
   RADevToolManager() = default;
@@ -58,4 +59,8 @@ private:
 
   std::vector<u8> m_cloned_memory;
   std::set<u32> m_modified_addresses;
+
+  std::function<void(void*)> m_rebuild_callback;
+  void* m_rebuild_callback_object;
+
 };  // class RADevToolManager

@@ -49,6 +49,8 @@ public:
 
   void InstallUpdateManually();
 
+  void RefreshRAMenu();
+
 signals:
   // File
   void Open();
@@ -216,6 +218,7 @@ private:
   std::array<QAction*, 5> m_wii_remotes;
   QAction* m_import_wii_save;
   QAction* m_export_wii_saves;
+  QMenu* m_ra_dev_ipl;
 
   // Emulation
   QAction* m_play_action;
