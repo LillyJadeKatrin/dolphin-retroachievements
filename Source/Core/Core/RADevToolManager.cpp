@@ -89,6 +89,8 @@ void RADevToolManager::ReinstallMemoryBanks()
 
 void RADevToolManager::LoadGame(const std::string& iso_path)
 {
+  m_filename = iso_path.substr(iso_path.find_last_of('/') + 1,
+                               iso_path.find_last_of('.') - iso_path.find_last_of('/') - 1);
   struct FilereaderState
   {
     int64_t position = 0;
@@ -188,8 +190,8 @@ void RADevToolManager::RAIDoFrame()
                                                       m_cloned_memory.data() + modified_address, 1);
   }
   m_modified_addresses.clear();
-  Core::System::GetInstance().GetMemory().CopyFromEmu(
-      m_cloned_memory.data(), RA2EmuAddress(0), m_cloned_memory.size());
+  Core::System::GetInstance().GetMemory().CopyFromEmu(m_cloned_memory.data(), RA2EmuAddress(0),
+                                                      m_cloned_memory.size());
   RA_DoAchievementsFrame();
 }
 
@@ -251,7 +253,8 @@ void RADevToolManager::ActivateMenuItem(int item)
   RA_InvokeDialog(item);
 }
 
-void RADevToolManager::SetRefreshMenuCallback(std::function<void(void*)> callback, void* callback_object)
+void RADevToolManager::SetRefreshMenuCallback(std::function<void(void*)> callback,
+                                              void* callback_object)
 {
   m_rebuild_callback = std::move(callback);
   m_rebuild_callback_object = std::move(callback_object);
