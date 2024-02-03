@@ -260,6 +260,25 @@ void RADevToolManager::SetRefreshMenuCallback(std::function<void(void*)> callbac
   m_rebuild_callback_object = std::move(callback_object);
 }
 
+void RADevToolManager::DoState(PointerWrap& p)
+{
+  int size = 0;
+  if (!p.IsReadMode())
+    size = RA_CaptureState(nullptr, 0);
+  p.Do(size);
+  char* buffer = (char*)malloc(size);
+  if (!p.IsReadMode())
+    RA_CaptureState(buffer, size);
+  p.Do(buffer);
+  if (p.IsReadMode())
+    RA_RestoreState(buffer);
+}
+
+bool RADevToolManager::RAWarnDisableHardcore()
+{
+  return RA_WarnDisableHardcore("load a state");
+}
+
 int RADevToolManager::RACallbackIsActive()
 {
   return m_game_id;

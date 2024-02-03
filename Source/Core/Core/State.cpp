@@ -46,6 +46,7 @@
 #include "Core/Movie.h"
 #include "Core/NetPlayClient.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 
 #include "VideoCommon/FrameDumpFFMpeg.h"
@@ -199,6 +200,9 @@ static void DoState(PointerWrap& p)
   p.DoMarker("Wiimote");
   Gecko::DoState(p);
   p.DoMarker("Gecko");
+
+  RADevToolManager::GetInstance()->DoState(p);
+  p.DoMarker("RADev");
 }
 
 void LoadFromBuffer(std::vector<u8>& buffer)
@@ -853,6 +857,9 @@ void LoadAs(const std::string& filename)
     return;
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
+
+  if (!RADevToolManager::GetInstance()->RAWarnDisableHardcore())
+    return;
 
   std::unique_lock lk(s_load_or_save_in_progress_mutex, std::try_to_lock);
   if (!lk)

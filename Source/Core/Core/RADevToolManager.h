@@ -33,6 +33,8 @@ public:
   std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
   void ActivateMenuItem(int item);
   void SetRefreshMenuCallback(std::function<void(void*)> callback, void* callback_object);
+  void DoState(PointerWrap& p);
+  bool RAWarnDisableHardcore();
 
 private:
   RADevToolManager() = default;
