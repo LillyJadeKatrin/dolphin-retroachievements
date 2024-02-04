@@ -20,6 +20,7 @@
 #include "Core/HW/Memmap.h"
 #include "Core/IOS/FS/FileSystem.h"
 #include "Core/PowerPC/MMU.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 #include "DiscIO/DirectoryBlob.h"
 #include "DiscIO/RiivolutionParser.h"
@@ -528,6 +529,8 @@ static void ApplyMemoryPatch(const Core::CPUThreadGuard& guard, u32 offset,
   if (::Config::Get(::Config::RA_HARDCORE_ENABLED))
     return;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return;
 
   if (value.empty())
     return;

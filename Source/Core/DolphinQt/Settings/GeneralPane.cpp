@@ -22,6 +22,7 @@
 #include "Core/Core.h"
 #include "Core/DolphinAnalytics.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 
 #include "DolphinQt/QtUtils/ModalMessageBox.h"
 #include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
@@ -89,7 +90,8 @@ void GeneralPane::OnEmulationStateChanged(Core::State state)
   bool hardcore = Config::Get(Config::RA_HARDCORE_ENABLED);
   m_checkbox_cheats->setEnabled(!running && !hardcore);
 #else   // USE_RETRO_ACHIEVEMENTS
-  m_checkbox_cheats->setEnabled(!running);
+  bool hardcore = RADevToolManager::GetInstance()->RAIsHardcoreActive();
+  m_checkbox_cheats->setEnabled(!running && !hardcore);
 #endif  // USE_RETRO_ACHIEVEMENTS
   m_checkbox_override_region_settings->setEnabled(!running);
 #ifdef USE_DISCORD_PRESENCE

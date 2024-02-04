@@ -35,6 +35,7 @@
 #include "Core/GeckoCodeConfig.h"
 #include "Core/PowerPC/MMU.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 
 namespace PatchEngine
@@ -237,6 +238,8 @@ static void ApplyPatches(const Core::CPUThreadGuard& guard, const std::vector<Pa
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return;
   for (const Patch& patch : patches)
   {
     if (patch.enabled)
@@ -282,6 +285,8 @@ static void ApplyMemoryPatches(const Core::CPUThreadGuard& guard,
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return;
   std::lock_guard lock(s_on_frame_memory_mutex);
   for (std::size_t index : memory_patch_indices)
   {

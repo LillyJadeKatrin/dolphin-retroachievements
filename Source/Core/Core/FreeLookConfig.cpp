@@ -9,6 +9,7 @@
 #include "Core/Config/FreeLookSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "Core/RADevToolManager.h"
 
 namespace FreeLook
 {
@@ -50,7 +51,8 @@ void Config::Refresh()
   enabled = ::Config::Get(::Config::FREE_LOOK_ENABLED) &&
             !AchievementManager::GetInstance().IsHardcoreModeActive();
 #else   // USE_RETRO_ACHIEVEMENTS
-  enabled = ::Config::Get(::Config::FREE_LOOK_ENABLED);
+  enabled = ::Config::Get(::Config::FREE_LOOK_ENABLED) &&
+            !RADevToolManager::GetInstance()->RAIsHardcoreActive();
 #endif  // USE_RETRO_ACHIEVEMENTS
 }
 }  // namespace FreeLook

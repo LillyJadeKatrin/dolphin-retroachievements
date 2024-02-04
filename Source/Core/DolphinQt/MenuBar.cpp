@@ -130,8 +130,9 @@ void MenuBar::OnEmulationStateChanged(Core::State state)
   m_state_load_menu->setEnabled(running && !hardcore);
   m_frame_advance_action->setEnabled(running && !hardcore);
 #else   // USE_RETRO_ACHIEVEMENTS
-  m_state_load_menu->setEnabled(running);
-  m_frame_advance_action->setEnabled(running);
+  const bool hardcore = RADevToolManager::GetInstance()->RAIsHardcoreActive();
+  m_state_load_menu->setEnabled(running && !hardcore);
+  m_frame_advance_action->setEnabled(running && !hardcore);
 #endif  // USE_RETRO_ACHIEVEMENTS
 
   // Movie
@@ -145,7 +146,7 @@ void MenuBar::OnEmulationStateChanged(Core::State state)
 #ifdef USE_RETRO_ACHIEVEMENTS
   m_recording_play->setEnabled(m_game_selected && !running && !hardcore);
 #else   // USE_RETRO_ACHIEVEMENTS
-  m_recording_play->setEnabled(m_game_selected && !running);
+  m_recording_play->setEnabled(m_game_selected && !running && !hardcore);
 #endif  // USE_RETRO_ACHIEVEMENTS
   m_recording_start->setEnabled((m_game_selected || running) &&
                                 !Core::System::GetInstance().GetMovie().IsPlayingInput());

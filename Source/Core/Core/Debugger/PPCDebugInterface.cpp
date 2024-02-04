@@ -25,6 +25,7 @@
 #include "Core/PowerPC/MMU.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 
 void ApplyMemoryPatch(const Core::CPUThreadGuard& guard, Common::Debug::MemoryPatch& patch,
@@ -34,6 +35,8 @@ void ApplyMemoryPatch(const Core::CPUThreadGuard& guard, Common::Debug::MemoryPa
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return;
   if (patch.value.empty())
     return;
 

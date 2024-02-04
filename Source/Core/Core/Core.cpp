@@ -1087,6 +1087,11 @@ void DoFrameStep()
     return;
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+  {
+    OSD::AddMessage("Frame stepping is disabled in RetroAchievements hardcore mode");
+    return;
+  }
   if (GetState() == State::Paused)
   {
     // if already paused, frame advance for 1 frame

@@ -220,6 +220,11 @@ void LoadFromBuffer(std::vector<u8>& buffer)
     return;
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+  {
+    OSD::AddMessage("Loading savestates is disabled in RetroAchievements hardcore mode");
+    return;
+  }
 
   Core::RunOnCPUThread(
       [&] {
@@ -857,9 +862,11 @@ void LoadAs(const std::string& filename)
     return;
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
-
-  if (!RADevToolManager::GetInstance()->RAWarnDisableHardcore())
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+  {
+    OSD::AddMessage("Loading savestates is disabled in RetroAchievements hardcore mode");
     return;
+  }
 
   std::unique_lock lk(s_load_or_save_in_progress_mutex, std::try_to_lock);
   if (!lk)

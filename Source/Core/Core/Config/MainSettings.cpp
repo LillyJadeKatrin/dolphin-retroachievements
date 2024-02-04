@@ -27,6 +27,7 @@
 #include "Core/HW/Memmap.h"
 #include "Core/HW/SI/SI_Device.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "DiscIO/Enums.h"
 #include "VideoCommon/VideoBackendBase.h"
 
@@ -746,7 +747,7 @@ bool AreCheatsEnabled()
 #ifdef USE_RETRO_ACHIEVEMENTS
   return Config::Get(::Config::MAIN_ENABLE_CHEATS) && !::Config::Get(::Config::RA_HARDCORE_ENABLED);
 #else   // USE_RETRO_ACHIEVEMENTS
-  return Config::Get(::Config::MAIN_ENABLE_CHEATS);
+  return Config::Get(::Config::MAIN_ENABLE_CHEATS) && !RADevToolManager::GetInstance()->RAIsHardcoreActive();
 #endif  // USE_RETRO_ACHIEVEMENTS
 }
 
@@ -756,7 +757,7 @@ bool IsDebuggingEnabled()
   return Config::Get(::Config::MAIN_ENABLE_DEBUGGING) &&
          !::Config::Get(::Config::RA_HARDCORE_ENABLED);
 #else   // USE_RETRO_ACHIEVEMENTS
-  return Config::Get(::Config::MAIN_ENABLE_DEBUGGING);
+  return Config::Get(::Config::MAIN_ENABLE_DEBUGGING) && !RADevToolManager::GetInstance()->RAIsHardcoreActive();
 #endif  // USE_RETRO_ACHIEVEMENTS
 }
 

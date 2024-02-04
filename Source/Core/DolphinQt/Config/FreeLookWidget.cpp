@@ -14,6 +14,7 @@
 #include "Core/Config/FreeLookSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "Core/RADevToolManager.h"
 
 #include "DolphinQt/Config/ConfigControls/ConfigChoice.h"
 #include "DolphinQt/Config/Mapping/MappingWindow.h"
@@ -42,6 +43,8 @@ void FreeLookWidget::CreateLayout()
   const bool hardcore = AchievementManager::GetInstance().IsHardcoreModeActive();
   m_enable_freelook->setEnabled(!hardcore);
 #endif  // USE_RETRO_ACHIEVEMENTS
+  const bool hardcore = RADevToolManager::GetInstance()->RAIsHardcoreActive();
+  m_enable_freelook->setEnabled(!hardcore);
   m_freelook_controller_configure_button = new NonDefaultQPushButton(tr("Configure Controller"));
 
   m_freelook_control_type = new ConfigChoice({tr("Six Axis"), tr("First Person"), tr("Orbital")},
@@ -116,6 +119,8 @@ void FreeLookWidget::LoadSettings()
   const bool hardcore = AchievementManager::GetInstance().IsHardcoreModeActive();
   m_enable_freelook->setEnabled(!hardcore);
 #endif  // USE_RETRO_ACHIEVEMENTS
+  const bool hardcore = RADevToolManager::GetInstance()->RAIsHardcoreActive();
+  m_enable_freelook->setEnabled(!hardcore);
   m_freelook_control_type->setEnabled(checked);
   m_freelook_controller_configure_button->setEnabled(checked);
   m_freelook_background_input->setEnabled(checked);

@@ -21,6 +21,7 @@
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/MMU.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 
 Cheats::DataType Cheats::GetDataType(const Cheats::SearchValue& value)
@@ -211,6 +212,9 @@ Cheats::NewSearch(const Core::CPUThreadGuard& guard,
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return Cheats::SearchErrorCode::DisabledInHardcoreMode;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return Cheats::SearchErrorCode::InvalidParameters;
+  const u32 data_size = sizeof(T);
   std::vector<Cheats::SearchResult<T>> results;
   const Core::State core_state = Core::GetState();
   if (core_state != Core::State::Running && core_state != Core::State::Paused)
@@ -265,6 +269,8 @@ Cheats::NextSearch(const Core::CPUThreadGuard& guard,
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return Cheats::SearchErrorCode::DisabledInHardcoreMode;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return Cheats::SearchErrorCode::InvalidParameters;
   std::vector<Cheats::SearchResult<T>> results;
   const Core::State core_state = Core::GetState();
   if (core_state != Core::State::Running && core_state != Core::State::Paused)
@@ -431,6 +437,8 @@ Cheats::SearchErrorCode Cheats::CheatSearchSession<T>::RunSearch(const Core::CPU
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return Cheats::SearchErrorCode::DisabledInHardcoreMode;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return Cheats::SearchErrorCode::InvalidParameters;
   Common::Result<SearchErrorCode, std::vector<SearchResult<T>>> result =
       Cheats::SearchErrorCode::InvalidParameters;
   if (m_filter_type == FilterType::CompareAgainstSpecificValue)

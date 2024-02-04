@@ -22,6 +22,7 @@
 #include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 
 #include "VideoCommon/Fifo.h"
@@ -148,6 +149,14 @@ void CoreTimingManager::RefreshConfig()
     OSD::AddMessage("Minimum speed is 100% in Hardcore Mode");
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive() &&
+      Config::Get(Config::MAIN_EMULATION_SPEED) < 1.0f &&
+      Config::Get(Config::MAIN_EMULATION_SPEED) > 0.0f)
+  {
+    Config::SetCurrent(Config::MAIN_EMULATION_SPEED, 1.0f);
+    m_emulation_speed = 1.0f;
+    OSD::AddMessage("Minimum speed is 100% in Hardcore Mode");
+  }
 
   m_emulation_speed = Config::Get(Config::MAIN_EMULATION_SPEED);
 }

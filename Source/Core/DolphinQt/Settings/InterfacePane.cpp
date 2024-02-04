@@ -22,6 +22,7 @@
 #include "Core/Config/AchievementSettings.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/Config/UISettings.h"
+#include "Core/RADevToolManager.h"
 
 #include "DolphinQt/Config/ToolTipControls/ToolTipCheckBox.h"
 #include "DolphinQt/QtUtils/ModalMessageBox.h"
@@ -268,6 +269,17 @@ void InterfacePane::LoadConfig()
     m_checkbox_show_debugging_ui->SetDescription({});
   }
 #endif  // USE_RETRO_ACHIEVEMENTS
+  bool hardcore = RADevToolManager::GetInstance()->RAIsHardcoreActive();
+  SignalBlocking(m_checkbox_show_debugging_ui)->setEnabled(!hardcore);
+  if (hardcore)
+  {
+    m_checkbox_show_debugging_ui->SetDescription(
+        tr("<dolphin_emphasis>Disabled in Hardcore Mode.</dolphin_emphasis>"));
+  }
+  else
+  {
+    m_checkbox_show_debugging_ui->SetDescription({});
+  }
 
   SignalBlocking(m_combobox_language)
       ->setCurrentIndex(m_combobox_language->findData(

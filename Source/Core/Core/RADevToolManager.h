@@ -35,6 +35,7 @@ public:
   void SetRefreshMenuCallback(std::function<void(void*)> callback, void* callback_object);
   void DoState(PointerWrap& p);
   bool RAWarnDisableHardcore();
+  bool RAIsHardcoreActive();
 
 private:
   RADevToolManager() = default;

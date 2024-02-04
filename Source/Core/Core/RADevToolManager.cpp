@@ -279,6 +279,11 @@ bool RADevToolManager::RAWarnDisableHardcore()
   return RA_WarnDisableHardcore("load a state");
 }
 
+bool RADevToolManager::RAIsHardcoreActive()
+{
+  return RA_HardcoreModeIsActive();
+}
+
 int RADevToolManager::RACallbackIsActive()
 {
   return m_game_id;

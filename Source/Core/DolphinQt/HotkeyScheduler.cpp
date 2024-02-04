@@ -30,6 +30,7 @@
 #include "Core/IOS/IOS.h"
 #include "Core/IOS/USB/Bluetooth/BTBase.h"
 #include "Core/IOS/USB/Bluetooth/BTReal.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 #include "Core/System.h"
 #include "Core/WiiUtils.h"
@@ -590,6 +591,10 @@ void HotkeyScheduler::Run()
       else
         OSD::AddMessage(fmt::format("Free Look: {}", new_value ? "Enabled" : "Disabled"));
 #else   // USE_RETRO_ACHIEVEMENTS
+      const bool hardcore = RADevToolManager::GetInstance()->RAIsHardcoreActive();
+      if (hardcore)
+        OSD::AddMessage("Free Look is Disabled in Hardcore Mode");
+      else
       OSD::AddMessage(fmt::format("Free Look: {}", new_value ? "Enabled" : "Disabled"));
 #endif  // USE_RETRO_ACHIEVEMENTS
     }

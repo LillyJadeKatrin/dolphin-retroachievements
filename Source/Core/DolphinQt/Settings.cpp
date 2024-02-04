@@ -41,6 +41,7 @@
 #include "Core/IOS/IOS.h"
 #include "Core/NetPlayClient.h"
 #include "Core/NetPlayServer.h"
+#include "Core/RADevToolManager.h"
 #include "Core/System.h"
 
 #include "DolphinQt/Host.h"
@@ -568,6 +569,8 @@ void Settings::SetDebugModeEnabled(bool enabled)
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     enabled = false;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    enabled = false;
   if (IsDebugModeEnabled() != enabled)
   {
     Config::SetBaseOrCurrent(Config::MAIN_ENABLE_DEBUGGING, enabled);

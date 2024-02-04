@@ -64,6 +64,7 @@
 #include "Core/IOS/USB/Bluetooth/BTEmu.h"
 #include "Core/IOS/USB/Bluetooth/WiimoteDevice.h"
 #include "Core/NetPlayProto.h"
+#include "Core/RADevToolManager.h"
 #include "Core/State.h"
 #include "Core/System.h"
 #include "Core/WiiUtils.h"
@@ -944,6 +945,8 @@ bool MovieManager::PlayInput(const std::string& movie_path,
   if (Config::Get(Config::RA_HARDCORE_ENABLED))
     return false;
 #endif  // USE_RETRO_ACHIEVEMENTS
+  if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
+    return false;
 
   m_total_frames = m_temp_header.frameCount;
   m_total_lag_count = m_temp_header.lagCount;

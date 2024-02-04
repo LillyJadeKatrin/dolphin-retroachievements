@@ -1,7 +1,6 @@
 // Copyright 2023 Dolphin Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#ifdef USE_RETRO_ACHIEVEMENTS
 #include "DolphinQt/Config/HardcoreWarningWidget.h"
 
 #include <QHBoxLayout>
@@ -13,6 +12,7 @@
 #include "Core/Config/AchievementSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "Core/RADevToolManager.h"
 
 #include "DolphinQt/Settings.h"
 
@@ -57,6 +57,5 @@ void HardcoreWarningWidget::ConnectWidgets()
 
 void HardcoreWarningWidget::Update()
 {
-  setHidden(!Config::Get(Config::RA_HARDCORE_ENABLED));
+  setHidden(!RADevToolManager::GetInstance()->RAIsHardcoreActive());
 }
-#endif  // USE_RETRO_ACHIEVEMENTS
