@@ -214,7 +214,7 @@ Cheats::NewSearch(const Core::CPUThreadGuard& guard,
 #endif  // USE_RETRO_ACHIEVEMENTS
   if (RADevToolManager::GetInstance()->RAIsHardcoreActive())
     return Cheats::SearchErrorCode::InvalidParameters;
-  const u32 data_size = sizeof(T);
+
   std::vector<Cheats::SearchResult<T>> results;
   const Core::State core_state = Core::GetState();
   if (core_state != Core::State::Running && core_state != Core::State::Paused)
