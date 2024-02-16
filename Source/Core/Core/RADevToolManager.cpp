@@ -269,7 +269,7 @@ void RADevToolManager::DoState(PointerWrap& p)
   char* buffer = (char*)malloc(size);
   if (!p.IsReadMode())
     RA_CaptureState(buffer, size);
-  p.Do(buffer);
+  p.DoArray(buffer, size);
   if (p.IsReadMode())
     RA_RestoreState(buffer);
 }
