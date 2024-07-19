@@ -64,6 +64,7 @@ target_include_directories(rcheevos PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/rcheevo
 target_include_directories(rcheevos INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_definitions(rcheevos PRIVATE "RC_DISABLE_LUA=1" "RCHEEVOS_URL_SSL")
 target_compile_definitions(rcheevos PRIVATE "RC_CLIENT_SUPPORTS_HASH")
+target_compile_definitions(rcheevos PRIVATE "RC_CLIENT_SUPPORTS_RAINTEGRATION")
 target_compile_definitions(rcheevos PRIVATE "RC_HASH_NO_ENCRYPTED")
 target_compile_definitions(rcheevos PRIVATE "RC_HASH_NO_ZIP")
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
