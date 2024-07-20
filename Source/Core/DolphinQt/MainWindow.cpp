@@ -268,7 +268,7 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   NetPlayInit();
 
 #ifdef USE_RETRO_ACHIEVEMENTS
-  AchievementManager::GetInstance().Init();
+  AchievementManager::GetInstance().Init(reinterpret_cast<void*>(winId()));
 #endif  // USE_RETRO_ACHIEVEMENTS
 
 #if defined(__unix__) || defined(__unix) || defined(__APPLE__)
