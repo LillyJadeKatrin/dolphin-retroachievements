@@ -43,6 +43,7 @@
 #include "Core/BootManager.h"
 #include "Core/CommonTitles.h"
 #include "Core/Config/AchievementSettings.h"
+#include "Core/Config/FreeLookSettings.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/Config/NetplaySettings.h"
 #include "Core/Config/UISettings.h"
@@ -265,6 +266,8 @@ MainWindow::MainWindow(Core::System& system, std::unique_ptr<BootParameters> boo
           &MainWindow::ShowAchievementSettings);
   connect(m_game_list, &GameList::OpenAchievementSettings, this,
           &MainWindow::ShowAchievementSettings);
+  connect(&Settings::Instance(), &Settings::HardcoreStateChanged, this,
+          &MainWindow::OnHardcoreChanged);
 #endif  // USE_RETRO_ACHIEVEMENTS
 
   InitCoreCallbacks();
@@ -275,6 +278,14 @@ MainWindow::MainWindow(Core::System& system, std::unique_ptr<BootParameters> boo
   AchievementManager::GetInstance().Init(reinterpret_cast<void*>(winId()));
   if (AchievementManager::GetInstance().IsHardcoreModeActive())
     Settings::Instance().SetDebugModeEnabled(false);
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  Config::AddConfigChangedCallback(
+      [this]() { QueueOnObject(this, [this] { this->OnHardcoreChanged(); }); });
+#endif  // RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+  // If hardcore is enabled when the emulator starts, make sure it turns off what it needs to
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+    OnHardcoreChanged();
 #endif  // USE_RETRO_ACHIEVEMENTS
 
 #if defined(__unix__) || defined(__unix) || defined(__APPLE__)
@@ -1991,6 +2002,14 @@ void MainWindow::ShowAchievementSettings()
 {
   ShowAchievementsWindow();
   m_achievements_window->ForceSettingsTab();
+}
+
+void MainWindow::OnHardcoreChanged()
+{
+  AchievementManager::GetInstance().SetHardcoreMode();
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+    Settings::Instance().SetDebugModeEnabled(false);
+  emit Settings::Instance().EmulationStateChanged(Core::GetState(Core::System::GetInstance()));
 }
 #endif  // USE_RETRO_ACHIEVEMENTS
 
