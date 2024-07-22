@@ -1324,6 +1324,7 @@ void AchievementManager::LoadIntegrationCallback(int result, const char* error_m
     INFO_LOG_FMT(ACHIEVEMENTS, "RAIntegration.dll found.");
     instance.m_dll_found = true;
     rc_client_raintegration_set_event_handler(instance.m_client, RAIntegrationEventHandler);
+    rc_client_raintegration_set_write_memory_function(instance.m_client, MemoryPoker);
     instance.m_dev_menu_callback();
     // TODO: hook up menu and dll event handlers
     break;
@@ -1368,6 +1369,24 @@ void AchievementManager::RAIntegrationEventHandler(const rc_client_raintegration
   default:
     WARN_LOG_FMT(ACHIEVEMENTS, "Unsupported raintegration event. {}", event->type);
     break;
+  }
+}
+
+void AchievementManager::MemoryPoker(u32 address, u8* buffer, u32 num_bytes, rc_client_t* client)
+{
+  if (buffer == nullptr)
+    return;
+  auto& system = Core::System::GetInstance();
+  if (!(Core::IsHostThread() || Core::IsCPUThread()))
+  {
+    ASSERT_MSG(ACHIEVEMENTS, false, "MemoryPoker called from wrong thread");
+    return;
+  }
+  Core::CPUThreadGuard threadguard(system);
+  for (u32 num_write = 0; num_write < num_bytes; num_write++)
+  {
+    system.GetMMU().HostTryWriteU8(threadguard, buffer[num_write], address + num_write,
+                                   PowerPC::RequestedAddressSpace::Physical);
   }
 }
 #endif  // RC_CLIENT_SUPPORTS_RAINTEGRATION
