@@ -260,16 +260,6 @@ void AchievementSettingsWidget::Logout()
 void AchievementSettingsWidget::ToggleHardcore()
 {
   SaveSettings();
-  AchievementManager::GetInstance().SetHardcoreMode();
-  if (Config::Get(Config::RA_HARDCORE_ENABLED))
-  {
-    if (Config::Get(Config::MAIN_EMULATION_SPEED) < 1.0f)
-      Config::SetBaseOrCurrent(Config::MAIN_EMULATION_SPEED, 1.0f);
-    Config::SetBaseOrCurrent(Config::FREE_LOOK_ENABLED, false);
-    Settings::Instance().SetCheatsEnabled(false);
-    Settings::Instance().SetDebugModeEnabled(false);
-  }
-  emit Settings::Instance().EmulationStateChanged(Core::GetState(Core::System::GetInstance()));
   emit Settings::Instance().HardcoreStateChanged();
 }
 

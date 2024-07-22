@@ -1323,6 +1323,7 @@ void AchievementManager::LoadIntegrationCallback(int result, const char* error_m
   case RC_OK:
     INFO_LOG_FMT(ACHIEVEMENTS, "RAIntegration.dll found.");
     instance.m_dll_found = true;
+    rc_client_raintegration_set_event_handler(instance.m_client, RAIntegrationEventHandler);
     instance.m_dev_menu_callback();
     // TODO: hook up menu and dll event handlers
     break;
@@ -1335,6 +1336,32 @@ void AchievementManager::LoadIntegrationCallback(int result, const char* error_m
   default:
     WARN_LOG_FMT(ACHIEVEMENTS, "Failed to load RAIntegration.dll. {}", error_message);
     return;
+  }
+}
+
+void AchievementManager::RAIntegrationEventHandler(const rc_client_raintegration_event_t* event,
+                                                   rc_client_t* client)
+{
+  auto& instance = AchievementManager::GetInstance();
+  switch (event->type)
+  {
+  case RC_CLIENT_RAINTEGRATION_EVENT_MENUITEM_CHECKED_CHANGED:
+    instance.m_dev_menu_callback();
+    break;
+  case RC_CLIENT_RAINTEGRATION_EVENT_PAUSE:
+  {
+    Core::System* system = instance.m_system.load(std::memory_order_acquire);
+    if (!system)
+      return;
+    Core::SetState(*system, Core::State::Paused);
+    break;
+  }
+  case RC_CLIENT_RAINTEGRATION_EVENT_HARDCORE_CHANGED:
+    instance.m_hardcore_callback();
+    break;
+  default:
+    WARN_LOG_FMT(ACHIEVEMENTS, "Unsupported raintegration event. {}", event->type);
+    break;
   }
 }
 #endif  // RC_CLIENT_SUPPORTS_RAINTEGRATION
