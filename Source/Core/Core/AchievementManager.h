@@ -151,10 +151,7 @@ public:
   {
     m_dev_menu_callback = callback;
   };
-  void SetHardcoreCallback(std::function<void(void)> callback)
-  {
-    m_hardcore_callback = callback;
-  };
+  void SetHardcoreCallback(std::function<void(void)> callback) { m_hardcore_callback = callback; };
 #endif  // RC_CLIENT_SUPPORTS_RAINTEGRATION
 
   void DoState(PointerWrap& p);
@@ -226,6 +223,7 @@ private:
                                       void* userdata);
   static void RAIntegrationEventHandler(const rc_client_raintegration_event_t* event,
                                         rc_client_t* client);
+  static void MemoryPoker(u32 address, u8* buffer, u32 num_bytes, rc_client_t* client);
 #endif  // RC_CLIENT_SUPPORTS_RAINTEGRATION
 
   rc_runtime_t m_runtime{};
