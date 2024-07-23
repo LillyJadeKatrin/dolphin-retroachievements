@@ -24,6 +24,7 @@
 #include "Common/Version.h"
 #include "Common/WorkQueueThread.h"
 #include "Core/Config/AchievementSettings.h"
+#include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
 #include "Core/HW/Memmap.h"
 #include "Core/HW/VideoInterface.h"
@@ -1358,6 +1359,7 @@ void AchievementManager::LoadIntegrationCallback(int result, const char* error_m
     rc_client_raintegration_set_event_handler(instance.m_client, RAIntegrationEventHandler);
     rc_client_raintegration_set_write_memory_function(instance.m_client, MemoryPoker);
     rc_client_raintegration_set_get_game_name_function(instance.m_client, GameTitleEstimateHandler);
+    Config::SetBaseOrCurrent(Config::MAIN_CONFIRM_ON_STOP, true);
     instance.m_dev_menu_callback();
     // TODO: hook up menu and dll event handlers
     break;
