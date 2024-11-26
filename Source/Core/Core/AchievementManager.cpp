@@ -1465,6 +1465,7 @@ void AchievementManager::MemoryPoker(u32 address, u8* buffer, u32 num_bytes, rc_
     Core::QueueHostJob([address, buffer, num_bytes, client](Core::System& system) {
       MemoryPoker(address, buffer, num_bytes, client);
     });
+    return;
   }
   Core::CPUThreadGuard threadguard(system);
   for (u32 num_write = 0; num_write < num_bytes; num_write++)
@@ -1473,6 +1474,7 @@ void AchievementManager::MemoryPoker(u32 address, u8* buffer, u32 num_bytes, rc_
                                    PowerPC::RequestedAddressSpace::Physical);
   }
 }
+
 void AchievementManager::GameTitleEstimateHandler(char* buffer, u32 buffer_size,
                                                   rc_client_t* client)
 {
