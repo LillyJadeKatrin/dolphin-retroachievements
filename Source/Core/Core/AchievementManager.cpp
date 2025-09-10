@@ -1318,11 +1318,7 @@ void AchievementManager::Request(const rc_api_request_t* request,
 // future synchronous calls.
 u32 AchievementManager::MemoryVerifier(u32 address, u8* buffer, u32 num_bytes, rc_client_t* client)
 {
-  auto& system = Core::System::GetInstance();
-  u32 mem2_size = system.GetMemory().GetExRamSizeReal();
-  if (address < MEM1_SIZE + mem2_size)
-    return std::min(MEM1_SIZE + mem2_size - address, num_bytes);
-  return 0;
+  return num_bytes;
 }
 
 u32 AchievementManager::MemoryPeeker(u32 address, u8* buffer, u32 num_bytes, rc_client_t* client)
@@ -1334,6 +1330,8 @@ u32 AchievementManager::MemoryPeeker(u32 address, u8* buffer, u32 num_bytes, rc_
   if (instance.m_dll_found)
   {
     std::lock_guard lg{instance.m_memory_lock};
+    if (address > MEM1_SIZE)
+      address -= (0x10000000 - MEM1_SIZE);
     if (u64(address) + num_bytes > instance.m_cloned_memory.size())
     {
       ERROR_LOG_FMT(ACHIEVEMENTS,
@@ -1353,8 +1351,6 @@ u32 AchievementManager::MemoryPeeker(u32 address, u8* buffer, u32 num_bytes, rc_
     return 0;
   }
   Core::CPUThreadGuard thread_guard(system);
-  if (address > MEM1_SIZE)
-    address += (MEM2_START - MEM1_SIZE);
   for (u32 num_read = 0; num_read < num_bytes; num_read++)
   {
     auto value = system.GetMMU().HostTryReadU8(thread_guard, address + num_read,
@@ -1583,7 +1579,10 @@ void AchievementManager::MemoryPoker(u32 address, u8* buffer, u32 num_bytes, rc_
     return;
   }
   auto& instance = AchievementManager::GetInstance();
-  if (u64(address) + num_bytes >= instance.m_cloned_memory.size())
+  u32 clone_address = address;
+  if (clone_address > MEM1_SIZE)
+    clone_address -= (0x10000000 - MEM1_SIZE);
+  if (u64(clone_address) + num_bytes >= instance.m_cloned_memory.size())
   {
     ERROR_LOG_FMT(ACHIEVEMENTS,
                   "Attempt to write past memory size: size {} address {} write length {}",
@@ -1595,11 +1594,8 @@ void AchievementManager::MemoryPoker(u32 address, u8* buffer, u32 num_bytes, rc_
     return;
   Core::CPUThreadGuard thread_guard(*system);
   std::lock_guard lg{instance.m_memory_lock};
-  if (address < MEM1_SIZE)
-    system->GetMemory().CopyToEmu(address, buffer, num_bytes);
-  else
-    system->GetMemory().CopyToEmu(address - MEM1_SIZE + MEM2_START, buffer, num_bytes);
-  std::copy(buffer, buffer + num_bytes, instance.m_cloned_memory.begin() + address);
+  system->GetMemory().CopyToEmu(address, buffer, num_bytes);
+  std::copy(buffer, buffer + num_bytes, instance.m_cloned_memory.begin() + clone_address);
 }
 void AchievementManager::GameTitleEstimateHandler(char* buffer, u32 buffer_size,
                                                   rc_client_t* client)
