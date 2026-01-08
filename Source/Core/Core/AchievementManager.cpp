@@ -76,6 +76,7 @@ void AchievementManager::Init(void* hwnd)
     if (!host_url.empty())
       rc_client_set_host(m_client, host_url.c_str());
     rc_client_set_event_handler(m_client, EventHandler);
+    rc_client_set_allow_background_memory_reads(m_client, 0);
     rc_client_enable_logging(m_client, RC_CLIENT_LOG_LEVEL_VERBOSE,
                              [](const char* message, const rc_client_t* client) {
                                INFO_LOG_FMT(ACHIEVEMENTS, "{}", message);
